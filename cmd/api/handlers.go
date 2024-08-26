@@ -3,10 +3,11 @@ package api
 import (
 	"net/http"
 
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/response"
 )
 
-func (app *application) status(w http.ResponseWriter, r *http.Request) {
+func (app *datamodels.Application) status(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{
 		"Status": "OK",
 	}

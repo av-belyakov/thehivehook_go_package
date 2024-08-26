@@ -4,9 +4,11 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 )
 
-func (app *application) routes() http.Handler {
+func (app *datamodels.Application) routes() http.Handler {
 	mux := chi.NewRouter()
 
 	mux.NotFound(app.notFound)

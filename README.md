@@ -7,55 +7,33 @@
 
 ## Структура поекта
 
-Everything in the codebase is designed to be editable. Feel free to change and adapt it to meet your needs.
-
-|                           |                                                                                                                                                                                        |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`cmd/api`**             | Your application-specific code (handlers, routing, middleware, helpers) for dealing with HTTP requests and responses.                                                                  |
-| `↳ cmd/api/errors.go`     | Contains helpers for managing and responding to error conditions.                                                                                                                      |
-| `↳ cmd/api/handlers.go`   | Contains your application HTTP handlers.                                                                                                                                               |
-| `↳ cmd/api/helpers.go`    | Contains helper functions for common tasks.                                                                                                                                            |
-| `↳ cmd/api/main.go`       | The entry point for the application. Responsible for parsing configuration settings initializing dependencies and running the server. Start here when you're looking through the code. |
-| `↳ cmd/api/middleware.go` | Contains your application middleware.                                                                                                                                                  |
-| `↳ cmd/api/routes.go`     | Contains your application route mappings.                                                                                                                                              |
-| `↳ cmd/api/server.go`     | Contains a helper functions for starting and gracefully shutting down the server.                                                                                                      |
-
-|                         |                                                           |
-| ----------------------- | --------------------------------------------------------- |
-| **`internal`**          | Contains various helper packages used by the application. |
-| `↳ internal/request/`   | Contains helper functions for decoding JSON requests.     |
-| `↳ internal/response/`  | Contains helper functions for sending JSON responses.     |
-| `↳ internal/validator/` | Contains validation helpers.                              |
-| `↳ internal/version/`   | Contains the application version number definition.       |
-
 ## Конфигурационные настройки
 
-Configuration settings are managed via command-line flags in `main.go`.
+Конфигурационные параметры для сервиса могут быть заданы как через конфигурационный файл так и методом установки переменных окружения. Однако, все пароли и
+ключевые токены, используемые для авторизации, задаются ТОЛЬКО через переменные окружения.
 
-You can try this out by using the `--http-port` flag to configure the network port that the server is listening on:
+Типы конфигурационных файлов:
 
-```
-$ go run ./cmd/api --http-port=9999
-```
+- config.yaml общий конфигурационный файл
+- config_dev.yaml конфигурационный файл используемый для тестов при разработке
+- config_prod.yaml конфигурационный файл применяемый в продуктовом режиме
 
-Feel free to adapt the `run()` function to parse additional command-line flags and store their values in the `config` struct. For example, to add a configuration setting to enable a 'debug mode' in your application you could do this:
+Основная переменная окружения для данного приложения - GO_HIVEHOOK_MAIN. На основании значения этой переменной принимается решение какой из конфигурационных файлов config_dev.yaml или config_prod.yaml использовать. При GO_HIVEHOOK_MAIN=development будет использоваться config_dev.yaml, во всех остальных случаях, в том числе и при отсутствии переменной окружения GO_HIVEHOOK_MAIN будет использоваться конфигурационный файл config_prod.yaml. Перечень переменных окружения которые можно использовать для настройки приложения:
 
-```
-type config struct {
-    httpPort  int
-    debug     bool
-}
+//Переменная окружения отвечающая за тип запуска приложения "development" или "production"
+GO_HIVEHOOK_MAIN
 
-...
+//Подключение к NATS
+GO_HIVEHOOK_NHOST
+GO_HIVEHOOK_NPORT
+GO_HIVEHOOK_SUBJECTCASE
+GO_HIVEHOOK_SUBJECTALERT
 
-func run() {
-    var cfg config
+//Подключение к TheHive
+GO_HIVEHOOK_NAME
+GO_HIVEHOOK_URL
 
-    flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
-    flag.BoolVar(&cfg.debug, "debug", false, "enable debug mode")
+GO_HIVEHOOK_APIKEY - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!! Он задается ТОЛЬКО через переменную окружения. В конфигурационном
+файле этого параметра нет.
 
-    flag.Parse()
-
-    ...
-}
-```
+Приоритет значений заданных через переменные окружения выше чем значений полученных из конфигурационных файлов.

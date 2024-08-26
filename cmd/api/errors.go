@@ -7,11 +7,12 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/response"
 	"github.com/av-belyakov/thehivehook_go_package/internal/validator"
 )
 
-func (app *application) reportServerError(r *http.Request, err error) {
+func (app *datamodels.Application) reportServerError(r *http.Request, err error) {
 	var (
 		message = err.Error()
 		method  = r.Method
@@ -23,7 +24,7 @@ func (app *application) reportServerError(r *http.Request, err error) {
 	app.logger.Error(message, requestAttrs, "trace", trace)
 }
 
-func (app *application) errorMessage(w http.ResponseWriter, r *http.Request, status int, message string, headers http.Header) {
+func (app *datamodels.Application) errorMessage(w http.ResponseWriter, r *http.Request, status int, message string, headers http.Header) {
 	message = strings.ToUpper(message[:1]) + message[1:]
 
 	err := response.JSONWithHeaders(w, status, map[string]string{"Error": message}, headers)
@@ -33,28 +34,28 @@ func (app *application) errorMessage(w http.ResponseWriter, r *http.Request, sta
 	}
 }
 
-func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
+func (app *datamodels.Application) serverError(w http.ResponseWriter, r *http.Request, err error) {
 	app.reportServerError(r, err)
 
 	message := "The server encountered a problem and could not process your request"
 	app.errorMessage(w, r, http.StatusInternalServerError, message, nil)
 }
 
-func (app *application) notFound(w http.ResponseWriter, r *http.Request) {
+func (app *datamodels.Application) notFound(w http.ResponseWriter, r *http.Request) {
 	message := "The requested resource could not be found"
 	app.errorMessage(w, r, http.StatusNotFound, message, nil)
 }
 
-func (app *application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
+func (app *datamodels.Application) methodNotAllowed(w http.ResponseWriter, r *http.Request) {
 	message := fmt.Sprintf("The %s method is not supported for this resource", r.Method)
 	app.errorMessage(w, r, http.StatusMethodNotAllowed, message, nil)
 }
 
-func (app *application) badRequest(w http.ResponseWriter, r *http.Request, err error) {
+func (app *datamodels.Application) badRequest(w http.ResponseWriter, r *http.Request, err error) {
 	app.errorMessage(w, r, http.StatusBadRequest, err.Error(), nil)
 }
 
-func (app *application) failedValidation(w http.ResponseWriter, r *http.Request, v validator.Validator) {
+func (app *datamodels.Application) failedValidation(w http.ResponseWriter, r *http.Request, v validator.Validator) {
 	err := response.JSON(w, http.StatusUnprocessableEntity, v)
 	if err != nil {
 		app.serverError(w, r, err)

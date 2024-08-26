@@ -1,25 +1,68 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"log"
 	"log/slog"
 	"os"
+	"os/signal"
 	"runtime/debug"
-
-	"github.com/av-belyakov/thehivehook_go_package/datamodels"
-	"github.com/av-belyakov/thehivehook_go_package/internal/version"
+	"syscall"
 
 	"github.com/lmittmann/tint"
+
+	"github.com/av-belyakov/simplelogger"
+	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
 )
 
-func main() {
-	logger := slog.New(tint.NewHandler(os.Stdout, &tint.Options{Level: slog.LevelDebug}))
+const ROOT_DIR = "thehivehook_go_package"
 
-	err := run(logger)
+func main() {
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
+
+	rootPath, err := supportingfunctions.GetRootPath(ROOT_DIR)
+	if err != nil {
+		log.Fatalf("error, it is impossible to form root path (%w)", err)
+	}
+
+	//инициализируем модуль чтения конфигурационного файла
+	confApp, err := confighandler.NewConfig(rootPath)
+	if err != nil {
+		log.Fatalf("error module 'confighandler': %w", err)
+	}
+
+	//инициализируем модуль логирования
+	sl, err := simplelogger.NewSimpleLogger(ROOT_DIR, getLoggerSettings(confApp.GetListLogs()))
+	if err != nil {
+		log.Fatalf("error module 'simplelogger': %v", err)
+	}
+
+	ctxCore, ctxCancelCore := context.WithCancel(context.Background())
+
+	go func() {
+		osCall := <-sigChan
+		msg := fmt.Sprintf("stop 'main' function, %s", osCall.String())
+		_ = sl.WriteLoggingData(msg, "info")
+
+		ctxCancelCore()
+	}()
+
+	loggerColor := slog.New(tint.NewHandler(os.Stdout, &tint.Options{Level: slog.LevelDebug}))
+
+	err := run(loggerColor)
 	if err != nil {
 		trace := string(debug.Stack())
-		logger.Error(err.Error(), "trace", trace)
+		loggerColor.Error(err.Error(), "trace", trace)
 		os.Exit(1)
 	}
 }
@@ -35,7 +78,7 @@ func run(logger *slog.Logger) error {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("version: %s\n", version.Get())
+		fmt.Printf("version: %s\n", versionandname.GetVersion())
 		return nil
 	}
 
