@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"os"
 	"runtime/debug"
-	"sync"
 
-	"example.com/internal/version"
+	"github.com/av-belyakov/thehivehook_go_package/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/internal/version"
 
 	"github.com/lmittmann/tint"
 )
@@ -24,19 +24,8 @@ func main() {
 	}
 }
 
-type config struct {
-	baseURL  string
-	httpPort int
-}
-
-type application struct {
-	config config
-	logger *slog.Logger
-	wg     sync.WaitGroup
-}
-
 func run(logger *slog.Logger) error {
-	var cfg config
+	var cfg datamodels.Config
 
 	flag.StringVar(&cfg.baseURL, "base-url", "http://localhost:4444", "base URL for the application")
 	flag.IntVar(&cfg.httpPort, "http-port", 4444, "port to listen on for HTTP requests")
@@ -50,7 +39,7 @@ func run(logger *slog.Logger) error {
 		return nil
 	}
 
-	app := &application{
+	app := &datamodels.Application{
 		config: cfg,
 		logger: logger,
 	}

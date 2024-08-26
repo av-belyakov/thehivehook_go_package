@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"example.com/internal/response"
+	"github.com/av-belyakov/thehivehook_go_package/internal/response"
 )
 
 func (app *application) status(w http.ResponseWriter, r *http.Request) {

@@ -7,8 +7,8 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"example.com/internal/response"
-	"example.com/internal/validator"
+	"github.com/av-belyakov/thehivehook_go_package/internal/response"
+	"github.com/av-belyakov/thehivehook_go_package/internal/validator"
 )
 
 func (app *application) reportServerError(r *http.Request, err error) {
