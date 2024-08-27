@@ -24,6 +24,16 @@ func (conf *ConfigApp) GetApplicationTheHive() *AppConfigTheHive {
 	return &conf.AppConfigTheHive
 }
 
+// GetApplicationElasticsearch настройки взаимодействия с Elasticsearch
+func (conf *ConfigApp) GetApplicationElasticsearch() *AppConfigElasticSearch {
+	return &conf.AppConfigElasticSearch
+}
+
+// GetApplicationHookServer настройки основного сервера API
+func (conf *ConfigApp) GetApplicationHookServer() *AppConfigHookServer {
+	return &conf.AppConfigHookServer
+}
+
 // Clean
 func (conf *ConfigApp) Clean() {
 	conf = &ConfigApp{}

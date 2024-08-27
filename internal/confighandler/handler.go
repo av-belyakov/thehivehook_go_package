@@ -7,6 +7,7 @@ import (
 	"path"
 	"strconv"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
@@ -14,21 +15,36 @@ import (
 
 func NewConfig(rootDir string) (*ConfigApp, error) {
 	conf := ConfigApp{}
-	var envList map[string]string = map[string]string{
-		"GO_HIVEHOOK_MAIN": "",
+	var (
+		validate *validator.Validate
+		envList  map[string]string = map[string]string{
+			"GO_HIVEHOOK_MAIN": "",
 
-		//Подключение к NATS
-		"GO_HIVEHOOK_NHOST":        "",
-		"GO_HIVEHOOK_NPORT":        "",
-		"GO_HIVEHOOK_SUBJECTCASE":  "",
-		"GO_HIVEHOOK_SUBJECTALERT": "",
+			//Подключение к NATS
+			"GO_HIVEHOOK_NHOST":        "",
+			"GO_HIVEHOOK_NPORT":        "",
+			"GO_HIVEHOOK_SUBJECTCASE":  "",
+			"GO_HIVEHOOK_SUBJECTALERT": "",
 
-		//Подключение к TheHive
-		"GO_HIVEHOOK_THHOST":   "",
-		"GO_HIVEHOOK_THPORT":   "",
-		"GO_HIVEHOOK_THUNAME":  "",
-		"GO_HIVEHOOK_THAPIKEY": "",
-	}
+			//Подключение к TheHive
+			"GO_HIVEHOOK_THHOST":   "",
+			"GO_HIVEHOOK_THPORT":   "",
+			"GO_HIVEHOOK_THUNAME":  "",
+			"GO_HIVEHOOK_THAPIKEY": "",
+
+			// Подключение к СУБД Elasticsearch
+			"GO_HIVEHOOK_ESHOST":   "",
+			"GO_HIVEHOOK_ESPORT":   "",
+			"GO_HIVEHOOK_ESUSER":   "",
+			"GO_HIVEHOOK_ESPASSWD": "",
+			"GO_HIVEHOOK_ESPREFIX": "",
+			"GO_HIVEHOOK_ESINDEX":  "",
+
+			//Настройки основного API серврера
+			"GO_HIVEHOOK_HHOST": "",
+			"GO_HIVEHOOK_HPORT": "",
+		}
+	)
 
 	getFileName := func(sf, confPath string, lfs []fs.DirEntry) (string, error) {
 		for _, v := range lfs {
@@ -118,8 +134,35 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			conf.AppConfigTheHive.ApiKey = viper.GetString("THEHIVE.api_key")
 		}
 
+		// Настройки для модуля подключения к СУБД ElasticSearch
+		if viper.IsSet("ELASTICSEARCH.host") {
+			conf.AppConfigElasticSearch.Host = viper.GetString("ELASTICSEARCH.host")
+		}
+		if viper.IsSet("ELASTICSEARCH.port") {
+			conf.AppConfigElasticSearch.Port = viper.GetInt("ELASTICSEARCH.port")
+		}
+		if viper.IsSet("ELASTICSEARCH.user") {
+			conf.AppConfigElasticSearch.UserName = viper.GetString("ELASTICSEARCH.user")
+		}
+		if viper.IsSet("ELASTICSEARCH.prefix") {
+			conf.AppConfigElasticSearch.Prefix = viper.GetString("ELASTICSEARCH.prefix")
+		}
+		if viper.IsSet("ELASTICSEARCH.index") {
+			conf.AppConfigElasticSearch.Index = viper.GetString("ELASTICSEARCH.index")
+		}
+
+		//	Настройки основного API сервера
+		if viper.IsSet("HOOKSERVER.host") {
+			conf.AppConfigHookServer.Host = viper.GetString("HOOKSERVER.host")
+		}
+		if viper.IsSet("HOOKSERVER.port") {
+			conf.AppConfigHookServer.Port = viper.GetInt("HOOKSERVER.port")
+		}
+
 		return nil
 	}
+
+	validate = validator.New(validator.WithRequiredStructEnabled())
 
 	for v := range envList {
 		if env, ok := os.LookupEnv(v); ok {
@@ -196,6 +239,43 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 	}
 	if envList["GO_HIVEHOOK_THAPIKEY"] != "" {
 		conf.AppConfigTheHive.ApiKey = envList["GO_HIVEHOOK_THAPIKEY"]
+	}
+
+	//Настройки для модуля подключения к СУБД ElasticSearch
+	if envList["GO_HIVEHOOK_ESHOST"] != "" {
+		conf.AppConfigElasticSearch.Host = envList["GO_HIVEHOOK_ESHOST"]
+	}
+	if envList["GO_HIVEHOOK_ESPORT"] != "" {
+		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_ESPORT"]); err == nil {
+			conf.AppConfigElasticSearch.Port = p
+		}
+	}
+	if envList["GO_HIVEHOOK_ESUSER"] != "" {
+		conf.AppConfigElasticSearch.UserName = envList["GO_HIVEHOOK_ESUSER"]
+	}
+	if envList["GO_HIVEHOOK_ESPASSWD"] != "" {
+		conf.AppConfigElasticSearch.Passwd = envList["GO_HIVEHOOK_ESPASSWD"]
+	}
+	if envList["GO_HIVEHOOK_ESPREFIX"] != "" {
+		conf.AppConfigElasticSearch.Prefix = envList["GO_HIVEHOOK_ESPREFIX"]
+	}
+	if envList["GO_HIVEHOOK_ESINDEX"] != "" {
+		conf.AppConfigElasticSearch.Index = envList["GO_HIVEHOOK_ESINDEX"]
+	}
+
+	//Настройки основного API сервера
+	if envList["GO_HIVEHOOK_HHOST"] != "" {
+		conf.AppConfigHookServer.Host = envList["GO_HIVEHOOK_HHOST"]
+	}
+	if envList["GO_HIVEHOOK_HPORT"] != "" {
+		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_HPORT"]); err == nil {
+			conf.AppConfigHookServer.Port = p
+		}
+	}
+
+	//выполняем проверку заполненой структуры
+	if err = validate.Struct(conf); err != nil {
+		return &conf, err
 	}
 
 	return &conf, nil

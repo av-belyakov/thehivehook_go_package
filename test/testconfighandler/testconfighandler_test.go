@@ -1,6 +1,7 @@
 package testconfighandler_test
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -12,8 +13,9 @@ import (
 
 var _ = Describe("Testconfighandler", Ordered, func() {
 	var (
-		rootDir       string = "thehivehook_go_package"
-		theHiveApiKey string = "70e97faa558d188822c55ec9e00744fd"
+		rootDir             string = "thehivehook_go_package"
+		theHiveApiKey       string = "70e97faa558d188822c55ec9e00744fd"
+		elasticsearchPasswd string = "yD7T27#e28"
 
 		conf *confighandler.ConfigApp
 
@@ -30,14 +32,22 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		os.Unsetenv("GO_HIVEHOOK_THHOST")
 		os.Unsetenv("GO_HIVEHOOK_THPORT")
 		os.Unsetenv("GO_HIVEHOOK_THUNAME")
+
+		os.Unsetenv("GO_HIVEHOOK_ESHOST")
+		os.Unsetenv("GO_HIVEHOOK_ESPORT")
+		os.Unsetenv("GO_HIVEHOOK_ESUSER")
+		os.Unsetenv("GO_HIVEHOOK_ESPREFIX")
+		os.Unsetenv("GO_HIVEHOOK_ESINDEX")
 	}
 
 	BeforeAll(func() {
 		os.Setenv("GO_HIVEHOOK_THAPIKEY", theHiveApiKey)
+		os.Setenv("GO_HIVEHOOK_ESPASSWD", elasticsearchPasswd)
 	})
 
 	AfterAll(func() {
 		os.Unsetenv("GO_HIVEHOOK_THAPIKEY")
+		os.Unsetenv("GO_HIVEHOOK_ESPASSWD")
 	})
 
 	BeforeEach(func() {
@@ -47,6 +57,9 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 	Context("Тест 1. Чтение конфигурационного файла (по умолчанию config_prod.yaml)", func() {
 		BeforeAll(func() {
 			conf, err = confighandler.NewConfig(rootDir)
+			if err != nil {
+				fmt.Println("ERROR:", err)
+			}
 			Expect(err).ShouldNot(HaveOccurred())
 		})
 
@@ -69,6 +82,22 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(cth.Port).Should(Equal(9000))
 			Expect(cth.UserName).Should(Equal("test"))
 			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
+		})
+
+		It("Все пораметры конфигрурационного файла 'config_prod.yaml' для ELASTICSEARCH должны быть успешно получены", func() {
+			ces := conf.GetApplicationElasticsearch()
+			Expect(ces.Host).Should(Equal("datahook.cloud.gcm"))
+			Expect(ces.Port).Should(Equal(9200))
+			Expect(ces.UserName).Should(Equal("writer"))
+			Expect(ces.Prefix).Should(Equal(""))
+			Expect(ces.Index).Should(Equal("thehivehook_go_package"))
+			Expect(ces.Passwd).Should(Equal(elasticsearchPasswd))
+		})
+
+		It("Все пораметры конфигрурационного файла 'config_prod.yaml' для HOOKSERVER должны быть успешно получены", func() {
+			chs := conf.GetApplicationHookServer()
+			Expect(chs.Host).Should(Equal("192.168.13.3"))
+			Expect(chs.Port).Should(Equal(7878))
 		})
 	})
 
@@ -99,6 +128,22 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(cth.Port).Should(Equal(9001))
 			Expect(cth.UserName).Should(Equal("testtest"))
 			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
+		})
+
+		It("Все пораметры конфигрурационного файла 'config_dev.yaml' для ELASTICSEARCH должны быть успешно получены", func() {
+			ces := conf.GetApplicationElasticsearch()
+			Expect(ces.Host).Should(Equal("datahook.cloud.gcm"))
+			Expect(ces.Port).Should(Equal(9200))
+			Expect(ces.UserName).Should(Equal("writer"))
+			Expect(ces.Prefix).Should(Equal("test_"))
+			Expect(ces.Index).Should(Equal("thehivehook_go_package"))
+			Expect(ces.Passwd).Should(Equal(elasticsearchPasswd))
+		})
+
+		It("Все пораметры конфигрурационного файла 'config_prod.yaml' для HOOKSERVER должны быть успешно получены", func() {
+			chs := conf.GetApplicationHookServer()
+			Expect(chs.Host).Should(Equal("127.0.0.1"))
+			Expect(chs.Port).Should(Equal(7878))
 		})
 	})
 
@@ -156,7 +201,60 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		})
 	})
 
-	Context("Тест 5. Проверяем обработку файда 'config.yaml'", func() {
+	Context("Тест 5. Проверяем установленные для ELASTICSEARCH значения переменных окружения", func() {
+		const (
+			HIVEHOOK_HOST   = "test.datahook.cloud.gcm"
+			HIVEHOOK_PORT   = 9922
+			HIVEHOOK_UNAME  = "writer_test"
+			HIVEHOOK_PREFIX = "myTest_"
+			HIVEHOOK_INDEX  = "new_my_test_index"
+		)
+
+		BeforeAll(func() {
+			os.Setenv("GO_HIVEHOOK_ESHOST", HIVEHOOK_HOST)
+			os.Setenv("GO_HIVEHOOK_ESPORT", strconv.Itoa(HIVEHOOK_PORT))
+			os.Setenv("GO_HIVEHOOK_ESUSER", HIVEHOOK_UNAME)
+			os.Setenv("GO_HIVEHOOK_ESPREFIX", HIVEHOOK_PREFIX)
+			os.Setenv("GO_HIVEHOOK_ESINDEX", HIVEHOOK_INDEX)
+
+			conf, err = confighandler.NewConfig(rootDir)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("Все параметры конфигурации для Elasticsearch должны быть успешно установлены через соответствующие переменные окружения", func() {
+			ces := conf.GetApplicationElasticsearch()
+
+			Expect(ces.Host).Should(Equal(HIVEHOOK_HOST))
+			Expect(ces.Port).Should(Equal(HIVEHOOK_PORT))
+			Expect(ces.UserName).Should(Equal(HIVEHOOK_UNAME))
+			Expect(ces.Prefix).Should(Equal(HIVEHOOK_PREFIX))
+			Expect(ces.Index).Should(Equal(HIVEHOOK_INDEX))
+		})
+	})
+
+	Context("Тест 6. Проверяем установленные для HOOKSERVER значения переменных окружения", func() {
+		const (
+			HIVEHOOK_HOST = "11.0.11.10"
+			HIVEHOOK_PORT = 7822
+		)
+
+		BeforeAll(func() {
+			os.Setenv("GO_HIVEHOOK_ESHOST", HIVEHOOK_HOST)
+			os.Setenv("GO_HIVEHOOK_ESPORT", strconv.Itoa(HIVEHOOK_PORT))
+
+			conf, err = confighandler.NewConfig(rootDir)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("Все параметры конфигурации для HOOKSERVER должны быть успешно установлены через соответствующие переменные окружения", func() {
+			ces := conf.GetApplicationElasticsearch()
+
+			Expect(ces.Host).Should(Equal(HIVEHOOK_HOST))
+			Expect(ces.Port).Should(Equal(HIVEHOOK_PORT))
+		})
+	})
+
+	Context("Тест 7. Проверяем обработку файда 'config.yaml'", func() {
 		It("Должно быть получено содержимое общего файла 'config.yaml'", func() {
 			confApp, err := confighandler.NewConfig(rootDir)
 			Expect(err).ShouldNot(HaveOccurred())

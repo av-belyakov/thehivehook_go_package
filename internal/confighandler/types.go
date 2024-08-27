@@ -5,6 +5,8 @@ type ConfigApp struct {
 	CommonAppConfig
 	AppConfigNATS
 	AppConfigTheHive
+	AppConfigElasticSearch
+	AppConfigHookServer
 }
 
 type CommonInfo struct {
@@ -62,5 +64,19 @@ type AppConfigTheHive struct {
 	Port     int    `validate:"gt=0,lte=65535" yaml:"port"`
 	Host     string `validate:"required" yaml:"host"`
 	UserName string `validate:"required" yaml:"user_name"`
-	ApiKey   string
+	ApiKey   string `validate:"required"`
+}
+
+type AppConfigElasticSearch struct {
+	Port     int    `validate:"gt=0,lte=65535" yaml:"port"`
+	Host     string `validate:"required" yaml:"host"`
+	UserName string `validate:"required" yaml:"user"`
+	Passwd   string `validate:"required"`
+	Prefix   string `yaml:"prefix"`
+	Index    string `validate:"required" yaml:"index"`
+}
+
+type AppConfigHookServer struct {
+	Port int    `validate:"gt=0,lte=65535" yaml:"port"`
+	Host string `validate:"required" yaml:"host"`
 }

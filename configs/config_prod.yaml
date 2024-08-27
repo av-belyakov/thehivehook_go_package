@@ -9,3 +9,12 @@ THEHIVE:
   host: "192.168.42.10"
   port: 9000
   user_name: "test"
+ELASTICSEARCH:
+  host: "datahook.cloud.gcm"
+  port: 9200
+  user: "writer"
+  prefix: ""
+  index: "thehivehook_go_package"
+HOOKSERVER:
+  host: "192.168.13.3"
+  port: 7878
