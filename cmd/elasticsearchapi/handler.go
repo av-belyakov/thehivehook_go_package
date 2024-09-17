@@ -10,7 +10,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
 func (h *HandlerSendData) New() error {
@@ -43,7 +43,7 @@ func (h *HandlerSendData) New() error {
 
 func HandlerElasticSearch(
 	conf confighandler.AppConfigElasticSearch,
-	logging chan<- datamodels.MessageLogging) (*ElasticSearchModule, error) {
+	logging chan<- logginghandler.MessageLogging) (*ElasticSearchModule, error) {
 
 	module := &ElasticSearchModule{
 		ChanInputModule:  make(chan SettingsInputChan),

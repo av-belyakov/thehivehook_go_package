@@ -26,8 +26,10 @@ GO_HIVEHOOK_MAIN
 //Подключение к NATS
 GO_HIVEHOOK_NHOST
 GO_HIVEHOOK_NPORT
-GO_HIVEHOOK_SUBJECTCASE
-GO_HIVEHOOK_SUBJECTALERT
+GO_HIVEHOOK_NSUBSCRIBERS - данный параметр должен содержать строку вида:
+<наименование события>:<наименование абонента 1>,<наименование абонента 2>;<наименование события>:<наименование абонента 1>
+например:
+caseupdate:gcm,rcmmsk,rcmnvs;alertupdate:gcm
 
 //Подключение к TheHive
 GO_HIVEHOOK_NAME

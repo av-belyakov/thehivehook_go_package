@@ -26,8 +26,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		os.Unsetenv("GO_HIVEHOOK_MAIN")
 		os.Unsetenv("GO_HIVEHOOK_NHOST")
 		os.Unsetenv("GO_HIVEHOOK_NPORT")
-		os.Unsetenv("GO_HIVEHOOK_SUBJECTCASE")
-		os.Unsetenv("GO_HIVEHOOK_SUBJECTALERT")
+		os.Unsetenv("GO_HIVEHOOK_NSUBSCRIBERS")
 
 		os.Unsetenv("GO_HIVEHOOK_THHOST")
 		os.Unsetenv("GO_HIVEHOOK_THPORT")
@@ -70,10 +69,21 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 		It("Все пораметры конфигрурационного файла 'config_prod.yaml' для NATS должны быть успешно получены", func() {
 			cn := conf.GetApplicationNATS()
+
+			fmt.Println("Application NATS config:")
+			fmt.Println(cn)
+
 			Expect(cn.Host).Should(Equal("nats.cloud.gcm"))
 			Expect(cn.Port).Should(Equal(4222))
-			Expect(cn.SubjectCase).Should(Equal("main_caseupdate"))
-			Expect(cn.SubjectAlert).Should(Equal("main_alertupdate"))
+			Expect(len(cn.Subscribers)).Should(Equal(2))
+			for _, v := range cn.Subscribers {
+				if v.Event == "caseupdate" {
+					Expect(len(v.Responders)).Should(Equal(3))
+				}
+				if v.Event == "alertupdate" {
+					Expect(len(v.Responders)).Should(Equal(1))
+				}
+			}
 		})
 
 		It("Все пораметры конфигрурационного файла 'config_prod.yaml' для THEHIVE должны быть успешно получены", func() {
@@ -118,8 +128,15 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			cn := conf.GetApplicationNATS()
 			Expect(cn.Host).Should(Equal("nats.cloud.gcmtest"))
 			Expect(cn.Port).Should(Equal(4223))
-			Expect(cn.SubjectCase).Should(Equal("main_caseupdate_test"))
-			Expect(cn.SubjectAlert).Should(Equal("main_alertupdate_test"))
+			Expect(len(cn.Subscribers)).Should(Equal(2))
+			for _, v := range cn.Subscribers {
+				if v.Event == "caseupdate" {
+					Expect(len(v.Responders)).Should(Equal(3))
+				}
+				if v.Event == "alertupdate" {
+					Expect(len(v.Responders)).Should(Equal(3))
+				}
+			}
 		})
 
 		It("Все пораметры конфигрурационного файла 'config_dev.yaml' для THEHIVE должны быть успешно получены", func() {
@@ -149,17 +166,15 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 	Context("Тест 3. Проверяем установленные для NATS значения переменных окружения", func() {
 		const (
-			NATS_HOST         = "nats.cloud.gcm.test.test"
-			NATS_PORT         = 4545
-			NATS_SUBJECTCASE  = "main_CASE_update"
-			NATS_SUBJECTALERT = "main_ALERT_update"
+			NATS_HOST        = "nats.cloud.gcm.test.test"
+			NATS_PORT        = 4545
+			NATS_SUBSCRIBERS = "main_caseupdate:gcm,rcmmsk,rcmnvs;main_alertupdate:gcm"
 		)
 
 		BeforeAll(func() {
 			os.Setenv("GO_HIVEHOOK_NHOST", NATS_HOST)
 			os.Setenv("GO_HIVEHOOK_NPORT", strconv.Itoa(NATS_PORT))
-			os.Setenv("GO_HIVEHOOK_SUBJECTCASE", NATS_SUBJECTCASE)
-			os.Setenv("GO_HIVEHOOK_SUBJECTALERT", NATS_SUBJECTALERT)
+			os.Setenv("GO_HIVEHOOK_NSUBSCRIBERS", NATS_SUBSCRIBERS)
 
 			conf, err = confighandler.NewConfig(rootDir)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -170,8 +185,14 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 			Expect(cn.Host).Should(Equal(NATS_HOST))
 			Expect(cn.Port).Should(Equal(NATS_PORT))
-			Expect(cn.SubjectCase).Should(Equal(NATS_SUBJECTCASE))
-			Expect(cn.SubjectAlert).Should(Equal(NATS_SUBJECTALERT))
+			for _, v := range cn.Subscribers {
+				if v.Event == "main_caseupdate" {
+					Expect(len(v.Responders)).Should(Equal(3))
+				}
+				if v.Event == "main_alertupdate" {
+					Expect(len(v.Responders)).Should(Equal(1))
+				}
+			}
 		})
 	})
 

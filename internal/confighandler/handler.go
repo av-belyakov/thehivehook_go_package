@@ -1,11 +1,13 @@
 package confighandler
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
@@ -23,8 +25,7 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			//Подключение к NATS
 			"GO_HIVEHOOK_NHOST":        "",
 			"GO_HIVEHOOK_NPORT":        "",
-			"GO_HIVEHOOK_SUBJECTCASE":  "",
-			"GO_HIVEHOOK_SUBJECTALERT": "",
+			"GO_HIVEHOOK_NSUBSCRIBERS": "",
 
 			//Подключение к TheHive
 			"GO_HIVEHOOK_THHOST":   "",
@@ -113,11 +114,13 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if viper.IsSet("NATS.port") {
 			conf.AppConfigNATS.Port = viper.GetInt("NATS.port")
 		}
-		if viper.IsSet("NATS.subject_case") {
-			conf.AppConfigNATS.SubjectCase = viper.GetString("NATS.subject_case")
-		}
-		if viper.IsSet("NATS.subject_alert") {
-			conf.AppConfigNATS.SubjectAlert = viper.GetString("NATS.subject_alert")
+		if viper.IsSet("NATS.subscribers") {
+			nats := NATS{}
+			if err := viper.GetViper().Unmarshal(&nats); err != nil {
+				return err
+			}
+
+			conf.AppConfigNATS.Subscribers = nats.NATS.Subscribers
 		}
 
 		//Настройки для модуля подключения к TheHive
@@ -218,11 +221,24 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			conf.AppConfigNATS.Port = p
 		}
 	}
-	if envList["GO_HIVEHOOK_SUBJECTCASE"] != "" {
-		conf.AppConfigNATS.SubjectCase = envList["GO_HIVEHOOK_SUBJECTCASE"]
-	}
-	if envList["GO_HIVEHOOK_SUBJECTALERT"] != "" {
-		conf.AppConfigNATS.SubjectAlert = envList["GO_HIVEHOOK_SUBJECTALERT"]
+	if envList["GO_HIVEHOOK_NSUBSCRIBERS"] != "" {
+		subscribers := []SubscriberNATS{}
+		if strings.Contains(envList["GO_HIVEHOOK_NSUBSCRIBERS"], ";") {
+			tmp := strings.Split(envList["GO_HIVEHOOK_NSUBSCRIBERS"], ";")
+			if len(tmp) > 0 {
+				for _, v := range tmp {
+					if subscriber, err := hundlerSubscribersString(v); err == nil {
+						subscribers = append(subscribers, subscriber)
+					}
+				}
+			}
+		} else {
+			if subscriber, err := hundlerSubscribersString(envList["GO_HIVEHOOK_NSUBSCRIBERS"]); err == nil {
+				subscribers = append(subscribers, subscriber)
+			}
+		}
+
+		conf.AppConfigNATS.Subscribers = subscribers
 	}
 
 	//Настройки для модуля подключения к TheHive
@@ -279,4 +295,30 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 	}
 
 	return &conf, nil
+}
+
+func hundlerSubscribersString(str string) (SubscriberNATS, error) {
+	errMsg := "an incorrect string containing the 'subscribers' of the NATS settings was received"
+	subscriber := SubscriberNATS{}
+
+	if !strings.Contains(str, ":") {
+		return subscriber, errors.New(errMsg)
+	}
+
+	tmp := strings.Split(str, ":")
+	if len(tmp) == 0 {
+		return subscriber, errors.New(errMsg)
+	}
+
+	responders := []string{}
+	if strings.Contains(tmp[1], ",") {
+		responders = append(responders, strings.Split(tmp[1], ",")...)
+	} else {
+		responders = append(responders, tmp[1])
+	}
+
+	subscriber.Event = tmp[0]
+	subscriber.Responders = responders
+
+	return subscriber, nil
 }

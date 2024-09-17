@@ -19,16 +19,14 @@ import (
 const ROOT_DIR = "thehivehook_go_package"
 
 func main() {
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan,
+	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGHUP,
 		syscall.SIGINT,
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 
-	ctx, cancel := context.WithCancel(context.Background())
-
 	go func() {
+		sigChan := make(chan os.Signal, 1)
 		osCall := <-sigChan
 		log.Printf("system call:%+v", osCall)
 
@@ -67,6 +65,6 @@ func server(ctx context.Context) {
 
 	// логирование данных
 	logging := make(chan logginghandler.MessageLogging)
-	go logginghandler.LoggingHandler(channelZabbix, sl, logging)
+	go logginghandler.LoggingHandler(ctx, channelZabbix, sl, logging)
 
 }

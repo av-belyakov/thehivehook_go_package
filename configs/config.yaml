@@ -3,14 +3,14 @@ LOGGING:
       msgTypeName: "error",
       writingFile: true,
       pathDirectory: "logs",
-      writingStdout: false,
+      writingStdout: true,
       maxFileSize: 1000000,
     }
   - {
       msgTypeName: "warning",
       writingFile: true,
       pathDirectory: "logs",
-      writingStdout: false,
+      writingStdout: true,
       maxFileSize: 1000000,
     }
   - {

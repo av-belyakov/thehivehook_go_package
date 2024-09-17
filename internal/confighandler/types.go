@@ -54,10 +54,9 @@ type Handshake struct {
 }
 
 type AppConfigNATS struct {
-	Port         int    `validate:"gt=0,lte=65535" yaml:"port"`
-	Host         string `validate:"required" yaml:"host"`
-	SubjectCase  string `validate:"required" yaml:"subject_case"`
-	SubjectAlert string `validate:"required" yaml:"subject_alert"`
+	Port        int              `validate:"gt=0,lte=65535" yaml:"port"`
+	Host        string           `validate:"required" yaml:"host"`
+	Subscribers []SubscriberNATS `yaml:"subscribers"`
 }
 
 type AppConfigTheHive struct {
@@ -79,4 +78,17 @@ type AppConfigElasticSearch struct {
 type AppConfigHookServer struct {
 	Port int    `validate:"gt=0,lte=65535" yaml:"port"`
 	Host string `validate:"required" yaml:"host"`
+}
+
+type NATS struct {
+	NATS SubscribersNATS
+}
+
+type SubscribersNATS struct {
+	Subscribers []SubscriberNATS `yaml:"subscribers"`
+}
+
+type SubscriberNATS struct {
+	Event      string   `validate:"required" yaml:"event"`
+	Responders []string `yaml:"responders"`
 }

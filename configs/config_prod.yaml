@@ -3,8 +3,15 @@ COMMONINFO:
 NATS:
   host: "nats.cloud.gcm"
   port: 4222
-  subject_case: "main_caseupdate"
-  subject_alert: "main_alertupdate"
+  subscribers:
+    - event: "caseupdate"
+      responders:
+        - "gcm"
+        - "rcmmsk"
+        - "rcmnvs"
+    - event: "alertupdate"
+      responders:
+        - "gcm"
 THEHIVE:
   host: "192.168.42.10"
   port: 9000

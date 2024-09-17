@@ -1,11 +1,8 @@
 package logginghandler
 
 import (
+	"context"
 	"fmt"
-	"log/slog"
-	"os"
-
-	"github.com/lmittmann/tint"
 
 	"github.com/av-belyakov/simplelogger"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/zabbixapi"
@@ -13,36 +10,35 @@ import (
 
 // LoggingHandler обработчик и распределитель логов
 func LoggingHandler(
+	ctx context.Context,
 	channelZabbix chan<- zabbixapi.MessageSettings,
 	sl simplelogger.SimpleLoggerSettings,
 	logging <-chan MessageLogging) {
-	loggerColor := slog.New(tint.NewHandler(os.Stdout, &tint.Options{Level: slog.LevelDebug}))
 
-	for msg := range logging {
-		_ = sl.WriteLoggingData(msg.MsgData, msg.MsgType)
+	for {
+		select {
+		case <-ctx.Done():
+			return
 
-		switch msg.MsgType {
-		case "error":
-			loggerColor.Error(msg.MsgData)
+		case msg := <-logging:
+			//**********************************************************************
+			//здесь так же может быть вывод в консоль, с индикацией цветов соответствующих
+			//определенному типу сообщений но для этого надо включить вывод на stdout
+			//в конфигурационном фале
+			_ = sl.WriteLoggingData(msg.MsgData, msg.MsgType)
 
-		case "warning":
-			loggerColor.Warn(msg.MsgData)
-
-		case "info":
-			loggerColor.Info(msg.MsgData)
-		}
-
-		if msg.MsgType == "error" || msg.MsgType == "warning" {
-			channelZabbix <- zabbixapi.MessageSettings{
-				EventType: "error",
-				Message:   fmt.Sprintf("%s: %s", msg.MsgType, msg.MsgData),
+			if msg.MsgType == "error" || msg.MsgType == "warning" {
+				channelZabbix <- zabbixapi.MessageSettings{
+					EventType: "error",
+					Message:   fmt.Sprintf("%s: %s", msg.MsgType, msg.MsgData),
+				}
 			}
-		}
 
-		if msg.MsgType == "info" {
-			channelZabbix <- zabbixapi.MessageSettings{
-				EventType: "info",
-				Message:   msg.MsgData,
+			if msg.MsgType == "info" {
+				channelZabbix <- zabbixapi.MessageSettings{
+					EventType: "info",
+					Message:   msg.MsgData,
+				}
 			}
 		}
 	}

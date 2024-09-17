@@ -1,4 +1,4 @@
-package testtintlogs_test
+package testsplitstring_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestTesttintlogs(t *testing.T) {
+func TestTestsplitstring(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Testtintlogs Suite")
+	RunSpecs(t, "Testsplitstring Suite")
 }
