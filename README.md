@@ -35,7 +35,8 @@ caseupdate:gcm,rcmmsk,rcmnvs;alertupdate:gcm
 GO_HIVEHOOK_NAME
 GO_HIVEHOOK_URL
 
-GO_HIVEHOOK_APIKEY - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!! Он задается ТОЛЬКО через переменную окружения. В конфигурационном
+GO_HIVEHOOK_APIKEY - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!!
+Он задается ТОЛЬКО через переменную окружения. В конфигурационном
 файле этого параметра нет.
 
 //Подключение к СУБД Elasticsearch

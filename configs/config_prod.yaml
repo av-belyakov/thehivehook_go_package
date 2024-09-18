@@ -6,16 +6,17 @@ NATS:
   subscribers:
     - event: "caseupdate"
       responders:
-        - "gcm"
-        - "rcmmsk"
-        - "rcmnvs"
+        - "ATD"
+        - "ES"
+        - "MISP"
+        - "MISP_TEST"
+        - "NCIRCC"
     - event: "alertupdate"
       responders:
-        - "gcm"
+        - "ES"
 THEHIVE:
   host: "192.168.42.10"
   port: 9000
-  user_name: "test"
 ELASTICSEARCH:
   host: "datahook.cloud.gcm"
   port: 9200

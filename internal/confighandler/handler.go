@@ -130,9 +130,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if viper.IsSet("THEHIVE.port") {
 			conf.AppConfigTheHive.Port = viper.GetInt("THEHIVE.port")
 		}
-		if viper.IsSet("THEHIVE.user_name") {
-			conf.AppConfigTheHive.UserName = viper.GetString("THEHIVE.user_name")
-		}
 		if viper.IsSet("THEHIVE.api_key") {
 			conf.AppConfigTheHive.ApiKey = viper.GetString("THEHIVE.api_key")
 		}
@@ -249,9 +246,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_THPORT"]); err == nil {
 			conf.AppConfigTheHive.Port = p
 		}
-	}
-	if envList["GO_HIVEHOOK_THUNAME"] != "" {
-		conf.AppConfigTheHive.UserName = envList["GO_HIVEHOOK_THUNAME"]
 	}
 	if envList["GO_HIVEHOOK_THAPIKEY"] != "" {
 		conf.AppConfigTheHive.ApiKey = envList["GO_HIVEHOOK_THAPIKEY"]

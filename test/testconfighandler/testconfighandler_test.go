@@ -78,7 +78,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(len(cn.Subscribers)).Should(Equal(2))
 			for _, v := range cn.Subscribers {
 				if v.Event == "caseupdate" {
-					Expect(len(v.Responders)).Should(Equal(3))
+					Expect(len(v.Responders)).Should(Equal(5))
 				}
 				if v.Event == "alertupdate" {
 					Expect(len(v.Responders)).Should(Equal(1))
@@ -90,7 +90,6 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			cth := conf.GetApplicationTheHive()
 			Expect(cth.Host).Should(Equal("192.168.42.10"))
 			Expect(cth.Port).Should(Equal(9000))
-			Expect(cth.UserName).Should(Equal("test"))
 			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
 		})
 
@@ -131,7 +130,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(len(cn.Subscribers)).Should(Equal(2))
 			for _, v := range cn.Subscribers {
 				if v.Event == "caseupdate" {
-					Expect(len(v.Responders)).Should(Equal(3))
+					Expect(len(v.Responders)).Should(Equal(5))
 				}
 				if v.Event == "alertupdate" {
 					Expect(len(v.Responders)).Should(Equal(3))
@@ -143,7 +142,6 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			cth := conf.GetApplicationTheHive()
 			Expect(cth.Host).Should(Equal("192.168.42.10"))
 			Expect(cth.Port).Should(Equal(9001))
-			Expect(cth.UserName).Should(Equal("testtest"))
 			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
 		})
 
@@ -217,7 +215,6 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 			Expect(cth.Host).Should(Equal(THEHIVE_HOST))
 			Expect(cth.Port).Should(Equal(THEHIVE_PORT))
-			Expect(cth.UserName).Should(Equal(THEHIVE_THUNAME))
 			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
 		})
 	})

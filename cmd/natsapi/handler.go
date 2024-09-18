@@ -82,7 +82,7 @@ func NewClientNATS(
 	//инициируем хранилище для дескрипторов сообщений NATS
 	ns = NewStorageNATS()
 
-	if conf.SubjectCase == "" && conf.SubjectAlert == "" {
+	if len(conf.Subscribers) == 0 {
 		_, f, l, _ := runtime.Caller(0)
 		return &mnats, fmt.Errorf("'there is not a single subscription available for NATS in the configuration file' %s:%d", f, l-1)
 	}
@@ -94,8 +94,13 @@ func NewClientNATS(
 
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", conf.Host, conf.Port),
+		//неограниченное количество попыток переподключения
 		nats.MaxReconnects(-1),
-		nats.ReconnectWait(3*time.Second))
+		//время ожидания для переподключения
+		nats.ReconnectWait(1*time.Second),
+		//устанавливает размер буфера для сообщений, сохраняемых при активном повторном
+		//подключении, значение по умолчанию для данного параметра 8Mb
+		nats.ReconnectBufSize(10*1024*1024))
 	_, f, l, _ := runtime.Caller(0)
 	if err != nil {
 		return &mnats, fmt.Errorf("'%s' %s:%d", err.Error(), f, l-4)

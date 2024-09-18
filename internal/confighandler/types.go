@@ -60,10 +60,9 @@ type AppConfigNATS struct {
 }
 
 type AppConfigTheHive struct {
-	Port     int    `validate:"gt=0,lte=65535" yaml:"port"`
-	Host     string `validate:"required" yaml:"host"`
-	UserName string `validate:"required" yaml:"user_name"`
-	ApiKey   string `validate:"required"`
+	Port   int    `validate:"gt=0,lte=65535" yaml:"port"`
+	Host   string `validate:"required" yaml:"host"`
+	ApiKey string `validate:"required"`
 }
 
 type AppConfigElasticSearch struct {
