@@ -103,10 +103,10 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(ces.Passwd).Should(Equal(elasticsearchPasswd))
 		})
 
-		It("Все пораметры конфигрурационного файла 'config_prod.yaml' для HOOKSERVER должны быть успешно получены", func() {
+		It("Все пораметры конфигрурационного файла 'config_prod.yaml' для WEBHOOKSERVER должны быть успешно получены", func() {
 			chs := conf.GetApplicationHookServer()
 			Expect(chs.Host).Should(Equal("192.168.13.3"))
-			Expect(chs.Port).Should(Equal(7878))
+			Expect(chs.Port).Should(Equal(5000))
 		})
 	})
 
@@ -158,7 +158,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		It("Все пораметры конфигрурационного файла 'config_prod.yaml' для HOOKSERVER должны быть успешно получены", func() {
 			chs := conf.GetApplicationHookServer()
 			Expect(chs.Host).Should(Equal("127.0.0.1"))
-			Expect(chs.Port).Should(Equal(7878))
+			Expect(chs.Port).Should(Equal(5000))
 		})
 	})
 

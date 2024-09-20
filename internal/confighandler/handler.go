@@ -152,11 +152,11 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		}
 
 		//	Настройки основного API сервера
-		if viper.IsSet("HOOKSERVER.host") {
-			conf.AppConfigHookServer.Host = viper.GetString("HOOKSERVER.host")
+		if viper.IsSet("WEBHOOKSERVER.host") {
+			conf.AppConfigWebHookServer.Host = viper.GetString("WEBHOOKSERVER.host")
 		}
-		if viper.IsSet("HOOKSERVER.port") {
-			conf.AppConfigHookServer.Port = viper.GetInt("HOOKSERVER.port")
+		if viper.IsSet("WEBHOOKSERVER.port") {
+			conf.AppConfigWebHookServer.Port = viper.GetInt("WEBHOOKSERVER.port")
 		}
 
 		return nil
@@ -274,12 +274,12 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 	}
 
 	//Настройки основного API сервера
-	if envList["GO_HIVEHOOK_HHOST"] != "" {
-		conf.AppConfigHookServer.Host = envList["GO_HIVEHOOK_HHOST"]
+	if envList["GO_HIVEHOOK_WEBHHOST"] != "" {
+		conf.AppConfigWebHookServer.Host = envList["GO_HIVEHOOK_WEBHHOST"]
 	}
-	if envList["GO_HIVEHOOK_HPORT"] != "" {
-		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_HPORT"]); err == nil {
-			conf.AppConfigHookServer.Port = p
+	if envList["GO_HIVEHOOK_WEBHPORT"] != "" {
+		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHPORT"]); err == nil {
+			conf.AppConfigWebHookServer.Port = p
 		}
 	}
 

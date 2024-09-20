@@ -6,7 +6,7 @@ type ConfigApp struct {
 	AppConfigNATS
 	AppConfigTheHive
 	AppConfigElasticSearch
-	AppConfigHookServer
+	AppConfigWebHookServer
 }
 
 type CommonInfo struct {
@@ -74,7 +74,7 @@ type AppConfigElasticSearch struct {
 	Index    string `validate:"required" yaml:"index"`
 }
 
-type AppConfigHookServer struct {
+type AppConfigWebHookServer struct {
 	Port int    `validate:"gt=0,lte=65535" yaml:"port"`
 	Host string `validate:"required" yaml:"host"`
 }

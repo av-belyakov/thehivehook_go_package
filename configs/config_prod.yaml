@@ -23,6 +23,6 @@ ELASTICSEARCH:
   user: "writer"
   prefix: ""
   index: "thehivehook_go_package"
-HOOKSERVER:
-  host: "192.168.13.3"
-  port: 7878
+WEBHOOKSERVER:
+  host: "10.10.0.2"
+  port: 5000

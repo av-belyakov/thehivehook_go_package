@@ -29,9 +29,9 @@ func (conf *ConfigApp) GetApplicationElasticsearch() *AppConfigElasticSearch {
 	return &conf.AppConfigElasticSearch
 }
 
-// GetApplicationHookServer настройки основного сервера API
-func (conf *ConfigApp) GetApplicationHookServer() *AppConfigHookServer {
-	return &conf.AppConfigHookServer
+// GetApplicationWebHookServer настройки основного сервера API
+func (conf *ConfigApp) GetApplicationWebHookServer() *AppConfigWebHookServer {
+	return &conf.AppConfigWebHookServer
 }
 
 // Clean

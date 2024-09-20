@@ -122,6 +122,35 @@ func NewClientNATS(
 		}
 	})
 
+	/****************************
+
+	Здесь надо сделать обработчик сообщений приходящих от NATS, например
+	для навешивания тегов в TheHive. Должно быть что то типа этого
+	func NewResponseMessage() *ResponseMessageFromMispToTheHave {
+		return &ResponseMessageFromMispToTheHave{
+			Success: true,
+			Service: "MISP",
+			Commands: []ResponseCommandForTheHive{
+				{
+					Command: "addtag",
+					String:  "Webhook: send=\"MISP\"",
+					//String:  "Webhook: send=\"MISP-WORLD\"",
+					//String: "Webhook: send=\"MISP-CENTER\"",
+				},
+			},
+		}
+	}
+	nrm.ResponseMessageAddNewCommand(datamodels.ResponseCommandForTheHive{
+					Command: "setcustomfield",
+					Name:    "misp-event-id.string",
+					String:  data.EventId,
+				})
+	Получить и отправить в NATS
+
+	а также, не здесь, но должен быть обработчик отправляющий сообщения в NATS
+
+	*****************************/
+
 	for k, v := range subjects {
 		//не добавляем обработчик если подписка пуста
 		if v == "" {

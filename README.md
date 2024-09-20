@@ -51,7 +51,31 @@ GO_HIVEHOOK_ESPREFIX
 GO_HIVEHOOK_ESINDEX
 
 //Настройки основного API сервера
-GO_HIVEHOOK_HHOST
-GO_HIVEHOOK_HPORT
+GO_HIVEHOOK_WEBHHOST
+GO_HIVEHOOK_WEBHPORT
 
 Приоритет значений заданных через переменные окружения выше чем значений полученных из конфигурационных файлов.
+
+## Настройка TheHive
+
+curl -XPUT -u <имя*пользователя>:'пароль_org-admin' -H 'Content-type: application/json' <url*или*ip*и*сетевой*порт>/api/config/organisation/notification -d '
+{
+"value": [
+{
+"delegate": false,
+"trigger": { "name": "AnyEvent"},
+"notifier": { "name": "webhook", "endpoint": "hivehook" }
+}
+]
+}'
+
+curl -XPUT -u a.belyakov@cloud.gcm:'Dr\*3t9$2q0L9' -H 'Content-type: application/json' http://192.168.9.38:9000/api/config/organisation/notification -d '
+{
+"value": [
+{
+"delegate": false,
+"trigger": { "name": "AnyEvent"},
+"notifier": { "name": "webhook", "endpoint": "hivehook" }
+}
+]
+}'
