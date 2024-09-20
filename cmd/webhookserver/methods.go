@@ -26,8 +26,7 @@ func New(ctx context.Context, host string, port int) (*WebHookServer, error) {
 	return wh, nil
 }
 
-func (wh *WebHookServer) Start() error {
-	var err error
+func (wh *WebHookServer) Start() {
 	defer func() {
 		wh.Shutdown(context.Background())
 	}()
@@ -49,14 +48,12 @@ func (wh *WebHookServer) Start() error {
 
 	go func() {
 		if errServer := server.ListenAndServe(); errServer != nil {
-			err = errServer
+			log.Fatal(errServer)
 		}
 	}()
 
 	log.Printf("server 'WebHookServer' was successfully launched, ip:%s, port:%d", wh.host, wh.port)
 	<-wh.ctx.Done()
-
-	return err
 }
 
 func (wh *WebHookServer) Shutdown(ctx context.Context) {

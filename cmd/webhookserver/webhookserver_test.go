@@ -26,12 +26,10 @@ func TestWebhookServer(t *testing.T) {
 		cancel()
 	}()
 
-	webHookServer, errServer := webhookserver.New(ctx, "192.168.13.3", 5000)
+	webHookServer, errServer := webhookserver.New(ctx, "192.168.9.208", 5000)
 	if errServer != nil {
 		t.Fatal("create new server %w", errServer)
 	}
 
-	if err := webHookServer.Start(); err != nil {
-		t.Fatal("fatal start web hook server: %w", err)
-	}
+	webHookServer.Start()
 }

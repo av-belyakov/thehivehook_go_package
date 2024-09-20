@@ -71,6 +71,13 @@ curl -XPUT -u <имя*пользователя>:'пароль_org-admin' -H 'Con
 
 ######
 
+cd existing_repo
+git remote add origin http://gitlab.cloud.gcm/a.belyakov/thehivehook_go_package.git
+git branch -M main
+git push -uf origin main
+
+######
+
 curl -XPUT -u a.belyakov@cloud.gcm:'Dr\*3t9$2q0L9' -H 'Content-type: application/json' http://192.168.9.38:9000/api/config/organisation/notification -d '
 {
 "value": [
