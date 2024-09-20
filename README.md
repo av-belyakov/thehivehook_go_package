@@ -75,7 +75,12 @@ curl -XPUT -u a.belyakov@cloud.gcm:'Dr\*3t9$2q0L9' -H 'Content-type: application
 {
 "delegate": false,
 "trigger": { "name": "AnyEvent"},
-"notifier": { "name": "webhook", "endpoint": "hivehook" }
+"notifier": { "name": "webhook", "endpoint": "gcm" }
+},
+{
+"delegate": false,
+"trigger": { "name": "AnyEvent"},
+"notifier": { "name": "webhook", "endpoint": "test" }
 }
 ]
 }'
