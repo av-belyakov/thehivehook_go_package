@@ -53,7 +53,7 @@ func (wh *WebHookServer) Start() error {
 		}
 	}()
 
-	log.Printf("Server 'WebHookServer' was successfully launched, ip:%s, port:%d", wh.host, wh.port)
+	log.Printf("server 'WebHookServer' was successfully launched, ip:%s, port:%d", wh.host, wh.port)
 	<-wh.ctx.Done()
 
 	return err
