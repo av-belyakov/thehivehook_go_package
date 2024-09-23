@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
-func New(ctx context.Context, host string, port int) (*WebHookServer, error) {
+func New(ctx context.Context, host string, port int, logging *logginghandler.LoggingChan) (*WebHookServer, error) {
 	wh := &WebHookServer{version: "1.1.0"}
 
 	if host == "" {
@@ -22,6 +24,7 @@ func New(ctx context.Context, host string, port int) (*WebHookServer, error) {
 	wh.ctx = ctx
 	wh.host = host
 	wh.port = port
+	wh.logger = logging
 
 	return wh, nil
 }

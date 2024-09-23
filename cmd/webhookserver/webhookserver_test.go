@@ -2,6 +2,7 @@ package webhookserver_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
+	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
 func TestWebhookServer(t *testing.T) {
@@ -26,7 +28,15 @@ func TestWebhookServer(t *testing.T) {
 		cancel()
 	}()
 
-	webHookServer, errServer := webhookserver.New(ctx, "192.168.9.208", 5000)
+	logging := logginghandler.New()
+
+	go func() {
+		for msg := range logging.GetChan() {
+			fmt.Println("Logging:", msg)
+		}
+	}()
+
+	webHookServer, errServer := webhookserver.New(ctx, "192.168.9.208", 5000, logging)
 	if errServer != nil {
 		t.Fatal("create new server %w", errServer)
 	}

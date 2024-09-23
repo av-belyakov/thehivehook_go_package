@@ -3,6 +3,8 @@ package webhookserver
 import (
 	"context"
 	"net/http"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
 type WebHookServer struct {
@@ -11,4 +13,5 @@ type WebHookServer struct {
 	version string
 	ctx     context.Context
 	server  *http.Server
+	logger  *logginghandler.LoggingChan
 }

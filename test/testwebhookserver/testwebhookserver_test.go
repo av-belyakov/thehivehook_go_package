@@ -12,6 +12,7 @@ import (
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
 var _ = Describe("Testwebhookserver", Ordered, func() {
@@ -61,7 +62,8 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 				cancel()
 			}()
 
-			webHookServer, errServer = webhookserver.New(ctx, confWebHookServer.Host, confWebHookServer.Port)
+			logging := logginghandler.New()
+			webHookServer, errServer = webhookserver.New(ctx, confWebHookServer.Host, confWebHookServer.Port, logging)
 		})
 
 		It("Ошибок при инициализации сервера быть не должно", func() {

@@ -64,7 +64,7 @@ func server(ctx context.Context) {
 	}
 
 	// логирование данных
-	logging := make(chan logginghandler.MessageLogging)
-	go logginghandler.LoggingHandler(ctx, channelZabbix, sl, logging)
+	logging := logginghandler.New()
+	go logginghandler.LoggingHandler(ctx, channelZabbix, sl, logging.GetChan())
 
 }
