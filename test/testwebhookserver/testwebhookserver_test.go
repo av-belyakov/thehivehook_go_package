@@ -2,7 +2,6 @@ package testwebhookserver_test
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -70,17 +69,9 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 		})
 
 		It("Работоспособность сервера", func() {
-			var err error
-			if err = webHookServer.Start(); err != nil {
+			webHookServer.Start()
 
-				fmt.Println("____ ERROR:", err.Error())
-
-				if err.Error() == "http: Server closed" {
-					err = nil
-				}
-			}
-
-			Expect(err).ShouldNot(HaveOccurred())
+			Expect(true).ShouldNot(BeTrue())
 		})
 	})
 
