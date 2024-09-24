@@ -14,6 +14,7 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+	"time"
 )
 
 type WebHookServer struct {
@@ -22,6 +23,7 @@ type WebHookServer struct {
 	version string
 	ctx     context.Context
 	server  *http.Server
+	logFile *LogFile
 }
 
 func New(ctx context.Context, host string, port int) (*WebHookServer, error) {
@@ -38,6 +40,13 @@ func New(ctx context.Context, host string, port int) (*WebHookServer, error) {
 	wh.ctx = ctx
 	wh.host = host
 	wh.port = port
+
+	lf, err := NewFile(fmt.Sprintf("my_logfile_%d", time.Now().Unix()))
+	if err != nil {
+		return wh, err
+	}
+
+	wh.logFile = lf
 
 	return wh, nil
 }
@@ -105,7 +114,12 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("__________\n%s____________\n\n", str)
+	if _, err := wh.logFile.Write(str); err != nil {
+		fmt.Println("ERROR:", err.Error())
+	}
+
+	log.Println("Recived JSON size =", len(str))
+	//	fmt.Printf("__________\n%s____________\n\n", str)
 
 	/*data, err := json.MarshalIndent(str, "", "  ")
 	if err != nil {
@@ -115,6 +129,31 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println(string(data))*/
+}
+
+type LogFile struct {
+	f *os.File
+}
+
+func NewFile(fname string) (*LogFile, error) {
+	lf := &LogFile{}
+
+	f, err := os.OpenFile(fname, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		return lf, err
+	}
+
+	lf.f = f
+
+	return lf, nil
+}
+
+func (lf *LogFile) Close() {
+	lf.f.Close()
+}
+
+func (lf *LogFile) Write(str string) (int, error) {
+	return lf.f.WriteString(str)
 }
 
 func TestWebhookServer(t *testing.T) {
@@ -137,6 +176,10 @@ func TestWebhookServer(t *testing.T) {
 		t.Fatal("create new server %w", errServer)
 	}
 
+	defer func() {
+		webHookServer.logFile.Close()
+	}()
+
 	webHookServer.Start()
 }
 
@@ -150,7 +193,7 @@ func NewReadReflectJSONSprint(b []byte) (string, error) {
 	listMap := map[string]interface{}{}
 	if err := json.Unmarshal(b, &listMap); err == nil {
 		if len(listMap) == 0 {
-			return str, fmt.Errorf(errSrc)
+			return str, errors.New(errSrc)
 		}
 
 		return readReflectMapSprint(listMap, 0), err
@@ -159,7 +202,7 @@ func NewReadReflectJSONSprint(b []byte) (string, error) {
 	listSlice := []interface{}{}
 	if err := json.Unmarshal(b, &listSlice); err == nil {
 		if len(listSlice) == 0 {
-			return str, fmt.Errorf(errSrc)
+			return str, errors.New(errSrc)
 		}
 
 		return readReflectSliceSprint(listSlice, 0), err
@@ -173,7 +216,7 @@ func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) st
 		nameStr string
 		str     strings.Builder = strings.Builder{}
 
-		isDescription bool
+		isCleanLine bool
 	)
 
 	r := reflect.TypeOf(anyType)
@@ -185,7 +228,7 @@ func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) st
 		nameStr = fmt.Sprintf("%s\"%s\":", ws, n)
 
 		if n == "description" {
-			isDescription = true
+			isCleanLine = true
 		}
 	}
 
@@ -197,7 +240,7 @@ func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) st
 	case reflect.String:
 		dataStr := reflect.ValueOf(anyType).String()
 
-		if isDescription {
+		if isCleanLine {
 			dataStr = strings.ReplaceAll(dataStr, "\t", "")
 			dataStr = strings.ReplaceAll(dataStr, "\n", "")
 		}
