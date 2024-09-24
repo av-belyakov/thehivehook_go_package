@@ -114,7 +114,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := wh.logFile.Write(str); err != nil {
+	if _, err := wh.logFile.Write(fmt.Sprintf("\t------- %s --------\n%s\n", time.Now().String(), str)); err != nil {
 		fmt.Println("ERROR:", err.Error())
 	}
 
