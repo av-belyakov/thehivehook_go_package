@@ -98,8 +98,6 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//fmt.Println("__________", string(bodyByte), "___________")
-
 	str, err := NewReadReflectJSONSprint(bodyByte)
 	if err != nil {
 		fmt.Println("ERROR:", err.Error())
@@ -107,17 +105,9 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("__________", str, "___________")
+	fmt.Printf("__________\n%s____________\n\n", str)
 
-	/*dst := make([]byte, base64.StdEncoding.DecodedLen(len(bodyByte)))
-	strData, err := base64.StdEncoding.Decode(dst, bodyByte)
-	if err != nil {
-		fmt.Println("ERROR:", err.Error())
-
-		return
-	}
-
-	data, err := json.MarshalIndent(strData, "", "  ")
+	/*data, err := json.MarshalIndent(str, "", "  ")
 	if err != nil {
 		fmt.Println("ERROR: ", err)
 
