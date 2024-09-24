@@ -97,6 +97,8 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println("__________", string(bodyByte), "___________")
+
 	dst := make([]byte, base64.StdEncoding.DecodedLen(len(bodyByte)))
 	strData, err := base64.StdEncoding.Decode(dst, bodyByte)
 	if err != nil {
