@@ -39,7 +39,7 @@ GO_HIVEHOOK_APIKEY - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!!
 Он задается ТОЛЬКО через переменную окружения. В конфигурационном
 файле этого параметра нет.
 
-//Подключение к СУБД Elasticsearch
+//Подключение к СУБД Elasticsearch (НУЖЕН ТОЛЬКО ДЛЯ ЛОГИРОВАНИЯ)
 GO_HIVEHOOK_ESHOST
 GO_HIVEHOOK_ESPORT
 GO_HIVEHOOK_ESUSER

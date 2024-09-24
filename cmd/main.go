@@ -49,22 +49,22 @@ func server(ctx context.Context) {
 	}
 
 	//инициализируем модуль логирования
-	sl, err := simplelogger.NewSimpleLogger(ROOT_DIR, getLoggerSettings(confApp.GetListLogs()))
+	simpleLogger, err := simplelogger.NewSimpleLogger(ROOT_DIR, getLoggerSettings(confApp.GetListLogs()))
 	if err != nil {
 		log.Fatalf("error module 'simplelogger': %v", err)
 	}
 
 	//взаимодействие с Zabbix
 	channelZabbix := make(chan zabbixapi.MessageSettings)
-	if err := interactionZabbix(ctx, confApp, sl, channelZabbix); err != nil {
+	if err := interactionZabbix(ctx, confApp, simpleLogger, channelZabbix); err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = sl.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
 
 		log.Fatalf("error module 'zabbixinteraction': %v\n", err)
 	}
 
 	// логирование данных
 	logging := logginghandler.New()
-	go logginghandler.LoggingHandler(ctx, channelZabbix, sl, logging.GetChan())
+	go logginghandler.LoggingHandler(ctx, channelZabbix, simpleLogger, logging.GetChan())
 
 }

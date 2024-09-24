@@ -16,3 +16,7 @@ func (l *LoggingChan) Send(msgType, msgData string) {
 		MsgData: msgData,
 	}
 }
+
+func (l *LoggingChan) Close() {
+	close(l.logChan)
+}

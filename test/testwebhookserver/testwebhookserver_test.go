@@ -2,6 +2,7 @@ package testwebhookserver_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -10,10 +11,14 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	"github.com/av-belyakov/simplelogger"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/zabbixapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
+
+const ROOT_DIR = "thehivehook_go_package"
 
 var _ = Describe("Testwebhookserver", Ordered, func() {
 	var (
@@ -62,7 +67,21 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 				cancel()
 			}()
 
+			simpleLogger, err := simplelogger.NewSimpleLogger(ROOT_DIR, getLoggerSettings(conf.GetListLogs()))
+			if err != nil {
+				log.Fatalf("error module 'simplelogger': %v", err)
+			}
+
+			channelZabbix := make(chan zabbixapi.MessageSettings)
+			go func() {
+				for msg := range channelZabbix {
+					fmt.Println("INFO for Zabbix:", msg)
+				}
+			}()
+
 			logging := logginghandler.New()
+			go logginghandler.LoggingHandler(ctx, channelZabbix, simpleLogger, logging.GetChan())
+
 			webHookServer, errServer = webhookserver.New(ctx, confWebHookServer.Host, confWebHookServer.Port, logging)
 		})
 
@@ -82,3 +101,19 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 		os.Unsetenv("GO_HIVEHOOK_ESPASSWD")
 	})
 })
+
+func getLoggerSettings(cls []confighandler.LogSet) []simplelogger.MessageTypeSettings {
+	loggerConf := make([]simplelogger.MessageTypeSettings, 0, len(cls))
+
+	for _, v := range cls {
+		loggerConf = append(loggerConf, simplelogger.MessageTypeSettings{
+			MsgTypeName:   v.MsgTypeName,
+			WritingFile:   v.WritingFile,
+			PathDirectory: v.PathDirectory,
+			WritingStdout: v.WritingStdout,
+			MaxFileSize:   v.MaxFileSize,
+		})
+	}
+
+	return loggerConf
+}

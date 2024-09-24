@@ -1,12 +1,13 @@
 package webhookserver
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"runtime"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
@@ -32,20 +33,18 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	strData, err := base64.StdEncoding.DecodeString(string(bodyByte))
-	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
-
-		return
+	//-------------------------------------------------------------------
+	//----------- ЗАПИСЬ в файл ЭТО ТОЛЬКО ДЛЯ ТЕСТОВ -------------------
+	//-------------------------------------------------------------------
+	if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
+		wh.logger.Send("log_for_test", str)
 	}
 
-	data, err := json.MarshalIndent(strData, "", "  ")
-	if err != nil {
-		fmt.Println("Error: ", err)
+	/*if _, err := wh.logFile.Write(fmt.Sprintf("\t------- %s --------\n%s\n", time.Now().String(), str)); err != nil {
+		fmt.Println("ERROR:", err.Error())
+	}*/
 
-		return
-	}
+	log.Println("Recived JSON size =", len(bodyByte))
 
-	fmt.Println(string(data))
+	//fmt.Println(string(data))
 }
