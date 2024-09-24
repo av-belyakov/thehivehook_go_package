@@ -23,7 +23,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("func 'RouteWebHook'")
 	fmt.Println("Header:", r.Header)
 
-	resBodyByte, err := io.ReadAll(r.Body)
+	bodyByte, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
@@ -32,9 +32,15 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := base64.StdEncoding.DecodeString(str)
+	strData, err := base64.StdEncoding.DecodeString(string(bodyByte))
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
+		wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
 
-	data, err := json.MarshalIndent(resBodyByte, "", "  ")
+		return
+	}
+
+	data, err := json.MarshalIndent(strData, "", "  ")
 	if err != nil {
 		fmt.Println("Error: ", err)
 
