@@ -55,7 +55,7 @@ var _ = Describe("Testwebhooktemporarystorage", Ordered, func() {
 
 			time.Sleep(6 * time.Second)
 			//удаляется автоматически
-			data, ok := whts.GetElementId(test_uuid_2)
+			_, ok := whts.GetElementId(test_uuid_2)
 			Expect(ok).ShouldNot(BeTrue())
 
 			d, ok := whts.GetElementId(test_uuid_3)
