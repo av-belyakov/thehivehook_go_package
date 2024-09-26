@@ -1,6 +1,7 @@
 package webhookserver
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -40,11 +41,31 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		wh.logger.Send("log_for_test", str)
 	}
 
-	/*if _, err := wh.logFile.Write(fmt.Sprintf("\t------- %s --------\n%s\n", time.Now().String(), str)); err != nil {
-		fmt.Println("ERROR:", err.Error())
-	}*/
+	eventElement := EventElement{}
+	err = json.Unmarshal(bodyByte, &eventElement)
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
+		wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
+
+		return
+	}
+
+	switch eventElement.ObjectType {
+	case "case":
+
+	case "case_artifact":
+		fmt.Println("Reseived object with object type:", eventElement.ObjectType)
+
+	case "case_task":
+		fmt.Println("Reseived object with object type:", eventElement.ObjectType)
+
+	case "case_task_log":
+		fmt.Println("Reseived object with object type:", eventElement.ObjectType)
+
+	case "alert":
+		fmt.Println("Reseived object with object type:", eventElement.ObjectType)
+
+	}
 
 	log.Println("Recived JSON size =", len(bodyByte))
-
-	//fmt.Println(string(data))
 }

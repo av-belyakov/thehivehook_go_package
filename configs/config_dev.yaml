@@ -17,14 +17,10 @@ NATS:
         - "MISP"
         - "NCIRCC"
 THEHIVE:
-  host: "192.168.42.10"
+  host: "thehive.cloud.gcm"
   port: 9001
-ELASTICSEARCH:
-  host: "datahook.cloud.gcm"
-  port: 9200
-  user: "writer"
-  prefix: "test_"
-  index: "thehivehook_go_package"
 WEBHOOKSERVER:
+  name: "rcmsml"
   host: "127.0.0.1"
   port: 5000
+  ttlTmpInfo: 12

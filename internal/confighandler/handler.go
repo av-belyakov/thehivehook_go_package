@@ -33,17 +33,11 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			"GO_HIVEHOOK_THUNAME":  "",
 			"GO_HIVEHOOK_THAPIKEY": "",
 
-			// Подключение к СУБД Elasticsearch
-			"GO_HIVEHOOK_ESHOST":   "",
-			"GO_HIVEHOOK_ESPORT":   "",
-			"GO_HIVEHOOK_ESUSER":   "",
-			"GO_HIVEHOOK_ESPASSWD": "",
-			"GO_HIVEHOOK_ESPREFIX": "",
-			"GO_HIVEHOOK_ESINDEX":  "",
-
-			//Настройки основного API серврера
-			"GO_HIVEHOOK_HHOST": "",
-			"GO_HIVEHOOK_HPORT": "",
+			//Настройки WebHookServer
+			"GO_HIVEHOOK_WEBHNAME":       "",
+			"GO_HIVEHOOK_WEBHHOST":       "",
+			"GO_HIVEHOOK_WEBHPORT":       "",
+			"GO_HIVEHOOK_WEBHTTLTMPINFO": "",
 		}
 	)
 
@@ -134,29 +128,18 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			conf.AppConfigTheHive.ApiKey = viper.GetString("THEHIVE.api_key")
 		}
 
-		// Настройки для модуля подключения к СУБД ElasticSearch
-		if viper.IsSet("ELASTICSEARCH.host") {
-			conf.AppConfigElasticSearch.Host = viper.GetString("ELASTICSEARCH.host")
-		}
-		if viper.IsSet("ELASTICSEARCH.port") {
-			conf.AppConfigElasticSearch.Port = viper.GetInt("ELASTICSEARCH.port")
-		}
-		if viper.IsSet("ELASTICSEARCH.user") {
-			conf.AppConfigElasticSearch.UserName = viper.GetString("ELASTICSEARCH.user")
-		}
-		if viper.IsSet("ELASTICSEARCH.prefix") {
-			conf.AppConfigElasticSearch.Prefix = viper.GetString("ELASTICSEARCH.prefix")
-		}
-		if viper.IsSet("ELASTICSEARCH.index") {
-			conf.AppConfigElasticSearch.Index = viper.GetString("ELASTICSEARCH.index")
-		}
-
 		//	Настройки основного API сервера
+		if viper.IsSet("WEBHOOKSERVER.name") {
+			conf.AppConfigWebHookServer.Name = viper.GetString("WEBHOOKSERVER.name")
+		}
 		if viper.IsSet("WEBHOOKSERVER.host") {
 			conf.AppConfigWebHookServer.Host = viper.GetString("WEBHOOKSERVER.host")
 		}
 		if viper.IsSet("WEBHOOKSERVER.port") {
 			conf.AppConfigWebHookServer.Port = viper.GetInt("WEBHOOKSERVER.port")
+		}
+		if viper.IsSet("WEBHOOKSERVER.ttlTmpInfo") {
+			conf.AppConfigWebHookServer.TTLTmpInfo = viper.GetInt("WEBHOOKSERVER.ttlTmpInfo")
 		}
 
 		return nil
@@ -251,35 +234,21 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		conf.AppConfigTheHive.ApiKey = envList["GO_HIVEHOOK_THAPIKEY"]
 	}
 
-	//Настройки для модуля подключения к СУБД ElasticSearch
-	if envList["GO_HIVEHOOK_ESHOST"] != "" {
-		conf.AppConfigElasticSearch.Host = envList["GO_HIVEHOOK_ESHOST"]
-	}
-	if envList["GO_HIVEHOOK_ESPORT"] != "" {
-		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_ESPORT"]); err == nil {
-			conf.AppConfigElasticSearch.Port = p
-		}
-	}
-	if envList["GO_HIVEHOOK_ESUSER"] != "" {
-		conf.AppConfigElasticSearch.UserName = envList["GO_HIVEHOOK_ESUSER"]
-	}
-	if envList["GO_HIVEHOOK_ESPASSWD"] != "" {
-		conf.AppConfigElasticSearch.Passwd = envList["GO_HIVEHOOK_ESPASSWD"]
-	}
-	if envList["GO_HIVEHOOK_ESPREFIX"] != "" {
-		conf.AppConfigElasticSearch.Prefix = envList["GO_HIVEHOOK_ESPREFIX"]
-	}
-	if envList["GO_HIVEHOOK_ESINDEX"] != "" {
-		conf.AppConfigElasticSearch.Index = envList["GO_HIVEHOOK_ESINDEX"]
-	}
-
 	//Настройки основного API сервера
+	if envList["GO_HIVEHOOK_WEBHNAME"] != "" {
+		conf.AppConfigWebHookServer.Name = envList["GO_HIVEHOOK_WEBHNAME"]
+	}
 	if envList["GO_HIVEHOOK_WEBHHOST"] != "" {
 		conf.AppConfigWebHookServer.Host = envList["GO_HIVEHOOK_WEBHHOST"]
 	}
 	if envList["GO_HIVEHOOK_WEBHPORT"] != "" {
 		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHPORT"]); err == nil {
 			conf.AppConfigWebHookServer.Port = p
+		}
+	}
+	if envList["GO_HIVEHOOK_WEBHTTLTMPINFO"] != "" {
+		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHTTLTMPINFO"]); err == nil {
+			conf.AppConfigWebHookServer.TTLTmpInfo = p
 		}
 	}
 

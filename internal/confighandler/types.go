@@ -5,7 +5,6 @@ type ConfigApp struct {
 	CommonAppConfig
 	AppConfigNATS
 	AppConfigTheHive
-	AppConfigElasticSearch
 	AppConfigWebHookServer
 }
 
@@ -65,18 +64,11 @@ type AppConfigTheHive struct {
 	ApiKey string `validate:"required"`
 }
 
-type AppConfigElasticSearch struct {
-	Port     int    `validate:"gt=0,lte=65535" yaml:"port"`
-	Host     string `validate:"required" yaml:"host"`
-	UserName string `validate:"required" yaml:"user"`
-	Passwd   string `validate:"required"`
-	Prefix   string `yaml:"prefix"`
-	Index    string `validate:"required" yaml:"index"`
-}
-
 type AppConfigWebHookServer struct {
-	Port int    `validate:"gt=0,lte=65535" yaml:"port"`
-	Host string `validate:"required" yaml:"host"`
+	TTLTmpInfo int    `validate:"gt=9,lte=86400" yaml:"ttlTmpInfo"`
+	Port       int    `validate:"gt=0,lte=65535" yaml:"port"`
+	Host       string `validate:"required" yaml:"host"`
+	Name       string `validate:"required" yaml:"name"`
 }
 
 type NATS struct {

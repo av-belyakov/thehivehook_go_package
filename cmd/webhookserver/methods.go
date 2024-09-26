@@ -10,21 +10,29 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
-func New(ctx context.Context, host string, port int, logging *logginghandler.LoggingChan) (*WebHookServer, error) {
-	wh := &WebHookServer{version: "1.1.0"}
+func New(ctx context.Context, name, host string, port, ttl int, logging *logginghandler.LoggingChan) (*WebHookServer, error) {
+	wh := &WebHookServer{
+		name:    name,
+		version: "1.1.0",
+		ctx:     ctx,
+		logger:  logging,
+	}
+
+	whts, err := NewWebHookTemporaryStorage(ttl)
+	if err != nil {
+		return wh, err
+	}
+	wh.storage = whts
 
 	if host == "" {
 		return wh, errors.New("the value of 'host' cannot be empty")
 	}
+	wh.host = host
 
 	if port == 0 || port > 65535 {
 		return wh, errors.New("an incorrect network port value was received")
 	}
-
-	wh.ctx = ctx
-	wh.host = host
 	wh.port = port
-	wh.logger = logging
 
 	return wh, nil
 }
@@ -55,7 +63,10 @@ func (wh *WebHookServer) Start() {
 		}
 	}()
 
-	log.Printf("server 'WebHookServer' was successfully launched, ip:%s, port:%d", wh.host, wh.port)
+	msg := fmt.Sprintf("server 'WebHookServer' was successfully launched, ip:%s, port:%d", wh.host, wh.port)
+	log.Println(msg)
+	wh.logger.Send("info", msg)
+
 	<-wh.ctx.Done()
 }
 

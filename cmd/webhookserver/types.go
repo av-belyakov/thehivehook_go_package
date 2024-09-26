@@ -11,9 +11,11 @@ import (
 type WebHookServer struct {
 	port    int
 	host    string
+	name    string //gcm, rcmmsk и т.д.
 	version string
 	ctx     context.Context
 	server  *http.Server
+	storage *WebHookTemporaryStorage
 	logger  *logginghandler.LoggingChan
 }
 
@@ -34,4 +36,13 @@ type ttlStorage struct {
 type messageDescriptors struct {
 	timeCreate int64
 	eventId    string
+}
+
+type EventElement struct {
+	Operation  string `json:"operation"`
+	ObjectType string `json:"objectType"`
+	RootId     string `json:"rootId"`
+}
+
+type wrappers struct {
 }

@@ -24,11 +24,6 @@ func (conf *ConfigApp) GetApplicationTheHive() *AppConfigTheHive {
 	return &conf.AppConfigTheHive
 }
 
-// GetApplicationElasticsearch настройки взаимодействия с Elasticsearch
-func (conf *ConfigApp) GetApplicationElasticsearch() *AppConfigElasticSearch {
-	return &conf.AppConfigElasticSearch
-}
-
 // GetApplicationWebHookServer настройки основного сервера API
 func (conf *ConfigApp) GetApplicationWebHookServer() *AppConfigWebHookServer {
 	return &conf.AppConfigWebHookServer

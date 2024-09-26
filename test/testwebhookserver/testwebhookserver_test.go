@@ -52,8 +52,13 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 	})
 
 	Context("Тест 2. Проверка работы WebHookServer", func() {
+		var (
+			ctx    context.Context
+			cancel context.CancelFunc
+		)
+
 		BeforeAll(func() {
-			ctx, cancel := signal.NotifyContext(context.Background(),
+			ctx, cancel = signal.NotifyContext(context.Background(),
 				syscall.SIGHUP,
 				syscall.SIGINT,
 				syscall.SIGTERM,
@@ -82,7 +87,7 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			logging := logginghandler.New()
 			go logginghandler.LoggingHandler(ctx, channelZabbix, simpleLogger, logging.GetChan())
 
-			webHookServer, errServer = webhookserver.New(ctx, confWebHookServer.Host, confWebHookServer.Port, logging)
+			webHookServer, errServer = webhookserver.New(ctx, confWebHookServer.Name, confWebHookServer.Host, confWebHookServer.Port, confWebHookServer.TTLTmpInfo, logging)
 		})
 
 		It("Ошибок при инициализации сервера быть не должно", func() {
@@ -91,6 +96,7 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 
 		It("Работоспособность сервера", func() {
 			webHookServer.Start()
+			webHookServer.Shutdown(ctx)
 
 			Expect(true).ShouldNot(BeTrue())
 		})

@@ -1,6 +1,19 @@
 package thehiveapi
 
-type TheHiveAPI struct {
+type ReguestChannelTheHive struct {
+	RequestId  string
+	RootId     string
+	Command    string
+	ChanOutput chan<- ResponseChannelTheHive
+}
+
+type ResponseChannelTheHive struct {
+	StatusCode int
+	RequestId  string
+	Data       interface{}
+}
+
+type apiTheHive struct {
 	port   int
 	host   string
 	apiKey string

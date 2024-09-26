@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/av-belyakov/simplelogger"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/zabbixapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
@@ -42,19 +43,19 @@ func server(ctx context.Context) {
 		log.Fatalf("error, it is impossible to form root path (%v)", err)
 	}
 
-	//инициализируем модуль чтения конфигурационного файла
+	//чтение конфигурационного файла
 	confApp, err := confighandler.NewConfig(rootPath)
 	if err != nil {
 		log.Fatalf("error module 'confighandler': %v", err)
 	}
 
-	//инициализируем модуль логирования
+	//********** инициализация модуля логирования **********
 	simpleLogger, err := simplelogger.NewSimpleLogger(ROOT_DIR, getLoggerSettings(confApp.GetListLogs()))
 	if err != nil {
 		log.Fatalf("error module 'simplelogger': %v", err)
 	}
 
-	//взаимодействие с Zabbix
+	//********** инициализация модуля взаимодействия с Zabbix **********
 	channelZabbix := make(chan zabbixapi.MessageSettings)
 	if err := interactionZabbix(ctx, confApp, simpleLogger, channelZabbix); err != nil {
 		_, f, l, _ := runtime.Caller(0)
@@ -63,8 +64,23 @@ func server(ctx context.Context) {
 		log.Fatalf("error module 'zabbixinteraction': %v\n", err)
 	}
 
-	// логирование данных
+	//********** инициализация обработчика логирования данных **********
 	logging := logginghandler.New()
 	go logginghandler.LoggingHandler(ctx, channelZabbix, simpleLogger, logging.GetChan())
 
+	//********** инициализация модуля взаимодействия с TheHive **********
+
+	//********** инициализация модуля взаимодействия с NATS **********
+
+	//********** инициализация WEBHOOKSERVER модуля **********
+	confWebHook := confApp.GetApplicationWebHookServer()
+	webHook, err := webhookserver.New(ctx, confWebHook.Name, confWebHook.Host, confWebHook.Port, confWebHook.TTLTmpInfo, logging)
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
+		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+
+		log.Fatalf("error module 'webhookserver': %v\n", err)
+	}
+	webHook.Start()
+	webHook.Shutdown(ctx)
 }

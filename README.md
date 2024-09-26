@@ -32,27 +32,17 @@ GO_HIVEHOOK_NSUBSCRIBERS - данный параметр должен содер
 caseupdate:gcm,rcmmsk,rcmnvs;alertupdate:gcm
 
 //Подключение к TheHive
-GO_HIVEHOOK_NAME
-GO_HIVEHOOK_URL
-
-GO_HIVEHOOK_APIKEY - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!!
+GO_HIVEHOOK_THHOST
+GO_HIVEHOOK_THPORT
+GO_HIVEHOOK_THAPIKEY - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!!
 Он задается ТОЛЬКО через переменную окружения. В конфигурационном
 файле этого параметра нет.
 
-//Подключение к СУБД Elasticsearch (НУЖЕН ТОЛЬКО ДЛЯ ЛОГИРОВАНИЯ)
-GO_HIVEHOOK_ESHOST
-GO_HIVEHOOK_ESPORT
-GO_HIVEHOOK_ESUSER
-
-GO_HIVEHOOK_ESPASSWD - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!! Он задается ТОЛЬКО через переменную окружения. В конфигурационном
-файле этого параметра нет.
-
-GO_HIVEHOOK_ESPREFIX
-GO_HIVEHOOK_ESINDEX
-
-//Настройки основного API сервера
+//Настройки WebHook сервера
+GO_HIVEHOOK_WEBHNAME //наименование сервера (gcm, rcmnvs и т.д.)
 GO_HIVEHOOK_WEBHHOST
 GO_HIVEHOOK_WEBHPORT
+GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной информации, в секундах от 10 до 86400
 
 Приоритет значений заданных через переменные окружения выше чем значений полученных из конфигурационных файлов.
 
@@ -65,31 +55,6 @@ curl -XPUT -u <имя*пользователя>:'пароль_org-admin' -H 'Con
 "delegate": false,
 "trigger": { "name": "AnyEvent"},
 "notifier": { "name": "webhook", "endpoint": "hivehook" }
-}
-]
-}'
-
-######
-
-cd existing_repo
-git remote add origin http://gitlab.cloud.gcm/a.belyakov/thehivehook_go_package.git
-git branch -M main
-git push -uf origin main
-
-######
-
-curl -XPUT -u a.belyakov@cloud.gcm:'Dr\*3t9$2q0L9' -H 'Content-type: application/json' http://192.168.9.38:9000/api/config/organisation/notification -d '
-{
-"value": [
-{
-"delegate": false,
-"trigger": { "name": "AnyEvent"},
-"notifier": { "name": "webhook", "endpoint": "gcm" }
-},
-{
-"delegate": false,
-"trigger": { "name": "AnyEvent"},
-"notifier": { "name": "webhook", "endpoint": "test" }
 }
 ]
 }'

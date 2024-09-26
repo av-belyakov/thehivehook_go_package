@@ -10,7 +10,7 @@ import (
 
 var (
 	once sync.Once
-	whts *WebHookTemporaryStorage
+	whts WebHookTemporaryStorage
 )
 
 // NewWebHookTemporaryStorage конструктор временного хранилища сервера WebHook
@@ -20,7 +20,7 @@ var (
 // Внимание! Чрезмерно большое время жизни временной информации может повлечь за
 // собой утечку памяти.
 func NewWebHookTemporaryStorage(ttl int) (*WebHookTemporaryStorage, error) {
-	whts := WebHookTemporaryStorage{}
+	whts = WebHookTemporaryStorage{}
 
 	if ttl < 5 || ttl > 86400 {
 		return &whts, errors.New("the lifetime of the temporary information should not be less than 10 seconds and more than 86400 seconds")

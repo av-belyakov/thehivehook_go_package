@@ -15,14 +15,10 @@ NATS:
       responders:
         - "ES"
 THEHIVE:
-  host: "192.168.42.10"
+  host: "thehive.cloud.gcm"
   port: 9000
-ELASTICSEARCH:
-  host: "datahook.cloud.gcm"
-  port: 9200
-  user: "writer"
-  prefix: ""
-  index: "thehivehook_go_package"
 WEBHOOKSERVER:
+  name: "gcm"
   host: "192.168.13.3"
   port: 5000
+  ttlTmpInfo: 10
