@@ -2,7 +2,6 @@ package webhookserver
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -46,12 +45,7 @@ func checkLiveTime(whts *WebHookTemporaryStorage) {
 			defer whts.ttlStorage.mutex.Unlock()
 
 			for k, v := range whts.ttlStorage.storage {
-				fmt.Println("int64(whts.ttl)=", int64(whts.ttl))
-				fmt.Println("time.Now().Unix():", time.Now().Unix(), ">", v.timeCreate+int64(whts.ttl), "timeCreate")
-
 				if time.Now().Unix() > (v.timeCreate + int64(whts.ttl)) {
-					fmt.Println("DELETE")
-
 					whts.DeleteElement(k)
 				}
 			}
