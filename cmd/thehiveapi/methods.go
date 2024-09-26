@@ -88,12 +88,12 @@ func New(ctx context.Context, apiKey, host string, port int, logging *logginghan
 }
 
 func (api *apiTheHive) query(ctx context.Context, path string, query []byte, method string) ([]byte, int, error) {
-	//apiKey := "Bearer " + api.apiKey
+	apiKey := "Bearer " + api.apiKey
 	url := fmt.Sprintf("http://%s:%d%s", api.host, api.port, path)
 
 	fmt.Println("TheHiveAPI QUERY: 1111")
 	fmt.Println("URL:", url)
-	fmt.Println("API key:", api.apiKey)
+	fmt.Println("API key:", apiKey)
 
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(query))
 	if err != nil {
@@ -102,7 +102,7 @@ func (api *apiTheHive) query(ctx context.Context, path string, query []byte, met
 
 	fmt.Println("TheHiveAPI QUERY: 2222")
 
-	req.Header.Add("Authorization", api.apiKey)
+	req.Header.Add("Authorization", apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
