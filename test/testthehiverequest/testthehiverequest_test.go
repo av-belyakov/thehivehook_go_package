@@ -2,6 +2,7 @@ package testthehiverequest_test
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
@@ -70,23 +71,47 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 		It("Запрос на получения Observable должен быть успешно выполнен", func() {
 			var (
 				statusCode int
-				rootId     string = "~86303891680"
+				rootId     string = "~86676517008" //caseId:35144
 				myUuid     string = uuid.New().String()
 				myUuidRes  string
 				wg         sync.WaitGroup
 
-				chanRes chan thehiveapi.ResponseChannelTheHive = make(chan thehiveapi.ResponseChannelTheHive)
+				chanResObservable chan thehiveapi.ResponseChannelTheHive = make(chan thehiveapi.ResponseChannelTheHive)
+				chanResTTL        chan thehiveapi.ResponseChannelTheHive = make(chan thehiveapi.ResponseChannelTheHive)
 			)
 
-			wg.Add(1)
+			wg.Add(2)
 
 			go func() {
-				for res := range chanRes {
+				for res := range chanResObservable {
 					myUuidRes = res.RequestId
+					statusCode = res.StatusCode
 
+					fmt.Println("--------- Observable ----------")
 					fmt.Println("Resived Response")
 					fmt.Println("RequestId:", res.RequestId)
-					fmt.Println("RequestId:", res.Data)
+
+					msg := []interface{}{}
+					err := json.Unmarshal(res.Data, &msg)
+					fmt.Println("ERROR:", err)
+					fmt.Println("DATA:", msg)
+				}
+
+				wg.Done()
+			}()
+			go func() {
+				for res := range chanResTTL {
+					myUuidRes = res.RequestId
+					statusCode = res.StatusCode
+
+					fmt.Println("--------- TTL ----------")
+					fmt.Println("Resived Response")
+					fmt.Println("RequestId:", res.RequestId)
+
+					msg := []interface{}{}
+					err := json.Unmarshal(res.Data, &msg)
+					fmt.Println("ERROR:", err)
+					fmt.Println("DATA:", msg)
 				}
 
 				wg.Done()
@@ -96,7 +121,14 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 				RequestId:  myUuid,
 				RootId:     rootId,
 				Command:    "get_observables",
-				ChanOutput: chanRes,
+				ChanOutput: chanResObservable,
+			}
+
+			chanTheHiveAPI <- thehiveapi.ReguestChannelTheHive{
+				RequestId:  myUuid,
+				RootId:     rootId,
+				Command:    "get_ttp",
+				ChanOutput: chanResTTL,
 			}
 
 			wg.Wait()

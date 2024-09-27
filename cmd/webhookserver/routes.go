@@ -22,9 +22,6 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("func 'RouteWebHook'")
-	fmt.Println("Header:", r.Header)
-
 	bodyByte, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {

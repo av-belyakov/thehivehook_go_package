@@ -43,41 +43,37 @@ func New(ctx context.Context, apiKey, host string, port int, logging *logginghan
 			case data := <-receivingChannel:
 				switch data.Command {
 				case "get_observables":
-					fmt.Println("TheHiveAPI: 1111")
-
-					req, err := json.Marshal(&RootQuery{
-						Query: []Query{
-							{Name: "getCase", IDOrName: data.RootId}, {Name: "observables"},
-						},
-					})
+					res, statusCode, err := apiTheHive.GetObservables(ctx, data.RootId)
 					if err != nil {
-						_, f, l, _ := runtime.Caller(0)
-						logging.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
+						logging.Send("error", err.Error())
 
 						continue
 					}
-
-					fmt.Println("TheHiveAPI: 2222")
-
-					res, statusCode, err := apiTheHive.query(ctx, "/api/v1/query?name=case-observables", req, "POST")
-					if err != nil {
-						_, f, l, _ := runtime.Caller(0)
-						logging.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
-
-						continue
-					}
-
-					fmt.Println("TheHiveAPI: 3333")
-					fmt.Println("TheHiveAPI: status code=", statusCode)
 
 					data.ChanOutput <- ResponseChannelTheHive{
 						RequestId:  data.RequestId,
 						StatusCode: statusCode,
 						Data:       res,
 					}
+
 					close(data.ChanOutput)
 
 				case "get_ttp":
+					res, statusCode, err := apiTheHive.GetTTP(ctx, data.RootId)
+					if err != nil {
+						logging.Send("error", err.Error())
+
+						continue
+					}
+
+					data.ChanOutput <- ResponseChannelTheHive{
+						RequestId:  data.RequestId,
+						StatusCode: statusCode,
+						Data:       res,
+					}
+
+					close(data.ChanOutput)
+
 				case "":
 				}
 			}
@@ -87,20 +83,69 @@ func New(ctx context.Context, apiKey, host string, port int, logging *logginghan
 	return receivingChannel, nil
 }
 
-func (api *apiTheHive) query(ctx context.Context, path string, query []byte, method string) ([]byte, int, error) {
-	apiKey := "Bearer " + api.apiKey
-	url := fmt.Sprintf("http://%s:%d%s", api.host, api.port, path)
+func (api *apiTheHive) GetObservables(ctx context.Context, rootId string) ([]byte, int, error) {
+	req, err := json.Marshal(RootQuery{
+		Query: []Query{
+			{Name: "getCase", IDOrName: rootId},
+			{Name: "observables"},
+		},
+	})
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
 
-	fmt.Println("TheHiveAPI QUERY: 1111")
-	fmt.Println("URL:", url)
-	fmt.Println("API key:", apiKey)
+		return nil, 0, fmt.Errorf("%s %s:%d", err.Error(), f, l-2)
+	}
+
+	res, statusCode, err := api.query(ctx, "/api/v1/query?name=case-observables", req, "POST")
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
+
+		return nil, 0, fmt.Errorf("%s %s:%d", err.Error(), f, l-2)
+	}
+
+	return res, statusCode, err
+}
+
+func (api *apiTheHive) GetTTP(ctx context.Context, rootId string) ([]byte, int, error) {
+	req, err := json.Marshal(&RootQuery{
+		Query: []Query{
+			{Name: "getCase", IDOrName: rootId},
+			{Name: "procedures"},
+			{
+				Name: "page",
+				From: 0,
+				To:   999,
+				ExtraData: []string{
+					"pattern",
+					"patternParent",
+				},
+			},
+		},
+	})
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
+
+		return nil, 0, fmt.Errorf("%s %s:%d", err.Error(), f, l-2)
+	}
+
+	res, statusCode, err := api.query(ctx, "/api/v1/query?name=case-procedures", req, "POST")
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
+
+		return nil, 0, fmt.Errorf("%s %s:%d", err.Error(), f, l-2)
+	}
+
+	return res, statusCode, err
+}
+
+func (api *apiTheHive) query(ctx context.Context, reqpath string, query []byte, method string) ([]byte, int, error) {
+	apiKey := "Bearer " + api.apiKey
+	url := fmt.Sprintf("http://%s:%d%s", api.host, api.port, reqpath)
 
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(query))
 	if err != nil {
 		return nil, 0, err
 	}
-
-	fmt.Println("TheHiveAPI QUERY: 2222")
 
 	req.Header.Add("Authorization", apiKey)
 	req.Header.Set("Content-Type", "application/json")
@@ -114,8 +159,6 @@ func (api *apiTheHive) query(ctx context.Context, path string, query []byte, met
 		return nil, 0, err
 	}
 
-	fmt.Println("TheHiveAPI QUERY: 3333")
-
 	if res.StatusCode != http.StatusOK { //|| res.StatusCode != http.StatusCreated
 		return nil, res.StatusCode, fmt.Errorf("error request, status is '%s'", res.Status)
 	}
@@ -124,12 +167,6 @@ func (api *apiTheHive) query(ctx context.Context, path string, query []byte, met
 	if err != nil {
 		return nil, 0, err
 	}
-
-	//var errAns ErrorAnswer
-	//_ = json.Unmarshal(resBody, &errAns)
-	//if errAns.Error() != "" { //nolint:wsl //b
-	//	return resBody, &errAns
-	//}
 
 	return resBody, res.StatusCode, nil
 }

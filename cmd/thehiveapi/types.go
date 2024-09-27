@@ -10,7 +10,7 @@ type ReguestChannelTheHive struct {
 type ResponseChannelTheHive struct {
 	StatusCode int
 	RequestId  string
-	Data       interface{}
+	Data       []byte
 }
 
 type apiTheHive struct {
@@ -29,4 +29,9 @@ type Query struct {
 	From      int64    `json:"from"`
 	To        int      `json:"to,omitempty"`
 	ExtraData []string `json:"extraData,omitempty"`
+}
+
+type ErrorAnswer struct {
+	Err     string `json:"type"`
+	Message string `json:"message"`
 }
