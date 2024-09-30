@@ -94,7 +94,10 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 					msg := []interface{}{}
 					err := json.Unmarshal(res.Data, &msg)
 					fmt.Println("ERROR:", err)
-					fmt.Println("DATA:", msg)
+
+					b, err := json.MarshalIndent(msg, "", " ")
+					fmt.Println("ERROR:", err)
+					fmt.Println("DATA:", string(b))
 				}
 
 				wg.Done()

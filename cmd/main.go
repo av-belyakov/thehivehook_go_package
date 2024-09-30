@@ -10,6 +10,8 @@ import (
 	"syscall"
 
 	"github.com/av-belyakov/simplelogger"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/zabbixapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
@@ -69,18 +71,50 @@ func server(ctx context.Context) {
 	go logginghandler.LoggingHandler(ctx, channelZabbix, simpleLogger, logging.GetChan())
 
 	//********** инициализация модуля взаимодействия с TheHive **********
+	confTheHiveAPI := confApp.GetApplicationTheHive()
+	chanRequestTheHiveAPI, err := thehiveapi.New(ctx, confTheHiveAPI.ApiKey, confTheHiveAPI.Host, confTheHiveAPI.Port, logging)
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
+		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+
+		log.Fatalf("error module 'thehiveapi': %v\n", err)
+	}
 
 	//********** инициализация модуля взаимодействия с NATS **********
 
 	//********** инициализация WEBHOOKSERVER модуля **********
 	confWebHook := confApp.GetApplicationWebHookServer()
-	webHook, err := webhookserver.New(ctx, confWebHook.Name, confWebHook.Host, confWebHook.Port, confWebHook.TTLTmpInfo, logging)
+	webHook, chanForSomebody, err := webhookserver.New(ctx, webhookserver.WebHookServerOptions{
+		TTL:     confWebHook.TTLTmpInfo,
+		Port:    confWebHook.Port,
+		Host:    confWebHook.Host,
+		Name:    confWebHook.Name,
+		Version: "1.1.0",
+	}, logging)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
 
 		log.Fatalf("error module 'webhookserver': %v\n", err)
 	}
+
+	go func() {
+		for msg := range chanForSomebody {
+			switch msg.ForSomebody {
+			case "for thehive":
+				if v, ok := msg.Data.(commoninterfaces.ChannelRequester); ok {
+					newChan := webhookserver.NewChannelRequest()
+					newChan.SetRequestId(v.GetRequestId())
+					newChan.SetRootId(v.GetRootId())
+					newChan.SetCommand(v.GetCommand())
+					newChan.SetChanOutput(v.GetChanOutput())
+
+					chanRequestTheHiveAPI <- newChan
+				}
+			}
+		}
+	}()
+
 	webHook.Start()
 	webHook.Shutdown(ctx)
 }

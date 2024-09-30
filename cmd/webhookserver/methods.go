@@ -10,31 +10,34 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
-func New(ctx context.Context, name, host string, port, ttl int, logging *logginghandler.LoggingChan) (*WebHookServer, error) {
+func New(ctx context.Context, opts WebHookServerOptions, logging *logginghandler.LoggingChan) (*WebHookServer, <-chan ChanFormWebHookServer, error) {
+	chanInput := make(chan ChanFormWebHookServer)
+
 	wh := &WebHookServer{
-		name:    name,
-		version: "1.1.0",
-		ctx:     ctx,
-		logger:  logging,
+		name:      opts.Name,
+		version:   opts.Version,
+		ctx:       ctx,
+		logger:    logging,
+		chanInput: chanInput,
 	}
 
-	whts, err := NewWebHookTemporaryStorage(ttl)
+	whts, err := NewWebHookTemporaryStorage(opts.TTL)
 	if err != nil {
-		return wh, err
+		return wh, chanInput, err
 	}
 	wh.storage = whts
 
-	if host == "" {
-		return wh, errors.New("the value of 'host' cannot be empty")
+	if opts.Host == "" {
+		return wh, chanInput, errors.New("the value of 'host' cannot be empty")
 	}
-	wh.host = host
+	wh.host = opts.Host
 
-	if port == 0 || port > 65535 {
-		return wh, errors.New("an incorrect network port value was received")
+	if opts.Port == 0 || opts.Port > 65535 {
+		return wh, chanInput, errors.New("an incorrect network port value was received")
 	}
-	wh.port = port
+	wh.port = opts.Port
 
-	return wh, nil
+	return wh, chanInput, nil
 }
 
 func (wh *WebHookServer) Start() {
@@ -68,6 +71,7 @@ func (wh *WebHookServer) Start() {
 	wh.logger.Send("info", msg)
 
 	<-wh.ctx.Done()
+	close(wh.chanInput)
 }
 
 func (wh *WebHookServer) Shutdown(ctx context.Context) {

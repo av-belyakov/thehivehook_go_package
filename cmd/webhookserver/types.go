@@ -9,14 +9,28 @@ import (
 )
 
 type WebHookServer struct {
-	port    int
-	host    string
-	name    string //gcm, rcmmsk и т.д.
-	version string
-	ctx     context.Context
-	server  *http.Server
-	storage *WebHookTemporaryStorage
-	logger  *logginghandler.LoggingChan
+	port      int
+	host      string
+	name      string //gcm, rcmmsk и т.д.
+	version   string
+	ctx       context.Context
+	server    *http.Server
+	storage   *WebHookTemporaryStorage
+	logger    *logginghandler.LoggingChan
+	chanInput chan ChanFormWebHookServer
+}
+
+type WebHookServerOptions struct {
+	TTL     int
+	Port    int
+	Host    string
+	Name    string
+	Version string
+}
+
+type ChanFormWebHookServer struct {
+	ForSomebody string
+	Data        interface{}
 }
 
 // WebHookTemporaryStorage временное хранилище для WebHookServer
@@ -44,5 +58,9 @@ type EventElement struct {
 	RootId     string `json:"rootId"`
 }
 
-type wrappers struct {
+type ReadyMadeEventCase struct {
+	Source      string        `json:"source"`
+	Case        []interface{} `json:"event"`
+	Observables []interface{} `json:"observables"`
+	TTPs        []interface{} `json:"ttp"`
 }
