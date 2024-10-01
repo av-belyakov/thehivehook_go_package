@@ -11,33 +11,33 @@ import (
 )
 
 func New(ctx context.Context, opts WebHookServerOptions, logging *logginghandler.LoggingChan) (*WebHookServer, <-chan ChanFormWebHookServer, error) {
-	chanInput := make(chan ChanFormWebHookServer)
+	chanOutput := make(chan ChanFormWebHookServer)
 
 	wh := &WebHookServer{
 		name:      opts.Name,
 		version:   opts.Version,
 		ctx:       ctx,
 		logger:    logging,
-		chanInput: chanInput,
+		chanInput: chanOutput,
 	}
 
 	whts, err := NewWebHookTemporaryStorage(opts.TTL)
 	if err != nil {
-		return wh, chanInput, err
+		return wh, chanOutput, err
 	}
 	wh.storage = whts
 
 	if opts.Host == "" {
-		return wh, chanInput, errors.New("the value of 'host' cannot be empty")
+		return wh, chanOutput, errors.New("the value of 'host' cannot be empty")
 	}
 	wh.host = opts.Host
 
 	if opts.Port == 0 || opts.Port > 65535 {
-		return wh, chanInput, errors.New("an incorrect network port value was received")
+		return wh, chanOutput, errors.New("an incorrect network port value was received")
 	}
 	wh.port = opts.Port
 
-	return wh, chanInput, nil
+	return wh, chanOutput, nil
 }
 
 func (wh *WebHookServer) Start() {
@@ -58,7 +58,6 @@ func (wh *WebHookServer) Start() {
 		Addr:    fmt.Sprintf("%s:%d", wh.host, wh.port),
 		Handler: mux,
 	}
-	wh.server = server
 
 	go func() {
 		if errServer := server.ListenAndServe(); errServer != nil {

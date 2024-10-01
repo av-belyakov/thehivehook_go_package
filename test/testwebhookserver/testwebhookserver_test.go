@@ -12,6 +12,8 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/av-belyakov/simplelogger"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/zabbixapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
@@ -22,26 +24,27 @@ const ROOT_DIR = "thehivehook_go_package"
 
 var _ = Describe("Testwebhookserver", Ordered, func() {
 	var (
-		rootDir             string = "thehivehook_go_package"
-		theHiveApiKey       string = "70e97faa558d188822c55ec9e00744fd"
-		elasticsearchPasswd string = "yD7T27#e28"
+		rootDir string = "thehivehook_go_package"
 
 		webHookServer *webhookserver.WebHookServer
 
 		conf              *confighandler.ConfigApp
+		confTheHiveAPI    *confighandler.AppConfigTheHive
 		confWebHookServer *confighandler.AppConfigWebHookServer
 
-		errConf, errServer error
+		errConf, errServer, errTheHiveAPI error
 	)
 
 	BeforeAll(func() {
-		// это для того что бы тест на чтение конфигурационног файла проходил успешно
-		// так как такие паратеры как Passwd для модуля Elasticsearch и ApiKey для модуля
-		// TheHive устанавливаются в конфиге приложения только через переме5нные окружения
-		os.Setenv("GO_HIVEHOOK_THAPIKEY", theHiveApiKey)
-		os.Setenv("GO_HIVEHOOK_ESPASSWD", elasticsearchPasswd)
+		//
+		// ВАЖНО!!!
+		//
+		//перед запуском теста установите переменную окружения GO_HIVEHOOK_THAPIKEY
+		//с ключем-идентификатором, необходимым для авторизации в API TheHive,
+		//командой export GO_HIVEHOOK_THAPIKEY=<api_key>
 
 		conf, errConf = confighandler.NewConfig(rootDir)
+		confTheHiveAPI = conf.GetApplicationTheHive()
 		confWebHookServer = conf.GetApplicationWebHookServer()
 	})
 
@@ -51,10 +54,19 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 		})
 	})
 
-	Context("Тест 2. Проверка работы WebHookServer", func() {
+	Context("Тест 2. Проверка инициализации модуля TheHiveAPI", func() {
+		It("При инициализации модуля не должно быть ошибок", func() {
+			Expect(errTheHiveAPI).ShouldNot(HaveOccurred())
+		})
+	})
+
+	Context("Тест 3. Проверка работы WebHookServer", func() {
 		var (
 			ctx    context.Context
 			cancel context.CancelFunc
+
+			chanForSomebody       <-chan webhookserver.ChanFormWebHookServer
+			chanRequestTheHiveAPI chan<- commoninterfaces.ChannelRequester
 		)
 
 		BeforeAll(func() {
@@ -87,7 +99,28 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			logging := logginghandler.New()
 			go logginghandler.LoggingHandler(ctx, channelZabbix, simpleLogger, logging.GetChan())
 
-			webHookServer, errServer = webhookserver.New(ctx, confWebHookServer.Name, confWebHookServer.Host, confWebHookServer.Port, confWebHookServer.TTLTmpInfo, logging)
+			//инициализация модуля взаимодействия с TheHive
+			chanRequestTheHiveAPI, errTheHiveAPI = thehiveapi.New(ctx, confTheHiveAPI.ApiKey, confTheHiveAPI.Host, confTheHiveAPI.Port, logging)
+
+			//инициализация webhookserver
+			webHookServer, chanForSomebody, errServer = webhookserver.New(ctx, webhookserver.WebHookServerOptions{
+				TTL:     confWebHookServer.TTLTmpInfo,
+				Port:    confWebHookServer.Port,
+				Host:    confWebHookServer.Host,
+				Name:    confWebHookServer.Name,
+				Version: "1.1.0",
+			}, logging)
+
+			go func() {
+				for msg := range chanForSomebody {
+					switch msg.ForSomebody {
+					case "for thehive":
+						chanRequestTheHiveAPI <- msg.Data
+
+					case "for nats":
+					}
+				}
+			}()
 		})
 
 		It("Ошибок при инициализации сервера быть не должно", func() {
@@ -100,11 +133,6 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 
 			Expect(true).ShouldNot(BeTrue())
 		})
-	})
-
-	AfterAll(func() {
-		os.Unsetenv("GO_HIVEHOOK_THAPIKEY")
-		os.Unsetenv("GO_HIVEHOOK_ESPASSWD")
 	})
 })
 

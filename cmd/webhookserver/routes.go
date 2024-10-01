@@ -48,18 +48,17 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//***************
-	//где то здесь надо добавить информацию о полученном кейсе в wh.storage
-	//а  потом корректно удалить ее как только она больше  не понадобится
-	//и еще надо избежать ЦИКЛИЧНЫХ ЗАПРОСОВ
-	//***************
+	uuidStorage := wh.storage.SetElementId(eventElement.RootId)
+
+	fmt.Println("Received object with object type:", eventElement.ObjectType)
+	log.Println("Received JSON size =", len(bodyByte))
 
 	switch eventElement.ObjectType {
 	case "case":
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		go func() {
-			readyMadeEventCase, err := CreateEvenCase( /* тут нужен канал для взаимодействия с модулем thehive */ )
+			readyMadeEventCase, err := CreateEvenCase(uuidStorage, eventElement.RootId, wh.chanInput)
 			if err != nil {
 				_, f, l, _ := runtime.Caller(0)
 				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
@@ -70,28 +69,33 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			eventCase := []interface{}{}
 			if err := json.Unmarshal(bodyByte, &eventCase); err != nil {
 				_, f, l, _ := runtime.Caller(0)
-				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
+				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
 
 				return
 			}
 
 			readyMadeEventCase.Source = wh.name
 			readyMadeEventCase.Case = eventCase
+
+			/*
+
+				Где то тут надо сделать использовать информацию из webhook storage
+				для предотвращения безконечных циклов порождаемых TheHive
+				хотя может и не тут
+
+			*/
+
+			fmt.Println("------ func 'RouteWebHook' ------- START")
+			if res, err := json.MarshalIndent(readyMadeEventCase, "", " "); err != nil {
+				fmt.Println(string(res))
+			}
+			fmt.Println("------ func 'RouteWebHook' ------- STOP")
 		}()
 
 	case "case_artifact":
-		fmt.Println("Reseived object with object type:", eventElement.ObjectType)
-
 	case "case_task":
-		fmt.Println("Reseived object with object type:", eventElement.ObjectType)
-
 	case "case_task_log":
-		fmt.Println("Reseived object with object type:", eventElement.ObjectType)
-
 	case "alert":
-		fmt.Println("Reseived object with object type:", eventElement.ObjectType)
 
 	}
-
-	log.Println("Recived JSON size =", len(bodyByte))
 }

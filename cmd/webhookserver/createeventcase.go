@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 )
 
-func CreateEvenCase(uuidStorage, rootId string, chanTheHiveAPI chan<- thehiveapi.RequestChannelTheHive) (ReadyMadeEventCase, error) {
+func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFormWebHookServer /*commoninterfaces.ChannelRequester*/) (ReadyMadeEventCase, error) {
 	var (
 		wg   sync.WaitGroup
 		rmec ReadyMadeEventCase = ReadyMadeEventCase{}
 
 		mainErr error
 
-		chanResObservable chan thehiveapi.ResponseChannelTheHive = make(chan thehiveapi.ResponseChannelTheHive)
-		chanResTTL        chan thehiveapi.ResponseChannelTheHive = make(chan thehiveapi.ResponseChannelTheHive)
+		chanResObservable chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
+		chanResTTL        chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
 	)
 
 	wg.Add(2)
@@ -23,7 +23,7 @@ func CreateEvenCase(uuidStorage, rootId string, chanTheHiveAPI chan<- thehiveapi
 	go func() {
 		for res := range chanResObservable {
 			msg := []interface{}{}
-			if err := json.Unmarshal(res.Data, &msg); err != nil {
+			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				mainErr = err
 
 				return
@@ -37,7 +37,7 @@ func CreateEvenCase(uuidStorage, rootId string, chanTheHiveAPI chan<- thehiveapi
 	go func() {
 		for res := range chanResTTL {
 			msg := []interface{}{}
-			if err := json.Unmarshal(res.Data, &msg); err != nil {
+			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				mainErr = err
 
 				return
@@ -49,18 +49,26 @@ func CreateEvenCase(uuidStorage, rootId string, chanTheHiveAPI chan<- thehiveapi
 		wg.Done()
 	}()
 
-	chanTheHiveAPI <- thehiveapi.RequestChannelTheHive{
-		RequestId:  uuidStorage,
-		RootId:     rootId,
-		Command:    "get_observables",
-		ChanOutput: chanResObservable,
+	//запрос на поиск дополнительной информации об Observables
+	reqObservable := NewChannelRequest()
+	reqObservable.SetRequestId(uuidStorage)
+	reqObservable.SetRootId(rootId)
+	reqObservable.SetCommand("get_observables")
+	reqObservable.SetChanOutput(chanResObservable)
+	chanInput <- ChanFormWebHookServer{
+		ForSomebody: "for thehive",
+		Data:        reqObservable,
 	}
 
-	chanTheHiveAPI <- thehiveapi.RequestChannelTheHive{
-		RequestId:  uuidStorage,
-		RootId:     rootId,
-		Command:    "get_ttp",
-		ChanOutput: chanResTTL,
+	//запрос на поиск дополнительной информации об TTL
+	reqTTP := NewChannelRequest()
+	reqTTP.SetRequestId(uuidStorage)
+	reqTTP.SetRootId(rootId)
+	reqTTP.SetCommand("get_ttp")
+	reqTTP.SetChanOutput(chanResTTL)
+	chanInput <- ChanFormWebHookServer{
+		ForSomebody: "for thehive",
+		Data:        reqTTP,
 	}
 
 	wg.Wait()

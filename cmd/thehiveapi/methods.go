@@ -62,12 +62,6 @@ func New(ctx context.Context, apiKey, host string, port int, logging *logginghan
 					data.GetChanOutput() <- newRes
 					close(data.GetChanOutput())
 
-					/*data.GetChanOutput() <- ResponseChannelTheHive{
-						RequestId:  data.GetRequestId(),
-						StatusCode: statusCode,
-						Data:       res,
-					}*/
-
 				case "get_ttp":
 					res, statusCode, err := apiTheHive.GetTTP(ctx, data.GetRootId())
 					if err != nil {
@@ -83,16 +77,6 @@ func New(ctx context.Context, apiKey, host string, port int, logging *logginghan
 
 					data.GetChanOutput() <- newRes
 					close(data.GetChanOutput())
-
-					/*
-						data.ChanOutput <- ResponseChannelTheHive{
-							RequestId:  data.GetRequestId(),
-							StatusCode: statusCode,
-							Data:       res,
-						}
-
-						close(data.ChanOutput)
-					*/
 
 				case "":
 				}

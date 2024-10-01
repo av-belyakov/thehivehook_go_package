@@ -11,7 +11,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
@@ -21,7 +23,7 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 		rootDir string = "thehivehook_go_package"
 
 		conf           *confighandler.ConfigApp
-		chanTheHiveAPI chan<- thehiveapi.ReguestChannelTheHive
+		chanTheHiveAPI chan<- commoninterfaces.ChannelRequester
 
 		chanDone chan struct{}
 
@@ -29,14 +31,17 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 	)
 
 	BeforeAll(func() {
+		//
+		// ВАЖНО!!!
+		//
+		//перед запуском теста установите переменную окружения GO_HIVEHOOK_THAPIKEY
+		//с ключем-идентификатором, необходимым для авторизации в API TheHive,
+		//командой export GO_HIVEHOOK_THAPIKEY=<api_key>
+
 		chanDone = make(chan struct{})
 
 		conf, errConf = confighandler.NewConfig(rootDir)
 		confTheHive := conf.GetApplicationTheHive()
-
-		//перед запуском теста установите переменную окружения GO_HIVEHOOK_THAPIKEY
-		//с ключем-идентификатором, необходимым для авторизации в API TheHive,
-		//командой export GO_HIVEHOOK_THAPIKEY=<api_key>
 
 		logging := logginghandler.New()
 
@@ -76,27 +81,28 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 				myUuidRes  string
 				wg         sync.WaitGroup
 
-				chanResObservable chan thehiveapi.ResponseChannelTheHive = make(chan thehiveapi.ResponseChannelTheHive)
-				chanResTTL        chan thehiveapi.ResponseChannelTheHive = make(chan thehiveapi.ResponseChannelTheHive)
+				chanResObservable chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
+				chanResTTL        chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
 			)
 
 			wg.Add(2)
 
 			go func() {
 				for res := range chanResObservable {
-					myUuidRes = res.RequestId
-					statusCode = res.StatusCode
+					myUuidRes = res.GetRequestId()
+					statusCode = res.GetStatusCode()
 
 					fmt.Println("--------- Observable ----------")
 					fmt.Println("Resived Response")
-					fmt.Println("RequestId:", res.RequestId)
+					fmt.Println("RequestId:", res.GetRequestId())
 
 					msg := []interface{}{}
-					err := json.Unmarshal(res.Data, &msg)
-					fmt.Println("ERROR:", err)
+					err := json.Unmarshal(res.GetData(), &msg)
+					Expect(err).ShouldNot(HaveOccurred())
 
 					b, err := json.MarshalIndent(msg, "", " ")
-					fmt.Println("ERROR:", err)
+					Expect(err).ShouldNot(HaveOccurred())
+
 					fmt.Println("DATA:", string(b))
 				}
 
@@ -104,35 +110,39 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 			}()
 			go func() {
 				for res := range chanResTTL {
-					myUuidRes = res.RequestId
-					statusCode = res.StatusCode
+					myUuidRes = res.GetRequestId()
+					statusCode = res.GetStatusCode()
 
 					fmt.Println("--------- TTL ----------")
 					fmt.Println("Resived Response")
-					fmt.Println("RequestId:", res.RequestId)
+					fmt.Println("RequestId:", res.GetRequestId())
 
 					msg := []interface{}{}
-					err := json.Unmarshal(res.Data, &msg)
-					fmt.Println("ERROR:", err)
-					fmt.Println("DATA:", msg)
+					err := json.Unmarshal(res.GetData(), &msg)
+					Expect(err).ShouldNot(HaveOccurred())
+
+					b, err := json.MarshalIndent(msg, "", " ")
+					Expect(err).ShouldNot(HaveOccurred())
+
+					fmt.Println("DATA:", string(b))
 				}
 
 				wg.Done()
 			}()
 
-			chanTheHiveAPI <- thehiveapi.ReguestChannelTheHive{
-				RequestId:  myUuid,
-				RootId:     rootId,
-				Command:    "get_observables",
-				ChanOutput: chanResObservable,
-			}
+			reqObservable := webhookserver.NewChannelRequest()
+			reqObservable.SetRequestId(myUuid)
+			reqObservable.SetRootId(rootId)
+			reqObservable.SetCommand("get_observables")
+			reqObservable.SetChanOutput(chanResObservable)
+			chanTheHiveAPI <- reqObservable
 
-			chanTheHiveAPI <- thehiveapi.ReguestChannelTheHive{
-				RequestId:  myUuid,
-				RootId:     rootId,
-				Command:    "get_ttp",
-				ChanOutput: chanResTTL,
-			}
+			reqTTP := webhookserver.NewChannelRequest()
+			reqTTP.SetRequestId(myUuid)
+			reqTTP.SetRootId(rootId)
+			reqTTP.SetCommand("get_ttp")
+			reqTTP.SetChanOutput(chanResTTL)
+			chanTheHiveAPI <- reqTTP
 
 			wg.Wait()
 

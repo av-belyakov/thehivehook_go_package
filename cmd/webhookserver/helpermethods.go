@@ -1,5 +1,7 @@
 package webhookserver
 
+import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+
 //********************* Response ********************
 
 func NewChannelRespons() *ResponsTheHive {
@@ -60,10 +62,10 @@ func (r *RequestTheHive) SetCommand(v string) {
 	r.Command = v
 }
 
-func (r *RequestTheHive) GetChanOutput() chan ResponsTheHive {
+func (r *RequestTheHive) GetChanOutput() chan commoninterfaces.ChannelResponser {
 	return r.ChanOutput
 }
 
-func (r *RequestTheHive) SetChanOutput(v chan ResponsTheHive) {
+func (r *RequestTheHive) SetChanOutput(v chan commoninterfaces.ChannelResponser) {
 	r.ChanOutput = v
 }

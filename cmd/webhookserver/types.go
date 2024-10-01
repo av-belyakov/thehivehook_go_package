@@ -4,7 +4,9 @@ import (
 	"context"
 	"net/http"
 	"sync"
+	"time"
 
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
@@ -17,7 +19,7 @@ type WebHookServer struct {
 	server    *http.Server
 	storage   *WebHookTemporaryStorage
 	logger    *logginghandler.LoggingChan
-	chanInput chan ChanFormWebHookServer
+	chanInput chan<- ChanFormWebHookServer
 }
 
 type WebHookServerOptions struct {
@@ -30,7 +32,7 @@ type WebHookServerOptions struct {
 
 type ChanFormWebHookServer struct {
 	ForSomebody string
-	Data        interface{}
+	Data        commoninterfaces.ChannelRequester
 }
 
 // WebHookTemporaryStorage временное хранилище для WebHookServer
@@ -38,17 +40,17 @@ type ChanFormWebHookServer struct {
 // устаревшим и подлежащим автоматическому удалению
 // ttlStorage - хранилище данных со сроком жизни
 type WebHookTemporaryStorage struct {
-	ttl        int
+	ttl        time.Duration
 	ttlStorage ttlStorage
 }
 
 type ttlStorage struct {
-	mutex   sync.Mutex
+	mutex   sync.RWMutex
 	storage map[string]messageDescriptors
 }
 
 type messageDescriptors struct {
-	timeCreate int64
+	timeExpiry time.Time
 	eventId    string
 }
 

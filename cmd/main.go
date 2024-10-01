@@ -98,23 +98,22 @@ func server(ctx context.Context) {
 		log.Fatalf("error module 'webhookserver': %v\n", err)
 	}
 
-	go func() {
-		for msg := range chanForSomebody {
-			switch msg.ForSomebody {
-			case "for thehive":
-				if v, ok := msg.Data.(commoninterfaces.ChannelRequester); ok {
-					newChan := webhookserver.NewChannelRequest()
-					newChan.SetRequestId(v.GetRequestId())
-					newChan.SetRootId(v.GetRootId())
-					newChan.SetCommand(v.GetCommand())
-					newChan.SetChanOutput(v.GetChanOutput())
-
-					chanRequestTheHiveAPI <- newChan
-				}
-			}
-		}
-	}()
+	go router(chanForSomebody, chanRequestTheHiveAPI)
 
 	webHook.Start()
 	webHook.Shutdown(ctx)
+}
+
+func router(
+	fromWebHook <-chan webhookserver.ChanFormWebHookServer,
+	toTheHiveAPI chan<- commoninterfaces.ChannelRequester) {
+
+	for msg := range fromWebHook {
+		switch msg.ForSomebody {
+		case "for thehive":
+			toTheHiveAPI <- msg.Data
+
+		case "for nats":
+		}
+	}
 }

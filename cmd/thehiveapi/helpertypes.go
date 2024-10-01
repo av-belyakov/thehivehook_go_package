@@ -6,7 +6,7 @@ type RequestChannelTheHive struct {
 	RequestId  string
 	RootId     string
 	Command    string
-	ChanOutput chan commoninterfaces.ChannelResponser //ResponseChannelTheHive
+	ChanOutput chan commoninterfaces.ChannelResponser
 }
 
 type ResponseChannelTheHive struct {
