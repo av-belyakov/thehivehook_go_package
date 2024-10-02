@@ -3,7 +3,8 @@ version: "3.4"
 services:
   thehivehook_go_package:
     container_name: thehivehook_go_package
-    build: .
+    build:
+      context: .
     restart: unless-stopped
     volumes:
       #- $PWD/logs:/opt/placeholder_es/logs:rw
@@ -12,4 +13,5 @@ services:
       #для корректного отображения даты с учетом временной зоны
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-    
+    port:
+      - "5000:5000"
