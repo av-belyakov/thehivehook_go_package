@@ -64,9 +64,9 @@ type EventElement struct {
 }
 
 type ReadyMadeEventCase struct {
-	Source string `json:"source"`
-	//Case        []interface{} `json:"event"`
-	Case        CaseEvent     `json:"event"`
+	Source string                 `json:"source"`
+	Case   map[string]interface{} `json:"event"`
+	//Case        CaseEvent     `json:"event"`
 	Observables []interface{} `json:"observables"`
 	TTPs        []interface{} `json:"ttp"`
 }

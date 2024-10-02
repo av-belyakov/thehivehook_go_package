@@ -66,8 +66,8 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			//eventCase := []interface{}{}
-			caseEvent := CaseEvent{}
+			caseEvent := map[string]interface{}{}
+			//caseEvent := CaseEvent{}
 			if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
 				_, f, l, _ := runtime.Caller(0)
 				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))

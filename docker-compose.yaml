@@ -1,0 +1,15 @@
+version: "3.4"
+
+services:
+  thehivehook_go_package:
+    container_name: thehivehook_go_package
+    build: .
+    restart: unless-stopped
+    volumes:
+      #- $PWD/logs:/opt/placeholder_es/logs:rw
+      #- $PWD/placeholder/configs:/opt/placeholder_es/configs:rw
+      #- $PWD/placeholder/rules:/opt/placeholder_es/rules:rw
+      #для корректного отображения даты с учетом временной зоны
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    
