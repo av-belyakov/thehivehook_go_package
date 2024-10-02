@@ -66,8 +66,9 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			eventCase := []interface{}{}
-			if err := json.Unmarshal(bodyByte, &eventCase); err != nil {
+			//eventCase := []interface{}{}
+			caseEvent := CaseEvent{}
+			if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
 				_, f, l, _ := runtime.Caller(0)
 				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
 
@@ -75,7 +76,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			}
 
 			readyMadeEventCase.Source = wh.name
-			readyMadeEventCase.Case = eventCase
+			readyMadeEventCase.Case = caseEvent
 
 			/*
 
@@ -86,7 +87,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			*/
 
 			fmt.Println("------ func 'RouteWebHook' ------- START")
-			if res, err := json.MarshalIndent(readyMadeEventCase, "", " "); err != nil {
+			if res, err := json.MarshalIndent(readyMadeEventCase, "", " "); err == nil {
 				fmt.Println(string(res))
 			}
 			fmt.Println("------ func 'RouteWebHook' ------- STOP")

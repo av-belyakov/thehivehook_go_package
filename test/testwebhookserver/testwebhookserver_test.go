@@ -103,13 +103,14 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			chanRequestTheHiveAPI, errTheHiveAPI = thehiveapi.New(ctx, confTheHiveAPI.ApiKey, confTheHiveAPI.Host, confTheHiveAPI.Port, logging)
 
 			//инициализация webhookserver
-			webHookServer, chanForSomebody, errServer = webhookserver.New(ctx, webhookserver.WebHookServerOptions{
-				TTL:     confWebHookServer.TTLTmpInfo,
-				Port:    confWebHookServer.Port,
-				Host:    confWebHookServer.Host,
-				Name:    confWebHookServer.Name,
-				Version: "1.1.0",
-			}, logging)
+			webHookServer, chanForSomebody, errServer = webhookserver.New(
+				ctx,
+				logging,
+				webhookserver.WithTTL(confWebHookServer.TTLTmpInfo),
+				webhookserver.WithPort(confWebHookServer.Port),
+				webhookserver.WithHost(confWebHookServer.Host),
+				webhookserver.WithName(confWebHookServer.Name),
+				webhookserver.WithVersion("1.1.0"))
 
 			go func() {
 				for msg := range chanForSomebody {

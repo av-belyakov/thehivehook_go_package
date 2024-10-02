@@ -2,7 +2,6 @@ package webhookserver
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,34 +9,31 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
-func New(ctx context.Context, opts WebHookServerOptions, logging *logginghandler.LoggingChan) (*WebHookServer, <-chan ChanFormWebHookServer, error) {
+func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFormWebHookServer, error) {
 	chanOutput := make(chan ChanFormWebHookServer)
 
-	wh := &WebHookServer{
-		name:      opts.Name,
-		version:   opts.Version,
+	whs := &WebHookServer{
 		ctx:       ctx,
+		name:      "gcm",
+		version:   "0.1.1",
+		host:      "127.0.0.1",
+		port:      7575,
+		ttl:       10,
 		logger:    logging,
 		chanInput: chanOutput,
 	}
 
-	whts, err := NewWebHookTemporaryStorage(opts.TTL)
+	for _, opt := range opts {
+		opt(whs)
+	}
+
+	whts, err := NewWebHookTemporaryStorage(whs.ttl)
 	if err != nil {
-		return wh, chanOutput, err
+		return whs, chanOutput, err
 	}
-	wh.storage = whts
+	whs.storage = whts
 
-	if opts.Host == "" {
-		return wh, chanOutput, errors.New("the value of 'host' cannot be empty")
-	}
-	wh.host = opts.Host
-
-	if opts.Port == 0 || opts.Port > 65535 {
-		return wh, chanOutput, errors.New("an incorrect network port value was received")
-	}
-	wh.port = opts.Port
-
-	return wh, chanOutput, nil
+	return whs, chanOutput, nil
 }
 
 func (wh *WebHookServer) Start() {
@@ -65,7 +61,7 @@ func (wh *WebHookServer) Start() {
 		}
 	}()
 
-	msg := fmt.Sprintf("server 'WebHookServer' was successfully launched, ip:%s, port:%d", wh.host, wh.port)
+	msg := fmt.Sprintf("server 'WebHookServer' was successfully launched, %s:%d", wh.host, wh.port)
 	log.Println(msg)
 	wh.logger.Send("info", msg)
 
@@ -75,4 +71,34 @@ func (wh *WebHookServer) Start() {
 
 func (wh *WebHookServer) Shutdown(ctx context.Context) {
 	wh.server.Shutdown(ctx)
+}
+
+func WithTTL(v int) webHookServerOptions {
+	return func(whs *WebHookServer) {
+		whs.ttl = v
+	}
+}
+
+func WithPort(v int) webHookServerOptions {
+	return func(whs *WebHookServer) {
+		whs.port = v
+	}
+}
+
+func WithHost(v string) webHookServerOptions {
+	return func(whs *WebHookServer) {
+		whs.host = v
+	}
+}
+
+func WithName(v string) webHookServerOptions {
+	return func(whs *WebHookServer) {
+		whs.name = v
+	}
+}
+
+func WithVersion(v string) webHookServerOptions {
+	return func(whs *WebHookServer) {
+		whs.version = v
+	}
 }

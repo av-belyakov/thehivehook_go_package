@@ -19,14 +19,14 @@ var _ = Describe("Testthehivegetcase", func() {
 		query, err := json.Marshal(thehiveapi.RootQuery{
 			Query: []thehiveapi.Query{
 				{Name: "getCase", IDOrName: "~86676517008"},
-				{Name: "observables"},
+				//{Name: "observables"},
 			},
 		})
 		if err != nil {
 			return nil, 0, err
 		}
 
-		url := fmt.Sprintf("http://%s:%d%s", host, port, "/api/v1/query?name=case-procedures")
+		url := fmt.Sprintf("http://%s:%d%s", host, port, "/api/v1/query?name=case")
 		req, err := http.NewRequestWithContext(context.Background(), "POST", url, bytes.NewBuffer(query))
 		if err != nil {
 			return nil, 0, err

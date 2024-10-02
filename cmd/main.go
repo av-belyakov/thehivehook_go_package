@@ -84,13 +84,14 @@ func server(ctx context.Context) {
 
 	//********** инициализация WEBHOOKSERVER модуля **********
 	confWebHook := confApp.GetApplicationWebHookServer()
-	webHook, chanForSomebody, err := webhookserver.New(ctx, webhookserver.WebHookServerOptions{
-		TTL:     confWebHook.TTLTmpInfo,
-		Port:    confWebHook.Port,
-		Host:    confWebHook.Host,
-		Name:    confWebHook.Name,
-		Version: "1.1.0",
-	}, logging)
+	webHook, chanForSomebody, err := webhookserver.New(
+		ctx,
+		logging,
+		webhookserver.WithTTL(confApp.TTLTmpInfo),
+		webhookserver.WithPort(confWebHook.Port),
+		webhookserver.WithHost(confWebHook.Host),
+		webhookserver.WithName(confWebHook.Name),
+		webhookserver.WithVersion("0.1.1"))
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
