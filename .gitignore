@@ -1,3 +1,4 @@
 logs
 ./thehivehook_go_package
 theHiveApiKey.txt
+.env

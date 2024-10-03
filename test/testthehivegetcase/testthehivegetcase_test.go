@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
+	"github.com/joho/godotenv"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 )
 
-var _ = Describe("Testthehivegetcase", func() {
+var _ = Describe("Testthehivegetcase", Ordered, func() {
 	apiTheHive := func(apiKey, host string, port int) ([]byte, int, error) {
 		query, err := json.Marshal(thehiveapi.RootQuery{
 			Query: []thehiveapi.Query{
@@ -55,6 +57,20 @@ var _ = Describe("Testthehivegetcase", func() {
 
 		return resBody, res.StatusCode, nil
 	}
+
+	var errLoadEnv error
+
+	BeforeAll(func() {
+		errLoadEnv = godotenv.Load("../../.env")
+		fmt.Println("ERROR env:", errLoadEnv)
+		fmt.Println("API KEY:", os.Getenv("GO_HIVEHOOK_THAPIKEY"))
+	})
+
+	Context("Тест 0. Чтение переменных окружения", func() {
+		It("При чтении переменных окружения не должно быть ошибок", func() {
+			Expect(errLoadEnv).ShouldNot(HaveOccurred())
+		})
+	})
 
 	Context("Тест 1. Запрос кейса по его номеру", func() {
 		It("Запрос должен быть успешно выполнен", func() {
