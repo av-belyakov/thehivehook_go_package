@@ -41,71 +41,24 @@ type ChanFormWebHookServer struct {
 	Data        commoninterfaces.ChannelRequester
 }
 
+// EventElement типовой элемент описывающий события приходящие из TheHive
 type EventElement struct {
 	Operation  string `json:"operation"`
 	ObjectType string `json:"objectType"`
 	RootId     string `json:"rootId"`
 }
 
+// ReadyMadeEventCase готовый, сформированный объект содержащий информацию по кейсу
 type ReadyMadeEventCase struct {
+	Source      string                 `json:"source"`
+	Case        map[string]interface{} `json:"event"`
+	Observables []interface{}          `json:"observables"`
+	TTPs        []interface{}          `json:"ttp"`
+}
+
+// ReadyMadeEventAlert готовый, сформированный объект содержащий информацию по алерту
+type ReadyMadeEventAlert struct {
 	Source string                 `json:"source"`
-	Case   map[string]interface{} `json:"event"`
-	//Case        CaseEvent     `json:"event"`
-	Observables []interface{} `json:"observables"`
-	TTPs        []interface{} `json:"ttp"`
+	Event  map[string]interface{} `json:"event"`
+	Alert  map[string]interface{} `json:"alert"`
 }
-
-// ************** case ***************
-type CaseEvent struct {
-	Operation      string  `json:"operation"`
-	Details        Details `json:"details"`
-	ObjectType     string  `json:"objectType"`
-	ObjectID       string  `json:"objectId"`
-	Base           bool    `json:"base"`
-	StartDate      int64   `json:"startDate"`
-	RootID         string  `json:"rootId"`
-	RequestID      string  `json:"requestId"`
-	Object         Object  `json:"object"`
-	OrganisationID string  `json:"organisationId"`
-	Organisation   string  `json:"organisation"` //nolint
-}
-
-type Details struct {
-	EndDate          int64                  `json:"endDate,omitempty"`
-	CustomFields     map[string]interface{} `json:"customFields,omitempty"`
-	ResolutionStatus string                 `json:"resolutionStatus,omitempty"`
-	Summary          string                 `json:"summary,omitempty"`
-	Status           string                 `json:"status,omitempty"`
-	ImpactStatus     string                 `json:"impactStatus,omitempty"`
-}
-
-type (
-	Stats  struct{}
-	Object struct {
-		ID_              string                 `json:"_id"` //nolint
-		ID               string                 `json:"id"`
-		CreatedBy        string                 `json:"createdBy"`
-		UpdatedBy        string                 `json:"updatedBy"`
-		CreatedAt        int64                  `json:"createdAt"`
-		UpdatedAt        int64                  `json:"updatedAt"`
-		Type             string                 `json:"_type"`
-		CaseID           int                    `json:"caseId"`
-		Title            string                 `json:"title"`
-		Description      string                 `json:"description"`
-		Severity         int                    `json:"severity"`
-		StartDate        int64                  `json:"startDate"`
-		EndDate          int64                  `json:"endDate"`
-		ImpactStatus     string                 `json:"impactStatus"`
-		ResolutionStatus string                 `json:"resolutionStatus"`
-		Tags             []string               `json:"tags"`
-		Flag             bool                   `json:"flag"`
-		Tlp              int                    `json:"tlp"`
-		Pap              int                    `json:"pap"`
-		Status           string                 `json:"status"`
-		Summary          string                 `json:"summary"`
-		Owner            string                 `json:"owner"`
-		CustomFields     map[string]interface{} `json:"customFields"`
-		Stats            Stats                  `json:"stats"`
-		Permissions      []interface{}          `json:"permissions"`
-	}
-)

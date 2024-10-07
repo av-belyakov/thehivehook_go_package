@@ -69,7 +69,6 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			}
 
 			caseEvent := map[string]interface{}{}
-			//caseEvent := CaseEvent{}
 			if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
 				_, f, l, _ := runtime.Caller(0)
 				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
@@ -88,17 +87,34 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 			*/
 
-			fmt.Println("------ func 'RouteWebHook' ------- START")
+			fmt.Println("------ func 'RouteWebHook' ------- CASE -----")
 			if res, err := json.MarshalIndent(readyMadeEventCase, "", " "); err == nil {
 				fmt.Println(string(res))
 			}
-			fmt.Println("------ func 'RouteWebHook' ------- STOP")
+			fmt.Println("------ func 'RouteWebHook' ------- CASE -----")
 		}()
 
 	case "case_artifact":
 	case "case_task":
 	case "case_task_log":
 	case "alert":
+		if eventElement.Operation == "delete" {
+			return
+		}
 
+		//формируем запрос на поиск дополнительной информации по алерту такой как aler
+		alertEvent := map[string]interface{}{}
+		if err := json.Unmarshal(bodyByte, &alertEvent); err != nil {
+			_, f, l, _ := runtime.Caller(0)
+			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
+
+			return
+		}
+
+		fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
+		if res, err := json.MarshalIndent(alertEvent, "", " "); err == nil {
+			fmt.Println(string(res))
+		}
+		fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
 	}
 }

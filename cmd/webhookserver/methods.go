@@ -9,6 +9,7 @@ import (
 
 	temporarystorage "github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver/temporarystorage"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
@@ -65,7 +66,7 @@ func (wh *WebHookServer) Start() {
 		}
 	}()
 
-	msg := fmt.Sprintf("server 'WebHookServer' was successfully launched, %s:%d", wh.host, wh.port)
+	msg := fmt.Sprintf("Application '%s' v%s was successfully launched, %s:%d", versionandname.GetName(), versionandname.GetVersion(), wh.host, wh.port)
 	log.Println(msg)
 	wh.logger.Send("info", msg)
 

@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -36,7 +38,10 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 		//
 		//перед запуском теста установите переменную окружения GO_HIVEHOOK_THAPIKEY
 		//с ключем-идентификатором, необходимым для авторизации в API TheHive,
-		//командой export GO_HIVEHOOK_THAPIKEY=<api_key>
+		//командой export GO_HIVEHOOK_THAPIKEY=<api_key> или воспользоватся godotenv
+		if err := godotenv.Load("../../.env"); err != nil {
+			log.Fatalln(err)
+		}
 
 		chanDone = make(chan struct{})
 
