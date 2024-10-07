@@ -1,3 +1,4 @@
+// Модуль для взаимодействия с API TheHive
 package thehiveapi
 
 import (
@@ -17,26 +18,37 @@ import (
 // New инициализирует новый модуль взаимодействия с API TheHive
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func New(ctx context.Context, apiKey, host string, port int, logging *logginghandler.LoggingChan) (chan<- commoninterfaces.ChannelRequester, error) {
+// func New(ctx context.Context, apiKey, host string, port int, logging *logginghandler.LoggingChan) (chan<- commoninterfaces.ChannelRequester, error) {
+func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...theHiveAPIOptions) (chan<- commoninterfaces.ChannelRequester, error) {
 	receivingChannel := make(chan commoninterfaces.ChannelRequester)
 
-	if apiKey == "" {
-		return receivingChannel, errors.New("the value of 'apiKey' cannot be empty")
+	api := &apiTheHiveSettings{}
+
+	for _, opt := range opts {
+		if err := opt(api); err != nil {
+			return receivingChannel, err
+		}
 	}
 
-	if host == "" {
-		return receivingChannel, errors.New("the value of 'host' cannot be empty")
-	}
+	/*
+		if apiKey == "" {
+			return receivingChannel, errors.New("the value of 'apiKey' cannot be empty")
+		}
 
-	if port == 0 || port > 65535 {
-		return receivingChannel, errors.New("an incorrect network port value was received")
-	}
+		if host == "" {
+			return receivingChannel, errors.New("the value of 'host' cannot be empty")
+		}
 
-	apiTheHive := &apiTheHive{
-		apiKey: apiKey,
-		host:   host,
-		port:   port,
-	}
+		if port == 0 || port > 65535 {
+			return receivingChannel, errors.New("an incorrect network port value was received")
+		}
+
+		api := &apiTheHiveSettings{
+			apiKey: apiKey,
+			host:   host,
+			port:   port,
+		}
+	*/
 
 	go func() {
 		for {
@@ -47,7 +59,7 @@ func New(ctx context.Context, apiKey, host string, port int, logging *logginghan
 			case data := <-receivingChannel:
 				switch data.GetCommand() {
 				case "get_observables":
-					res, statusCode, err := apiTheHive.GetObservables(ctx, data.GetRootId())
+					res, statusCode, err := api.GetObservables(ctx, data.GetRootId())
 					if err != nil {
 						logging.Send("error", err.Error())
 
@@ -63,7 +75,7 @@ func New(ctx context.Context, apiKey, host string, port int, logging *logginghan
 					close(data.GetChanOutput())
 
 				case "get_ttp":
-					res, statusCode, err := apiTheHive.GetTTP(ctx, data.GetRootId())
+					res, statusCode, err := api.GetTTP(ctx, data.GetRootId())
 					if err != nil {
 						logging.Send("error", err.Error())
 
@@ -87,8 +99,9 @@ func New(ctx context.Context, apiKey, host string, port int, logging *logginghan
 	return receivingChannel, nil
 }
 
-func (api *apiTheHive) GetObservables(ctx context.Context, rootId string) ([]byte, int, error) {
-	req, err := json.Marshal(RootQuery{
+// GetObservables формирует запрос на получения из TheHive объекта типа 'observables'
+func (api *apiTheHiveSettings) GetObservables(ctx context.Context, rootId string) ([]byte, int, error) {
+	req, err := json.Marshal(Querys{
 		Query: []Query{
 			{Name: "getCase", IDOrName: rootId},
 			{Name: "observables"},
@@ -110,8 +123,9 @@ func (api *apiTheHive) GetObservables(ctx context.Context, rootId string) ([]byt
 	return res, statusCode, err
 }
 
-func (api *apiTheHive) GetTTP(ctx context.Context, rootId string) ([]byte, int, error) {
-	req, err := json.Marshal(&RootQuery{
+// GetTTP формирует запрос на получения из TheHive объекта типа 'ttp'
+func (api *apiTheHiveSettings) GetTTP(ctx context.Context, rootId string) ([]byte, int, error) {
+	req, err := json.Marshal(&Querys{
 		Query: []Query{
 			{Name: "getCase", IDOrName: rootId},
 			{Name: "procedures"},
@@ -142,7 +156,8 @@ func (api *apiTheHive) GetTTP(ctx context.Context, rootId string) ([]byte, int, 
 	return res, statusCode, err
 }
 
-func (api *apiTheHive) query(ctx context.Context, reqpath string, query []byte, method string) ([]byte, int, error) {
+// query функция реализующая непосредственно сам HTTP запрос
+func (api *apiTheHiveSettings) query(ctx context.Context, reqpath string, query []byte, method string) ([]byte, int, error) {
 	apiKey := "Bearer " + api.apiKey
 	url := fmt.Sprintf("http://%s:%d%s", api.host, api.port, reqpath)
 
@@ -173,4 +188,43 @@ func (api *apiTheHive) query(ctx context.Context, reqpath string, query []byte, 
 	}
 
 	return resBody, res.StatusCode, nil
+}
+
+// WithAPIKey метод устанавливает идентификатор-ключ для API
+func WithAPIKey(v string) theHiveAPIOptions {
+	return func(th *apiTheHiveSettings) error {
+		if v == "" {
+			return errors.New("the value of 'apiKey' cannot be empty")
+		}
+
+		th.apiKey = v
+
+		return nil
+	}
+}
+
+// WithHost метод устанавливает имя или ip адрес хоста API
+func WithHost(v string) theHiveAPIOptions {
+	return func(th *apiTheHiveSettings) error {
+		if v == "" {
+			return errors.New("the value of 'host' cannot be empty")
+		}
+
+		th.host = v
+
+		return nil
+	}
+}
+
+// WithPort метод устанавливает порт API
+func WithPort(v int) theHiveAPIOptions {
+	return func(th *apiTheHiveSettings) error {
+		if v <= 0 || v > 65535 {
+			return errors.New("an incorrect network port value was received")
+		}
+
+		th.port = v
+
+		return nil
+	}
 }

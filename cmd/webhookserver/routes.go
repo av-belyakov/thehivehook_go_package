@@ -11,6 +11,7 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
+// RouteIndex маршрут при обращении к '/'
 func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -21,6 +22,7 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "Hello WebHookServer version "+wh.version)
 }
 
+// RouteWebHook маршрут при обращении к 'webhook'
 func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	bodyByte, err := io.ReadAll(r.Body)
 	defer r.Body.Close()

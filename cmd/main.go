@@ -72,7 +72,12 @@ func server(ctx context.Context) {
 
 	//********** инициализация модуля взаимодействия с TheHive **********
 	confTheHiveAPI := confApp.GetApplicationTheHive()
-	chanRequestTheHiveAPI, err := thehiveapi.New(ctx, confTheHiveAPI.ApiKey, confTheHiveAPI.Host, confTheHiveAPI.Port, logging)
+	chanRequestTheHiveAPI, err := thehiveapi.New(
+		ctx,
+		logging,
+		thehiveapi.WithAPIKey(confTheHiveAPI.ApiKey),
+		thehiveapi.WithHost(confTheHiveAPI.Host),
+		thehiveapi.WithPort(confTheHiveAPI.Port))
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")

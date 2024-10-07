@@ -7,6 +7,8 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 )
 
+// CreateEvenCase генератор кейса содержащего в себе дополнительную информацию, такую как
+// перечень значений observables и ttp
 func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFormWebHookServer /*commoninterfaces.ChannelRequester*/) (ReadyMadeEventCase, error) {
 	var (
 		wg   sync.WaitGroup

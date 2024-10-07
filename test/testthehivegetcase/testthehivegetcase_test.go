@@ -18,7 +18,7 @@ import (
 
 var _ = Describe("Testthehivegetcase", Ordered, func() {
 	apiTheHive := func(apiKey, host string, port int) ([]byte, int, error) {
-		query, err := json.Marshal(thehiveapi.RootQuery{
+		query, err := json.Marshal(thehiveapi.Querys{
 			Query: []thehiveapi.Query{
 				{Name: "getCase", IDOrName: "~86676517008"},
 				//{Name: "observables"},

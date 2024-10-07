@@ -6,12 +6,12 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
+	temporarystorage "github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver/temporarystorage"
 )
 
 var _ = Describe("Testwebhooktemporarystorage", Ordered, func() {
 	var (
-		whts *webhookserver.WebHookTemporaryStorage
+		whts *temporarystorage.WebHookTemporaryStorage
 
 		err error
 
@@ -25,7 +25,7 @@ var _ = Describe("Testwebhooktemporarystorage", Ordered, func() {
 	)
 
 	_ = BeforeAll(func() {
-		whts, err = webhookserver.NewWebHookTemporaryStorage(10)
+		whts, err = temporarystorage.NewWebHookTemporaryStorage(10)
 	})
 
 	Context("Тест 1. Проверка работы webHookTemporaryStorage", func() {

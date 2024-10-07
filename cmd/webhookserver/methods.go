@@ -1,3 +1,4 @@
+// Основной модуль приложения
 package webhookserver
 
 import (
@@ -6,9 +7,11 @@ import (
 	"log"
 	"net/http"
 
+	temporarystorage "github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver/temporarystorage"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
+// New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
 func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFormWebHookServer, error) {
 	chanOutput := make(chan ChanFormWebHookServer)
 
@@ -27,7 +30,7 @@ func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...webHo
 		opt(whs)
 	}
 
-	whts, err := NewWebHookTemporaryStorage(whs.ttl)
+	whts, err := temporarystorage.NewWebHookTemporaryStorage(whs.ttl)
 	if err != nil {
 		return whs, chanOutput, err
 	}
@@ -36,6 +39,7 @@ func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...webHo
 	return whs, chanOutput, nil
 }
 
+// Start выполняет запуск модуля
 func (wh *WebHookServer) Start() {
 	defer func() {
 		wh.Shutdown(context.Background())
@@ -69,34 +73,41 @@ func (wh *WebHookServer) Start() {
 	close(wh.chanInput)
 }
 
+// Shutdown завершает работу модуля
 func (wh *WebHookServer) Shutdown(ctx context.Context) {
 	wh.server.Shutdown(ctx)
 }
 
+// WithTTL устанавливает время TimeToLive для временного хранилища информации в модуле
 func WithTTL(v int) webHookServerOptions {
 	return func(whs *WebHookServer) {
 		whs.ttl = v
 	}
 }
 
+// WithPort устанавливает порт для взаимодействия с модулем
 func WithPort(v int) webHookServerOptions {
 	return func(whs *WebHookServer) {
 		whs.port = v
 	}
 }
 
+// WithHost устанавливает хост для взаимодействия с модулем
 func WithHost(v string) webHookServerOptions {
 	return func(whs *WebHookServer) {
 		whs.host = v
 	}
 }
 
+// WithName устанавливает наименование модуля (обязательно). Наименование основывается
+// на имени организации или подразделения эксплуатирующем модуль. Например, gcm, rcmslx и т.д.
 func WithName(v string) webHookServerOptions {
 	return func(whs *WebHookServer) {
 		whs.name = v
 	}
 }
 
+// WithVersion устанавливает версию модуля (опционально)
 func WithVersion(v string) webHookServerOptions {
 	return func(whs *WebHookServer) {
 		whs.version = v

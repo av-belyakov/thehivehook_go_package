@@ -100,7 +100,12 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			go logginghandler.LoggingHandler(ctx, channelZabbix, simpleLogger, logging.GetChan())
 
 			//инициализация модуля взаимодействия с TheHive
-			chanRequestTheHiveAPI, errTheHiveAPI = thehiveapi.New(ctx, confTheHiveAPI.ApiKey, confTheHiveAPI.Host, confTheHiveAPI.Port, logging)
+			chanRequestTheHiveAPI, errTheHiveAPI = thehiveapi.New(
+				ctx,
+				logging,
+				thehiveapi.WithAPIKey(confTheHiveAPI.ApiKey),
+				thehiveapi.WithHost(confTheHiveAPI.Host),
+				thehiveapi.WithPort(confTheHiveAPI.Port))
 
 			//инициализация webhookserver
 			webHookServer, chanForSomebody, errServer = webhookserver.New(

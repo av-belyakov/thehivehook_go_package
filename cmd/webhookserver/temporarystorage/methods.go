@@ -1,4 +1,5 @@
-package webhookserver
+// Модуль реализующий хранилище временной информации
+package temporarystoarge
 
 import (
 	"errors"

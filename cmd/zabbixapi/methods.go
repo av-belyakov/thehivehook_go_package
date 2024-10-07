@@ -1,3 +1,4 @@
+// Модуль реализующий взаимодействие с API Zabbix
 package zabbixapi
 
 import (
@@ -11,22 +12,22 @@ import (
 	"time"
 )
 
-// NewZabbixConnection создает обработчик соединения с Zabbix
+// NewZabbixConnection конструктор создающий обработчик соединения с API Zabbix
 // ctx - должен быть context.WithCancel()
 // settings - настройки
-func NewZabbixConnection(ctx context.Context, settings SettingsZabbixConnection) (*HandlerZabbixConnection, error) {
-	var hzc HandlerZabbixConnection
+func NewZabbixConnection(ctx context.Context, settings SettingsZabbixConnection) (*ZabbixConnection, error) {
+	var zc ZabbixConnection
 
 	if settings.Host == "" {
-		return &hzc, fmt.Errorf("the value 'Host' should not be empty")
+		return &zc, fmt.Errorf("the value 'Host' should not be empty")
 	}
 
 	if settings.Port == 0 {
-		return &hzc, fmt.Errorf("the value 'Port' should not be equal '0'")
+		return &zc, fmt.Errorf("the value 'Port' should not be equal '0'")
 	}
 
 	if settings.ZabbixHost == "" {
-		return &hzc, fmt.Errorf("the value 'ZabbixHost' should not be empty")
+		return &zc, fmt.Errorf("the value 'ZabbixHost' should not be empty")
 	}
 
 	if settings.NetProto != "tcp" && settings.NetProto != "udp" {
@@ -38,7 +39,7 @@ func NewZabbixConnection(ctx context.Context, settings SettingsZabbixConnection)
 		settings.ConnectionTimeout = &t
 	}
 
-	hzc = HandlerZabbixConnection{
+	zc = ZabbixConnection{
 		ctx:         ctx,
 		host:        settings.Host,
 		port:        settings.Port,
@@ -48,15 +49,16 @@ func NewZabbixConnection(ctx context.Context, settings SettingsZabbixConnection)
 		chanErr:     make(chan error),
 	}
 
-	return &hzc, nil
+	return &zc, nil
 }
 
-// GetChanErr возвращает канал в который отправляются ошибки возникающие при соединении с Zabbix
-func (hzc *HandlerZabbixConnection) GetChanErr() chan error {
-	return hzc.chanErr
+// GetChanErr метод возвращающий канал в который отправляются ошибки возникающие при соединении с Zabbix
+func (zc *ZabbixConnection) GetChanErr() chan error {
+	return zc.chanErr
 }
 
-func (hzc *HandlerZabbixConnection) Handler(events []EventType, msgChan <-chan MessageSettings) error {
+// Handler модуль добавляющий обработчики на различные типы событий
+func (zc *ZabbixConnection) Handler(events []EventType, msgChan <-chan MessageSettings) error {
 	countEvents := len(events)
 	if countEvents == 0 {
 		_, f, l, _ := runtime.Caller(0)
@@ -66,14 +68,14 @@ func (hzc *HandlerZabbixConnection) Handler(events []EventType, msgChan <-chan M
 	listChans := make(map[string]chan<- string, countEvents)
 
 	go func() {
-		<-hzc.ctx.Done()
+		<-zc.ctx.Done()
 
 		for _, channel := range listChans {
 			close(channel)
 		}
 		listChans = nil
 
-		close(hzc.chanErr)
+		close(zc.chanErr)
 	}()
 
 	for _, v := range events {
@@ -93,16 +95,16 @@ func (hzc *HandlerZabbixConnection) Handler(events []EventType, msgChan <-chan M
 
 			if t == nil {
 				for msg := range cm {
-					if _, err := hzc.SendData(zkey, []string{msg}); err != nil {
-						hzc.chanErr <- err
+					if _, err := zc.SendData(zkey, []string{msg}); err != nil {
+						zc.chanErr <- err
 					}
 				}
 			} else {
 				for {
 					select {
 					case <-t.C:
-						if _, err := hzc.SendData(zkey, []string{hs.Message}); err != nil {
-							hzc.chanErr <- err
+						if _, err := zc.SendData(zkey, []string{hs.Message}); err != nil {
+							zc.chanErr <- err
 						}
 
 					case msg, open := <-cm:
@@ -112,8 +114,8 @@ func (hzc *HandlerZabbixConnection) Handler(events []EventType, msgChan <-chan M
 							return
 						}
 
-						if _, err := hzc.SendData(zkey, []string{msg}); err != nil {
-							hzc.chanErr <- err
+						if _, err := zc.SendData(zkey, []string{msg}); err != nil {
+							zc.chanErr <- err
 						}
 					}
 				}
@@ -132,7 +134,8 @@ func (hzc *HandlerZabbixConnection) Handler(events []EventType, msgChan <-chan M
 	return nil
 }
 
-func (hzc *HandlerZabbixConnection) SendData(zkey string, data []string) (int, error) {
+// SendData метод реализующий отправку данных в Zabbix
+func (zc *ZabbixConnection) SendData(zkey string, data []string) (int, error) {
 	if len(data) == 0 {
 		return 0, fmt.Errorf("the list of transmitted data should not be empty")
 	}
@@ -140,7 +143,7 @@ func (hzc *HandlerZabbixConnection) SendData(zkey string, data []string) (int, e
 	ldz := make([]DataZabbix, 0, len(data))
 	for _, v := range data {
 		ldz = append(ldz, DataZabbix{
-			Host:  hzc.zabbixHost,
+			Host:  zc.zabbixHost,
 			Key:   zkey,
 			Value: v,
 		})
@@ -165,10 +168,10 @@ func (hzc *HandlerZabbixConnection) SendData(zkey string, data []string) (int, e
 	pkg = append(pkg, jsonReg...)
 
 	var d net.Dialer = net.Dialer{}
-	ctx, cancel := context.WithTimeout(context.Background(), *hzc.connTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), *zc.connTimeout)
 	defer cancel()
 
-	conn, err := d.DialContext(ctx, hzc.netProto, fmt.Sprintf("%s:%d", hzc.host, hzc.port))
+	conn, err := d.DialContext(ctx, zc.netProto, fmt.Sprintf("%s:%d", zc.host, zc.port))
 	if err != nil {
 		return 0, err
 	}

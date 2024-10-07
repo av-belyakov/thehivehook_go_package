@@ -3,13 +3,13 @@ package webhookserver
 import (
 	"context"
 	"net/http"
-	"sync"
-	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	temporarystorage "github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver/temporarystorage"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
+// WebHookServer непосредственно сам сервер
 type WebHookServer struct {
 	ttl       int
 	port      int
@@ -18,13 +18,15 @@ type WebHookServer struct {
 	version   string
 	ctx       context.Context
 	server    *http.Server
-	storage   *WebHookTemporaryStorage
+	storage   *temporarystorage.WebHookTemporaryStorage
 	logger    *logginghandler.LoggingChan
 	chanInput chan<- ChanFormWebHookServer
 }
 
+// webHookServerOptions функциональные параметры
 type webHookServerOptions func(*WebHookServer)
 
+// WebHookServerOptions основные опции
 type WebHookServerOptions struct {
 	TTL     int
 	Port    int
@@ -33,28 +35,10 @@ type WebHookServerOptions struct {
 	Version string
 }
 
+// ChanFormWebHookServer структура канала для взаимодействия сторонних сервисов с webhookserver
 type ChanFormWebHookServer struct {
 	ForSomebody string
 	Data        commoninterfaces.ChannelRequester
-}
-
-// WebHookTemporaryStorage временное хранилище для WebHookServer
-// ttl - количество секунд после истечении котрых объект будет считатся
-// устаревшим и подлежащим автоматическому удалению
-// ttlStorage - хранилище данных со сроком жизни
-type WebHookTemporaryStorage struct {
-	ttl        time.Duration
-	ttlStorage ttlStorage
-}
-
-type ttlStorage struct {
-	mutex   sync.RWMutex
-	storage map[string]messageDescriptors
-}
-
-type messageDescriptors struct {
-	timeExpiry time.Time
-	eventId    string
 }
 
 type EventElement struct {
