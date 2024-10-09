@@ -92,6 +92,26 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 				fmt.Println(string(res))
 			}
 			fmt.Println("------ func 'RouteWebHook' ------- CASE -----")
+
+			ec, err := json.Marshal(readyMadeEventCase)
+			if err != nil {
+				_, f, l, _ := runtime.Caller(0)
+				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
+
+				return
+			}
+
+			//отправка данных в NATS
+			sendData := NewChannelRequest()
+			sendData.SetRequestId(uuidStorage)
+			sendData.SetRootId(eventElement.RootId)
+			sendData.SetCommand("send case")
+			sendData.SetData(ec)
+			//sendData.SetChanOutput(chanResObservable)
+			wh.chanInput <- ChanFormWebHookServer{
+				ForSomebody: "for nats",
+				Data:        sendData,
+			}
 		}()
 
 	case "case_artifact":
@@ -99,6 +119,14 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	case "case_task_log":
 	case "alert":
 		if eventElement.Operation == "delete" {
+			return
+		}
+
+		readyMadeEventAlert, err := CreateEvenAlert(uuidStorage, eventElement.RootId, wh.chanInput)
+		if err != nil {
+			_, f, l, _ := runtime.Caller(0)
+			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
+
 			return
 		}
 
@@ -111,10 +139,33 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		readyMadeEventAlert.Source = wh.name
+		readyMadeEventAlert.Event = alertEvent
+
 		fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
-		if res, err := json.MarshalIndent(alertEvent, "", " "); err == nil {
+		if res, err := json.MarshalIndent(readyMadeEventAlert, "", " "); err == nil {
 			fmt.Println(string(res))
 		}
 		fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
+
+		ea, err := json.Marshal(readyMadeEventAlert)
+		if err != nil {
+			_, f, l, _ := runtime.Caller(0)
+			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
+
+			return
+		}
+
+		//отправка данных в NATS
+		sendData := NewChannelRequest()
+		sendData.SetRequestId(uuidStorage)
+		sendData.SetRootId(eventElement.RootId)
+		sendData.SetCommand("send alert")
+		sendData.SetData(ea)
+		//sendData.SetChanOutput(chanResObservable)
+		wh.chanInput <- ChanFormWebHookServer{
+			ForSomebody: "for nats",
+			Data:        sendData,
+		}
 	}
 }

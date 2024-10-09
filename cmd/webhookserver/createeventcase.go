@@ -9,7 +9,7 @@ import (
 
 // CreateEvenCase генератор кейса содержащего в себе дополнительную информацию, такую как
 // перечень значений observables и ttp
-func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFormWebHookServer /*commoninterfaces.ChannelRequester*/) (ReadyMadeEventCase, error) {
+func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFormWebHookServer) (ReadyMadeEventCase, error) {
 	var (
 		wg   sync.WaitGroup
 		rmec ReadyMadeEventCase = ReadyMadeEventCase{}

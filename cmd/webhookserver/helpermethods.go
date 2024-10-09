@@ -4,86 +4,96 @@ import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 
 //********************* Response ********************
 
-// NewChannelRespons конструктор ответа от TheHive
-func NewChannelRespons() *ResponsTheHive {
-	return &ResponsTheHive{}
+// NewChannelRespons конструктор ответа
+func NewChannelRespons() *ResponsToWebHook {
+	return &ResponsToWebHook{}
 }
 
 // GetStatusCode метод возвращает статус кода ответа
-func (r *ResponsTheHive) GetStatusCode() int {
+func (r *ResponsToWebHook) GetStatusCode() int {
 	return r.StatusCode
 }
 
 // SetStatusCode метод устанавливает статус кода ответа
-func (r *ResponsTheHive) SetStatusCode(v int) {
+func (r *ResponsToWebHook) SetStatusCode(v int) {
 	r.StatusCode = v
 }
 
 // GetRequestId метод возвращает уникальный идентификатор запроса
-func (r *ResponsTheHive) GetRequestId() string {
+func (r *ResponsToWebHook) GetRequestId() string {
 	return r.RequestId
 }
 
 // SetRequestId метод устанавливает уникальный идентификатор запроса
-func (r *ResponsTheHive) SetRequestId(v string) {
+func (r *ResponsToWebHook) SetRequestId(v string) {
 	r.RequestId = v
 }
 
 // GetData метод возвращает данные
-func (r *ResponsTheHive) GetData() []byte {
+func (r *ResponsToWebHook) GetData() []byte {
 	return r.Data
 }
 
 // SetData метод устанавливает определенные данные
-func (r *ResponsTheHive) SetData(v []byte) {
+func (r *ResponsToWebHook) SetData(v []byte) {
 	r.Data = v
 }
 
 //******************* Request *********************
 
 // NewChannelRequest конструктор формирующий структуру для выполнения запросов к модулю apithehive
-func NewChannelRequest() *RequestTheHive {
-	return &RequestTheHive{}
+func NewChannelRequest() *RequestFromWebHook {
+	return &RequestFromWebHook{}
 }
 
 // GetRequestId метод возвращает уникальный идентификатор запроса
-func (r *RequestTheHive) GetRequestId() string {
+func (r *RequestFromWebHook) GetRequestId() string {
 	return r.RequestId
 }
 
 // SetRequestId метод устанавливает уникальный идентификатор запроса
-func (r *RequestTheHive) SetRequestId(v string) {
+func (r *RequestFromWebHook) SetRequestId(v string) {
 	r.RequestId = v
 }
 
 // GetRootId метод возвращает основной идентификатор кейса или алерта
-func (r *RequestTheHive) GetRootId() string {
+func (r *RequestFromWebHook) GetRootId() string {
 	return r.RootId
 }
 
 // SetRootId метод устанавливает основной идентификатор кейса или алерта
-func (r *RequestTheHive) SetRootId(v string) {
+func (r *RequestFromWebHook) SetRootId(v string) {
 	r.RootId = v
 }
 
 // GetCommand метод возвращает команду, на основе которой выполняются определенные действия
-func (r *RequestTheHive) GetCommand() string {
+func (r *RequestFromWebHook) GetCommand() string {
 	return r.Command
 }
 
 // SetCommand метод устанавливает, на основе которой выполняются определенные действия
-func (r *RequestTheHive) SetCommand(v string) {
+func (r *RequestFromWebHook) SetCommand(v string) {
 	r.Command = v
+}
+
+// GetData метод возвращает некий набор данных
+func (r *RequestFromWebHook) GetData() []byte {
+	return r.Data
+}
+
+// SetData метод устанавливает некий набор данных
+func (r *RequestFromWebHook) SetData(v []byte) {
+	r.Data = v
 }
 
 // GetChanOutput метод возвращает канал через который ответ от модуля apithehive передается
 // источнику запроса
-func (r *RequestTheHive) GetChanOutput() chan commoninterfaces.ChannelResponser {
+func (r *RequestFromWebHook) GetChanOutput() chan commoninterfaces.ChannelResponser {
 	return r.ChanOutput
 }
 
 // SetChanOutput метод устанавливает канал через который ответ от модуля apithehive передается
 // источнику запроса
-func (r *RequestTheHive) SetChanOutput(v chan commoninterfaces.ChannelResponser) {
+func (r *RequestFromWebHook) SetChanOutput(v chan commoninterfaces.ChannelResponser) {
 	r.ChanOutput = v
 }

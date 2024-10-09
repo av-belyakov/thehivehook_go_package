@@ -16,6 +16,8 @@ type ChannelRequester interface {
 	SetRootId(string)
 	GetCommand() string
 	SetCommand(string)
+	GetData() []byte
+	SetData([]byte)
 	GetChanOutput() chan ChannelResponser
 	SetChanOutput(chan ChannelResponser)
 }

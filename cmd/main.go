@@ -11,6 +11,7 @@ import (
 
 	"github.com/av-belyakov/simplelogger"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/zabbixapi"
@@ -86,6 +87,18 @@ func server(ctx context.Context) {
 	}
 
 	//********** инициализация модуля взаимодействия с NATS **********
+	confNatsSAPI := confApp.GetApplicationNATS()
+	natsOptsAPI := []natsapi.NatsAPIOptions{
+		natsapi.WithHost(confNatsSAPI.Host),
+		natsapi.WithPort(confNatsSAPI.Port),
+	}
+	for _, v := range confNatsSAPI.Subscribers {
+		natsOptsAPI = append(natsOptsAPI, natsapi.WithSubscribers(v.Event, v.Responders))
+	}
+	chanRequestNatsAPI, err := natsapi.New(
+		ctx,
+		logging,
+		natsOptsAPI...)
 
 	//********** инициализация WEBHOOKSERVER модуля **********
 	confWebHook := confApp.GetApplicationWebHookServer()
@@ -104,7 +117,7 @@ func server(ctx context.Context) {
 		log.Fatalf("error module 'webhookserver': %v\n", err)
 	}
 
-	go router(chanForSomebody, chanRequestTheHiveAPI)
+	go router(chanForSomebody, chanRequestTheHiveAPI, chanRequestNatsAPI)
 
 	webHook.Start()
 	webHook.Shutdown(ctx)
@@ -112,7 +125,8 @@ func server(ctx context.Context) {
 
 func router(
 	fromWebHook <-chan webhookserver.ChanFormWebHookServer,
-	toTheHiveAPI chan<- commoninterfaces.ChannelRequester) {
+	toTheHiveAPI chan<- commoninterfaces.ChannelRequester,
+	toNatsAPI chan<- commoninterfaces.ChannelRequester) {
 
 	for msg := range fromWebHook {
 		switch msg.ForSomebody {
@@ -120,6 +134,7 @@ func router(
 			toTheHiveAPI <- msg.Data
 
 		case "for nats":
+			toNatsAPI <- msg.Data
 		}
 	}
 }

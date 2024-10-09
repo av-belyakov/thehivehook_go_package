@@ -7,6 +7,7 @@ type apiTheHiveSettings struct {
 	apiKey string
 }
 
+// theHiveAPIOptions функциональные опции
 type theHiveAPIOptions func(*apiTheHiveSettings) error
 
 // Querys перечень запросов к TheHive

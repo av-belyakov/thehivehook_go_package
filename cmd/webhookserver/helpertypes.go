@@ -2,21 +2,18 @@ package webhookserver
 
 import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 
-// RequestChannelTheHive структура запроса в модуль
-// RequestId - UUID идентификатор запроса
-// RootId - идентификатор по которому в TheHive будет выполнятся поиск
-// Command - команда
-// ChanOutput - канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
-type RequestTheHive struct {
-	RequestId  string
-	RootId     string
-	Command    string
-	ChanOutput chan commoninterfaces.ChannelResponser
+// RequestFromWebHook структура запроса из модуля
+type RequestFromWebHook struct {
+	RequestId  string                                 //UUID идентификатор запроса
+	RootId     string                                 //идентификатор по которому в TheHive будет выполнятся поиск
+	Command    string                                 //команда
+	Data       []byte                                 //набор данных
+	ChanOutput chan commoninterfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
 }
 
-// ResponseChannelTheHive структура ответа от модуля
-type ResponsTheHive struct {
-	StatusCode int
-	RequestId  string
-	Data       []byte
+// ResponsToWebHook структура ответа в модуля
+type ResponsToWebHook struct {
+	StatusCode int    //статус кода ответа
+	RequestId  string //UUID идентификатор ответа (соответствует идентификатору запроса)
+	Data       []byte //набор данных
 }

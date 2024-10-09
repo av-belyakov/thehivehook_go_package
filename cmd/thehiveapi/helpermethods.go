@@ -76,6 +76,16 @@ func (r *RequestChannelTheHive) SetCommand(v string) {
 	r.Command = v
 }
 
+// GetData метод возвращает данные
+func (r *RequestChannelTheHive) GetData() []byte {
+	return r.Data
+}
+
+// SetData метод устанавливает определенные данные
+func (r *RequestChannelTheHive) SetData(v []byte) {
+	r.Data = v
+}
+
 // GetChanOutput метод возвращает канал через который ответ от модуля apithehive передается
 // источнику запроса
 func (r *RequestChannelTheHive) GetChanOutput() chan commoninterfaces.ChannelResponser {

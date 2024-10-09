@@ -1,19 +1,31 @@
 package natsapi
 
+// apiNatsSettings настройки для API NATS
+type apiNatsSettings struct {
+	port        int
+	host        string
+	subscribers []SubscriberNATS
+}
+
+// SubscriberNATS абоненты NATS
+type SubscriberNATS struct {
+	Event      string   `validate:"required" yaml:"event"`
+	Responders []string `yaml:"responders"`
+}
+
+// NatsAPIOptions функциональные опции
+type NatsAPIOptions func(*apiNatsSettings) error
+
 // ModuleNATS инициализированный модуль
-// ChanOutputMISP - канал для отправки полученных данных из модуля
 type ModuleNATS struct {
-	chanOutputNATS chan SettingsOutputChan
+	chanOutputNATS chan SettingsOutputChan //канал для отправки полученных данных из модуля
 }
 
 // SettingsOutputChan канал вывода данных из модуля
-// MsgId - id сообщения
-// SubjectType - тип подписки
-// Data - данные
 type SettingsOutputChan struct {
-	MsgId       string
-	SubjectType string
-	Data        []byte
+	MsgId       string //id сообщения
+	SubjectType string //тип подписки
+	Data        []byte //набор данных
 }
 
 // SettingsInputChan канал для приема данных в модуль

@@ -6,17 +6,12 @@ import (
 )
 
 // SettingsZabbixConnection настройки Zabbix соединения
-// Port - сетевой порт
-// Host - ip адрес или доменное имя
-// NetProto - сетевой протокол (по умолчанию используется tcp)
-// ZabbixHost - имя Zabbix хоста
-// ConnectionTimeout - время ожидания подключения (по умолчанию используется 5 сек)
 type SettingsZabbixConnection struct {
-	Port              int
-	Host              string
-	NetProto          string
-	ZabbixHost        string
-	ConnectionTimeout *time.Duration
+	Port              int            //сетевой порт
+	Host              string         //ip адрес или доменное имя
+	NetProto          string         //сетевой протокол (по умолчанию используется tcp)
+	ZabbixHost        string         //имя Zabbix хоста
+	ConnectionTimeout *time.Duration //время ожидания подключения (по умолчанию используется 5 сек)
 }
 
 // ZabbixConnection структура содержащая параметры для соединения с Zabbix

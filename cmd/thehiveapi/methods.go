@@ -18,7 +18,6 @@ import (
 // New инициализирует новый модуль взаимодействия с API TheHive
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-// func New(ctx context.Context, apiKey, host string, port int, logging *logginghandler.LoggingChan) (chan<- commoninterfaces.ChannelRequester, error) {
 func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...theHiveAPIOptions) (chan<- commoninterfaces.ChannelRequester, error) {
 	receivingChannel := make(chan commoninterfaces.ChannelRequester)
 
@@ -29,26 +28,6 @@ func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...theHi
 			return receivingChannel, err
 		}
 	}
-
-	/*
-		if apiKey == "" {
-			return receivingChannel, errors.New("the value of 'apiKey' cannot be empty")
-		}
-
-		if host == "" {
-			return receivingChannel, errors.New("the value of 'host' cannot be empty")
-		}
-
-		if port == 0 || port > 65535 {
-			return receivingChannel, errors.New("an incorrect network port value was received")
-		}
-
-		api := &apiTheHiveSettings{
-			apiKey: apiKey,
-			host:   host,
-			port:   port,
-		}
-	*/
 
 	go func() {
 		for {

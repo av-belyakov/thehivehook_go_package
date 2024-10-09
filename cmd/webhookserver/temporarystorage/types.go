@@ -6,12 +6,9 @@ import (
 )
 
 // WebHookTemporaryStorage временное хранилище для WebHookServer
-// ttl - количество секунд после истечении котрых объект будет считатся
-// устаревшим и подлежащим автоматическому удалению
-// ttlStorage - хранилище данных со сроком жизни
 type WebHookTemporaryStorage struct {
-	ttl        time.Duration
-	ttlStorage ttlStorage
+	ttl        time.Duration //количество секунд после истечении котрых объект будет считатся устаревшим и подлежащим автоматическому удалению
+	ttlStorage ttlStorage    //хранилище данных со сроком жизни
 }
 
 // ttlStorage хранилище данных со сроком жизни
