@@ -18,6 +18,7 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
 )
 
 const ROOT_DIR = "thehivehook_go_package"
@@ -109,7 +110,7 @@ func server(ctx context.Context) {
 		webhookserver.WithPort(confWebHook.Port),
 		webhookserver.WithHost(confWebHook.Host),
 		webhookserver.WithName(confWebHook.Name),
-		webhookserver.WithVersion("0.1.1"))
+		webhookserver.WithVersion(versionandname.GetVersion()))
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
@@ -124,7 +125,7 @@ func server(ctx context.Context) {
 }
 
 func router(
-	fromWebHook <-chan webhookserver.ChanFormWebHookServer,
+	fromWebHook <-chan webhookserver.ChanFromWebHookServer,
 	toTheHiveAPI chan<- commoninterfaces.ChannelRequester,
 	toNatsAPI chan<- commoninterfaces.ChannelRequester) {
 

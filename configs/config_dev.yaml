@@ -24,3 +24,5 @@ WEBHOOKSERVER:
   host: "127.0.0.1"
   port: 5000
   ttlTmpInfo: 12
+SQLITE:
+  pathDatabase: "../../../../../_sqlite/database/db.sqlite"

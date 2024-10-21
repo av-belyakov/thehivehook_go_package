@@ -38,6 +38,9 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			"GO_HIVEHOOK_WEBHHOST":       "",
 			"GO_HIVEHOOK_WEBHPORT":       "",
 			"GO_HIVEHOOK_WEBHTTLTMPINFO": "",
+
+			//Настройки SQLite
+			"GO_HIVEHOOK_SLPATHDB": "",
 		}
 	)
 
@@ -140,6 +143,11 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		}
 		if viper.IsSet("WEBHOOKSERVER.ttlTmpInfo") {
 			conf.AppConfigWebHookServer.TTLTmpInfo = viper.GetInt("WEBHOOKSERVER.ttlTmpInfo")
+		}
+
+		// Настройки подключения к SQLite
+		if viper.IsSet("SQLITE.pathDatabase") {
+			conf.AppConfigSqlite.PathDatabase = viper.GetString("SQLITE.pathDatabase")
 		}
 
 		return nil
@@ -250,6 +258,11 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHTTLTMPINFO"]); err == nil {
 			conf.AppConfigWebHookServer.TTLTmpInfo = p
 		}
+	}
+
+	// Настройки подключения к SQLite
+	if envList["GO_HIVEHOOK_SLPATHDB"] != "" {
+		conf.AppConfigSqlite.PathDatabase = envList["GO_HIVEHOOK_SLPATHDB"]
 	}
 
 	//выполняем проверку заполненой структуры

@@ -20,7 +20,7 @@ type WebHookServer struct {
 	server    *http.Server
 	storage   *temporarystorage.WebHookTemporaryStorage
 	logger    *logginghandler.LoggingChan
-	chanInput chan<- ChanFormWebHookServer
+	chanInput chan<- ChanFromWebHookServer
 }
 
 // webHookServerOptions функциональные параметры
@@ -28,24 +28,17 @@ type webHookServerOptions func(*WebHookServer)
 
 // WebHookServerOptions основные опции
 type WebHookServerOptions struct {
-	TTL     int
-	Port    int
-	Host    string
-	Name    string
-	Version string
+	TTL     int    //Time to live в секундах, по умолчанию 10 сек. (не обязательный параметр)
+	Port    int    //сетевой порт, по умолчанию 7575 (не обязательный параметр)
+	Host    string //сетевой хост, доменное имя или ip адрес, по умолчанию 127.0.0.1
+	Name    string //наименование Webhook сервера (не обязательный параметр)
+	Version string //версия сервера (не обязательный параметр)
 }
 
-// ChanFormWebHookServer структура канала для взаимодействия сторонних сервисов с webhookserver
-type ChanFormWebHookServer struct {
-	ForSomebody string
+// ChanFromWebHookServer структура канала для взаимодействия сторонних сервисов с webhookserver
+type ChanFromWebHookServer struct {
+	ForSomebody string //от кого данные
 	Data        commoninterfaces.ChannelRequester
-}
-
-// EventElement типовой элемент описывающий события приходящие из TheHive
-type EventElement struct {
-	Operation  string `json:"operation"`
-	ObjectType string `json:"objectType"`
-	RootId     string `json:"rootId"`
 }
 
 // ReadyMadeEventCase готовый, сформированный объект содержащий информацию по кейсу

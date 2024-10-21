@@ -9,7 +9,7 @@ import (
 
 // CreateEvenCase генератор кейса содержащего в себе дополнительную информацию, такую как
 // перечень значений observables и ttp
-func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFormWebHookServer) (ReadyMadeEventCase, error) {
+func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFromWebHookServer) (ReadyMadeEventCase, error) {
 	var (
 		wg   sync.WaitGroup
 		rmec ReadyMadeEventCase = ReadyMadeEventCase{}
@@ -57,7 +57,7 @@ func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFormWebHook
 	reqObservable.SetRootId(rootId)
 	reqObservable.SetCommand("get_observables")
 	reqObservable.SetChanOutput(chanResObservable)
-	chanInput <- ChanFormWebHookServer{
+	chanInput <- ChanFromWebHookServer{
 		ForSomebody: "for thehive",
 		Data:        reqObservable,
 	}
@@ -68,7 +68,7 @@ func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFormWebHook
 	reqTTP.SetRootId(rootId)
 	reqTTP.SetCommand("get_ttp")
 	reqTTP.SetChanOutput(chanResTTL)
-	chanInput <- ChanFormWebHookServer{
+	chanInput <- ChanFromWebHookServer{
 		ForSomebody: "for thehive",
 		Data:        reqTTP,
 	}

@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 var (
@@ -64,26 +62,24 @@ func checkLiveTime(whts *WebHookTemporaryStorage) {
 	}
 }
 
-// SetElementId создает новую запись, принимает id события который нужно сохранить
-// и возвращает uuid идентификатор по которому это событие можно будет потом найти
-func (whts *WebHookTemporaryStorage) SetElementId(eventId string) string {
-	id := uuid.New().String()
-
+// SetValue создает новую запись, принимает значение которое нужно сохранить и
+// id по которому данное значение можно будет найти
+func (whts *WebHookTemporaryStorage) SetValue(id, value string) string {
 	whts.ttlStorage.mutex.Lock()
 	defer whts.ttlStorage.mutex.Unlock()
 
 	whts.ttlStorage.storage[id] = messageDescriptors{
 		timeExpiry: time.Now().Add(whts.ttl),
-		eventId:    eventId,
+		value:      value,
 	}
 
 	return id
 }
 
-// GetElementId возвращает id события и другие данные по полученому uuid
-func (whts *WebHookTemporaryStorage) GetElementId(id string) (string, bool) {
+// GetValue возвращает данные по полученому id
+func (whts *WebHookTemporaryStorage) GetValue(id string) (string, bool) {
 	if data, ok := whts.ttlStorage.storage[id]; ok {
-		return data.eventId, ok
+		return data.value, ok
 	}
 
 	return "", false

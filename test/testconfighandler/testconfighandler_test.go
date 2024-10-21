@@ -38,6 +38,9 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		os.Unsetenv("GO_HIVEHOOK_WEBHHOST")
 		os.Unsetenv("GO_HIVEHOOK_WEBHPORT")
 		os.Unsetenv("GO_HIVEHOOK_WEBHTTLTMPINFO")
+
+		//настройки SQLite
+		os.Unsetenv("GO_HIVEHOOK_SLPATHDB")
 	}
 
 	BeforeAll(func() {
@@ -256,6 +259,25 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 			//*** настройки логирования ***
 			Expect(len(confApp.GetListLogs())).Should(Equal(4))
+		})
+	})
+
+	Context("Тест 7. Проверяем настройки для доступа к SQLite", func() {
+		const (
+			SQLITE_PATH = "../../path"
+		)
+
+		BeforeAll(func() {
+			os.Setenv("GO_HIVEHOOK_SLPATHDB", SQLITE_PATH)
+
+			conf, err = confighandler.NewConfig(rootDir)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("Все параметры конфигурации для SQLITE должны быть успешно установлены через соответствующие переменные окружения", func() {
+			csql := conf.GetApplicationSqlite()
+
+			Expect(csql.PathDatabase).Should(Equal(SQLITE_PATH))
 		})
 	})
 

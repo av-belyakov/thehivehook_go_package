@@ -22,7 +22,7 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "Hello WebHookServer version "+wh.version)
 }
 
-// RouteWebHook маршрут при обращении к 'webhook'
+// RouteWebHook маршрут при обращении к '/webhook'
 func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	bodyByte, err := io.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -50,7 +50,25 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uuidStorage := wh.storage.SetElementId(eventElement.RootId)
+	//******* выполняем проверку было подобное событие получено ранее *******
+	//
+	// !!!!!!!!!!!!!!!!!!!!!
+	// здесь надо продумать как предотвращать цикличное взаимодействие между
+	// элементами находящимися за NATS и генерирующие команды на изменение
+	// кейса TheHive и постоянными событиями являющимися результатом этих изменений
+	// !!!!!!!!!!!!!!!!!!!!!
+	//
+	//_, isExistElement := wh.storage.GetValue(eventElement.GetEventId())
+	//exception := eventElement.Details.Status != "Resolved"
+	//if exception || !isExistElement {
+	//
+	//	fmt.Println("!!! Received repeated TheHive element with rootId =", eventElement.RootId)
+	//
+	//	return
+	//}
+
+	//записываем информацию о событии полученном из TheHive
+	idStorage := wh.storage.SetValue(eventElement.GetEventId(), "first")
 
 	fmt.Println("Received object with object type:", eventElement.ObjectType)
 	log.Println("Received JSON size =", len(bodyByte))
@@ -60,7 +78,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		go func() {
-			readyMadeEventCase, err := CreateEvenCase(uuidStorage, eventElement.RootId, wh.chanInput)
+			readyMadeEventCase, err := CreateEvenCase(idStorage, eventElement.RootId, wh.chanInput)
 			if err != nil {
 				_, f, l, _ := runtime.Caller(0)
 				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
@@ -79,14 +97,6 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			readyMadeEventCase.Source = wh.name
 			readyMadeEventCase.Case = caseEvent
 
-			/*
-
-				Где то тут надо сделать использовать информацию из webhook storage
-				для предотвращения безконечных циклов порождаемых TheHive
-				хотя может и не тут
-
-			*/
-
 			fmt.Println("------ func 'RouteWebHook' ------- CASE -----")
 			if res, err := json.MarshalIndent(readyMadeEventCase, "", " "); err == nil {
 				fmt.Println(string(res))
@@ -103,12 +113,12 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 			//отправка данных в NATS
 			sendData := NewChannelRequest()
-			sendData.SetRequestId(uuidStorage)
+			sendData.SetRequestId(idStorage)
 			sendData.SetRootId(eventElement.RootId)
 			sendData.SetCommand("send case")
 			sendData.SetData(ec)
 			//sendData.SetChanOutput(chanResObservable)
-			wh.chanInput <- ChanFormWebHookServer{
+			wh.chanInput <- ChanFromWebHookServer{
 				ForSomebody: "for nats",
 				Data:        sendData,
 			}
@@ -122,7 +132,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		readyMadeEventAlert, err := CreateEvenAlert(uuidStorage, eventElement.RootId, wh.chanInput)
+		readyMadeEventAlert, err := CreateEvenAlert(idStorage, eventElement.RootId, wh.chanInput)
 		if err != nil {
 			_, f, l, _ := runtime.Caller(0)
 			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
@@ -158,12 +168,12 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 		//отправка данных в NATS
 		sendData := NewChannelRequest()
-		sendData.SetRequestId(uuidStorage)
+		sendData.SetRequestId(idStorage)
 		sendData.SetRootId(eventElement.RootId)
 		sendData.SetCommand("send alert")
 		sendData.SetData(ea)
 		//sendData.SetChanOutput(chanResObservable)
-		wh.chanInput <- ChanFormWebHookServer{
+		wh.chanInput <- ChanFromWebHookServer{
 			ForSomebody: "for nats",
 			Data:        sendData,
 		}

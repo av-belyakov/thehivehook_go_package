@@ -7,14 +7,13 @@ import (
 	"log"
 	"net/http"
 
-	temporarystorage "github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver/temporarystorage"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
-func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFormWebHookServer, error) {
-	chanOutput := make(chan ChanFormWebHookServer)
+func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFromWebHookServer, error) {
+	chanOutput := make(chan ChanFromWebHookServer)
 
 	whs := &WebHookServer{
 		ctx:       ctx,
@@ -78,6 +77,8 @@ func (wh *WebHookServer) Start() {
 func (wh *WebHookServer) Shutdown(ctx context.Context) {
 	wh.server.Shutdown(ctx)
 }
+
+//******************** функциональные настройки webhookserver ***********************
 
 // WithTTL устанавливает время TimeToLive для временного хранилища информации в модуле
 func WithTTL(v int) webHookServerOptions {

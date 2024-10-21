@@ -4,6 +4,7 @@ type ConfigApp struct {
 	CommonInfo
 	CommonAppConfig
 	AppConfigNATS
+	AppConfigSqlite
 	AppConfigTheHive
 	AppConfigWebHookServer
 }
@@ -50,6 +51,10 @@ type EventType struct {
 type Handshake struct {
 	TimeInterval int    `yaml:"timeInterval"`
 	Message      string `validate:"required" yaml:"message"`
+}
+
+type AppConfigSqlite struct {
+	PathDatabase string `validate:"required" yaml:"pathDatabase"`
 }
 
 type AppConfigNATS struct {

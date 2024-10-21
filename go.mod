@@ -30,6 +30,7 @@ require (
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
+	github.com/mattn/go-sqlite3 v1.14.24 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/nats-io/nkeys v0.4.7 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect

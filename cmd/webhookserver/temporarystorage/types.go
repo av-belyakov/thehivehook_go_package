@@ -20,5 +20,5 @@ type ttlStorage struct {
 // messageDescriptors структура с описанием хранящихся значений
 type messageDescriptors struct {
 	timeExpiry time.Time
-	eventId    string
+	value      string
 }

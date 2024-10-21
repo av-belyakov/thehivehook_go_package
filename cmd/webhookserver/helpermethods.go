@@ -1,6 +1,10 @@
 package webhookserver
 
-import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+import (
+	"fmt"
+
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+)
 
 //********************* Response ********************
 
@@ -96,4 +100,11 @@ func (r *RequestFromWebHook) GetChanOutput() chan commoninterfaces.ChannelRespon
 // источнику запроса
 func (r *RequestFromWebHook) SetChanOutput(v chan commoninterfaces.ChannelResponser) {
 	r.ChanOutput = v
+}
+
+//**************************** вспомогательные методы ****************************
+
+// GetEventId возвращает уникальный id элемента основанный на комбинации некоторых значений EventElement
+func (e EventElement) GetEventId() string {
+	return fmt.Sprintf("%s:%d:%s", e.ObjectType, e.Object.CreatedAt, e.RootId)
 }
