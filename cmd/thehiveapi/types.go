@@ -1,10 +1,18 @@
 package thehiveapi
 
+import (
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/temporarystorage"
+)
+
 // apiTheHiveSettings настройки для API TheHive
 type apiTheHiveSettings struct {
-	port   int
-	host   string
-	apiKey string
+	port             int
+	host             string
+	apiKey           string
+	logger           commoninterfaces.Logger
+	receivingChannel chan commoninterfaces.ChannelRequester
+	temporaryStorage *temporarystoarge.TemporaryStorage
 }
 
 // theHiveAPIOptions функциональные опции

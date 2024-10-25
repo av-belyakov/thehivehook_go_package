@@ -12,35 +12,47 @@ import (
 	"runtime"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
+	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/temporarystorage"
 )
 
-// New инициализирует новый модуль взаимодействия с API TheHive
-// при инициализации возращается канал для взаимодействия с модулем, все
-// запросы к модулю выполняются через данный канал
-func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...theHiveAPIOptions) (chan<- commoninterfaces.ChannelRequester, error) {
-	receivingChannel := make(chan commoninterfaces.ChannelRequester)
+// New настраивает модуль взаимодействия с API TheHive
+func New(logger commoninterfaces.Logger, opts ...theHiveAPIOptions) (*apiTheHiveSettings, error) {
+	ts, err := temporarystoarge.NewTemporaryStorage(30)
+	if err != nil {
+		return &apiTheHiveSettings{}, err
+	}
 
-	api := &apiTheHiveSettings{}
+	api := &apiTheHiveSettings{
+		logger:           logger,
+		receivingChannel: make(chan commoninterfaces.ChannelRequester),
+		temporaryStorage: ts,
+	}
 
 	for _, opt := range opts {
 		if err := opt(api); err != nil {
-			return receivingChannel, err
+			return api, err
 		}
 	}
 
+	return api, nil
+}
+
+// Start инициализирует новый модуль взаимодействия с API TheHive
+// при инициализации возращается канал для взаимодействия с модулем, все
+// запросы к модулю выполняются через данный канал
+func (api *apiTheHiveSettings) Start(ctx context.Context) chan<- commoninterfaces.ChannelRequester {
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				return
 
-			case data := <-receivingChannel:
+			case data := <-api.receivingChannel:
 				switch data.GetCommand() {
 				case "get_observables":
 					res, statusCode, err := api.GetObservables(ctx, data.GetRootId())
 					if err != nil {
-						logging.Send("error", err.Error())
+						api.logger.Send("error", err.Error())
 
 						continue
 					}
@@ -56,7 +68,7 @@ func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...theHi
 				case "get_ttp":
 					res, statusCode, err := api.GetTTP(ctx, data.GetRootId())
 					if err != nil {
-						logging.Send("error", err.Error())
+						api.logger.Send("error", err.Error())
 
 						continue
 					}
@@ -69,13 +81,17 @@ func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...theHi
 					data.GetChanOutput() <- newRes
 					close(data.GetChanOutput())
 
-				case "":
+				case "send command":
+					// Вот здесь нужно использовать temporaryStorage как кеширующее
+					// хранилище команд корторые нужно отправить в TheHive и которые
+					// из-за, по какой то причине, недоступности TheHive отправить сразу
+					// не получается
 				}
 			}
 		}
 	}()
 
-	return receivingChannel, nil
+	return api.receivingChannel
 }
 
 // GetObservables формирует запрос на получения из TheHive объекта типа 'observables'

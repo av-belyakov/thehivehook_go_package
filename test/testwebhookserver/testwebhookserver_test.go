@@ -69,8 +69,10 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			ctx    context.Context
 			cancel context.CancelFunc
 
-			chanForSomebody       <-chan webhookserver.ChanFormWebHookServer
+			chanForSomebody       <-chan webhookserver.ChanFromWebHookServer
 			chanRequestTheHiveAPI chan<- commoninterfaces.ChannelRequester
+
+			errTheHiveApi error
 		)
 
 		BeforeAll(func() {
@@ -104,16 +106,18 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			go logginghandler.LoggingHandler(ctx, channelZabbix, simpleLogger, logging.GetChan())
 
 			//инициализация модуля взаимодействия с TheHive
-			chanRequestTheHiveAPI, errTheHiveAPI = thehiveapi.New(
-				ctx,
+			apiTheHive, err := thehiveapi.New(
 				logging,
 				thehiveapi.WithAPIKey(confTheHiveAPI.ApiKey),
 				thehiveapi.WithHost(confTheHiveAPI.Host),
 				thehiveapi.WithPort(confTheHiveAPI.Port))
+			chanRequestTheHiveAPI = apiTheHive.Start(context.Background())
+			if err != nil {
+				errTheHiveApi = err
+			}
 
 			//инициализация webhookserver
 			webHookServer, chanForSomebody, errServer = webhookserver.New(
-				ctx,
 				logging,
 				webhookserver.WithTTL(confWebHookServer.TTLTmpInfo),
 				webhookserver.WithPort(confWebHookServer.Port),
@@ -133,12 +137,16 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			}()
 		})
 
+		It("При инициализации модуля apiTheHive ошибок быть не должно", func() {
+			Expect(errTheHiveApi).ShouldNot(HaveOccurred())
+		})
+
 		It("Ошибок при инициализации сервера быть не должно", func() {
 			Expect(errServer).ShouldNot(HaveOccurred())
 		})
 
 		It("Работоспособность сервера", func() {
-			webHookServer.Start()
+			webHookServer.Start(ctx)
 			webHookServer.Shutdown(ctx)
 
 			Expect(true).ShouldNot(BeTrue())

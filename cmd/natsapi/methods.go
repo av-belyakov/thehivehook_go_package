@@ -6,30 +6,49 @@ import (
 	"errors"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/temporarystorage"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
-// New инициализирует новый модуль взаимодействия с API NATS
-// при инициализации возращается канал для взаимодействия с модулем, все
-// запросы к модулю выполняются через данный канал
-func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...NatsAPIOptions) (chan<- commoninterfaces.ChannelRequester, error) {
-	receivingChannel := make(chan commoninterfaces.ChannelRequester)
+// New настраивает новый модуль взаимодействия с API NATS
+func New(logger *logginghandler.LoggingChan, opts ...NatsAPIOptions) (*apiNatsSettings, error) {
+	ts, err := temporarystoarge.NewTemporaryStorage(30)
+	if err != nil {
+		return &apiNatsSettings{}, err
+	}
 
 	api := &apiNatsSettings{
-		subscribers: []SubscriberNATS(nil),
+		subscribers:      []SubscriberNATS(nil),
+		logger:           logger,
+		receivingChannel: make(chan commoninterfaces.ChannelRequester),
+		temporaryStorage: ts,
 	}
 
 	for _, opt := range opts {
 		if err := opt(api); err != nil {
-			return receivingChannel, err
+			return api, err
 		}
 	}
 
-	go func() {
+	return api, nil
+}
 
+// Start инициализирует новый модуль взаимодействия с API NATS
+// при инициализации возращается канал для взаимодействия с модулем, все
+// запросы к модулю выполняются через данный канал
+func (api *apiNatsSettings) Start(ctx context.Context) chan<- commoninterfaces.ChannelRequester {
+	go func() {
+		//здесь temporarystorage будет использоватся для хранения двух
+		// основных типов данных:
+		// 1. хранение дескрипторов соединения с NATS
+		// 2. выполнение функции кеширования case или alert которые отправляются
+		// в NATS. Если NATS по какой то причине не будет доступен, то хранить
+		// вышеуказанные виды объектов и пытатся их отправить до тех пор
+		// пока они не будут отправлены или не истечет заданный срок после которых
+		// их можно будет удалить
 	}()
 
-	return receivingChannel, nil
+	return api.receivingChannel
 }
 
 // WithHost метод устанавливает имя или ip адрес хоста API

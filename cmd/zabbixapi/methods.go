@@ -13,9 +13,7 @@ import (
 )
 
 // NewZabbixConnection конструктор создающий обработчик соединения с API Zabbix
-// ctx - должен быть context.WithCancel()
-// settings - настройки
-func NewZabbixConnection(ctx context.Context, settings SettingsZabbixConnection) (*ZabbixConnection, error) {
+func New(settings SettingsZabbixConnection) (*ZabbixConnection, error) {
 	var zc ZabbixConnection
 
 	if settings.Host == "" {
@@ -40,7 +38,6 @@ func NewZabbixConnection(ctx context.Context, settings SettingsZabbixConnection)
 	}
 
 	zc = ZabbixConnection{
-		ctx:         ctx,
 		host:        settings.Host,
 		port:        settings.Port,
 		netProto:    settings.NetProto,
@@ -52,13 +49,8 @@ func NewZabbixConnection(ctx context.Context, settings SettingsZabbixConnection)
 	return &zc, nil
 }
 
-// GetChanErr метод возвращающий канал в который отправляются ошибки возникающие при соединении с Zabbix
-func (zc *ZabbixConnection) GetChanErr() chan error {
-	return zc.chanErr
-}
-
 // Handler модуль добавляющий обработчики на различные типы событий
-func (zc *ZabbixConnection) Handler(events []EventType, msgChan <-chan MessageSettings) error {
+func (zc *ZabbixConnection) Start(ctx context.Context, events []EventType, recipient <-chan Messager) error {
 	countEvents := len(events)
 	if countEvents == 0 {
 		_, f, l, _ := runtime.Caller(0)
@@ -68,7 +60,7 @@ func (zc *ZabbixConnection) Handler(events []EventType, msgChan <-chan MessageSe
 	listChans := make(map[string]chan<- string, countEvents)
 
 	go func() {
-		<-zc.ctx.Done()
+		<-ctx.Done()
 
 		for _, channel := range listChans {
 			close(channel)
@@ -124,14 +116,19 @@ func (zc *ZabbixConnection) Handler(events []EventType, msgChan <-chan MessageSe
 	}
 
 	go func() {
-		for data := range msgChan {
-			if c, ok := listChans[data.EventType]; ok {
-				c <- data.Message
+		for msg := range recipient {
+			if c, ok := listChans[msg.GetType()]; ok {
+				c <- msg.GetMessage()
 			}
 		}
 	}()
 
 	return nil
+}
+
+// GetChanErr метод возвращающий канал в который отправляются ошибки возникающие при соединении с Zabbix
+func (zc *ZabbixConnection) GetChanErr() chan error {
+	return zc.chanErr
 }
 
 // SendData метод реализующий отправку данных в Zabbix
@@ -188,4 +185,24 @@ func (zc *ZabbixConnection) SendData(zkey string, data []string) (int, error) {
 	}
 
 	return num, nil
+}
+
+// GetType возвращает тип события
+func (s *MessageSettings) GetType() string {
+	return s.EventType
+}
+
+// SetType устанавливает тип события
+func (s *MessageSettings) SetType(v string) {
+	s.EventType = v
+}
+
+// GetMessage возвращает сообщение
+func (s *MessageSettings) GetMessage() string {
+	return s.Message
+}
+
+// SetMessage устанавливает сообщение
+func (s *MessageSettings) SetMessage(v string) {
+	s.Message = v
 }

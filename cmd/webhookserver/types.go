@@ -1,12 +1,10 @@
 package webhookserver
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	temporarystorage "github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver/temporarystorage"
-	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
 // WebHookServer непосредственно сам сервер
@@ -16,10 +14,9 @@ type WebHookServer struct {
 	host      string
 	name      string //gcm, rcmmsk и т.д.
 	version   string
-	ctx       context.Context
 	server    *http.Server
+	logger    commoninterfaces.Logger
 	storage   *temporarystorage.WebHookTemporaryStorage
-	logger    *logginghandler.LoggingChan
 	chanInput chan<- ChanFromWebHookServer
 }
 

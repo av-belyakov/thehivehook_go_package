@@ -21,3 +21,15 @@ type ChannelRequester interface {
 	GetChanOutput() chan ChannelResponser
 	SetChanOutput(chan ChannelResponser)
 }
+
+type Logger interface {
+	GetChan() <-chan Messager
+	Send(msgType, msgData string)
+}
+
+type Messager interface {
+	GetType() string
+	GetMessage() string
+	SetType(v string)
+	SetMessage(v string)
+}

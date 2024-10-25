@@ -62,12 +62,15 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 			}
 		}()
 
-		chanTheHiveAPI, errTheHiveApi = thehiveapi.New(
-			context.Background(),
+		apiTheHive, err := thehiveapi.New(
 			logging,
 			thehiveapi.WithAPIKey(os.Getenv("GO_HIVEHOOK_THAPIKEY")),
 			thehiveapi.WithHost(confTheHive.Host),
 			thehiveapi.WithPort(confTheHive.Port))
+		chanTheHiveAPI = apiTheHive.Start(context.Background())
+		if err != nil {
+			errTheHiveApi = err
+		}
 	})
 
 	Context("Тест 0. Чтение конфигурационного файла", func() {

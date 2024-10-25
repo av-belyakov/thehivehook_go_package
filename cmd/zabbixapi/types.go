@@ -1,7 +1,6 @@
 package zabbixapi
 
 import (
-	"context"
 	"time"
 )
 
@@ -16,7 +15,6 @@ type SettingsZabbixConnection struct {
 
 // ZabbixConnection структура содержащая параметры для соединения с Zabbix
 type ZabbixConnection struct {
-	ctx         context.Context
 	port        int
 	host        string
 	netProto    string

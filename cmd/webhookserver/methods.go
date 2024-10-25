@@ -7,22 +7,21 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
-func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFromWebHookServer, error) {
+func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFromWebHookServer, error) {
 	chanOutput := make(chan ChanFromWebHookServer)
 
 	whs := &WebHookServer{
-		ctx:       ctx,
 		name:      "gcm",
 		version:   "0.1.1",
 		host:      "127.0.0.1",
 		port:      7575,
 		ttl:       10,
-		logger:    logging,
+		logger:    logger,
 		chanInput: chanOutput,
 	}
 
@@ -30,17 +29,19 @@ func New(ctx context.Context, logging *logginghandler.LoggingChan, opts ...webHo
 		opt(whs)
 	}
 
-	whts, err := temporarystorage.NewWebHookTemporaryStorage(whs.ttl)
-	if err != nil {
-		return whs, chanOutput, err
-	}
-	whs.storage = whts
+	/*
+		whts, err := temporarystorage.NewWebHookTemporaryStorage(whs.ttl)
+		if err != nil {
+			return whs, chanOutput, err
+		}
+		whs.storage = whts
+	*/
 
 	return whs, chanOutput, nil
 }
 
 // Start выполняет запуск модуля
-func (wh *WebHookServer) Start() {
+func (wh *WebHookServer) Start(ctx context.Context) {
 	defer func() {
 		wh.Shutdown(context.Background())
 	}()
@@ -69,7 +70,7 @@ func (wh *WebHookServer) Start() {
 	log.Println(msg)
 	wh.logger.Send("info", msg)
 
-	<-wh.ctx.Done()
+	<-ctx.Done()
 	close(wh.chanInput)
 }
 

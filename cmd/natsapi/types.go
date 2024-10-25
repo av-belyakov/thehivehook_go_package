@@ -1,10 +1,18 @@
 package natsapi
 
+import (
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/temporarystorage"
+)
+
 // apiNatsSettings настройки для API NATS
 type apiNatsSettings struct {
-	port        int
-	host        string
-	subscribers []SubscriberNATS
+	port             int
+	host             string
+	subscribers      []SubscriberNATS
+	logger           commoninterfaces.Logger
+	receivingChannel chan commoninterfaces.ChannelRequester
+	temporaryStorage *temporarystoarge.TemporaryStorage
 }
 
 // SubscriberNATS абоненты NATS

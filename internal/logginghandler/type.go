@@ -1,12 +1,12 @@
 package logginghandler
 
+import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+
 type LoggingChan struct {
-	logChan chan MessageLogging
+	logChan chan commoninterfaces.Messager
 }
 
 // MessageLogging содержит информацию используемую при логировании
-// MsgData - сообщение
-// MsgType - тип сообщения
 type MessageLogging struct {
-	MsgData, MsgType string
+	Message, Type string
 }

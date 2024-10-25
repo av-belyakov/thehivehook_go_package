@@ -68,7 +68,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	//}
 
 	//записываем информацию о событии полученном из TheHive
-	idStorage := wh.storage.SetValue(eventElement.GetEventId(), "first")
+	//idStorage := wh.storage.SetValue(eventElement.GetEventId(), "first")
 
 	fmt.Println("Received object with object type:", eventElement.ObjectType)
 	log.Println("Received JSON size =", len(bodyByte))
