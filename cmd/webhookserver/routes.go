@@ -50,25 +50,18 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//******* выполняем проверку было подобное событие получено ранее *******
-	//
-	// !!!!!!!!!!!!!!!!!!!!!
-	// здесь надо продумать как предотвращать цикличное взаимодействие между
-	// элементами находящимися за NATS и генерирующие команды на изменение
-	// кейса TheHive и постоянными событиями являющимися результатом этих изменений
-	// !!!!!!!!!!!!!!!!!!!!!
-	//
-	//_, isExistElement := wh.storage.GetValue(eventElement.GetEventId())
-	//exception := eventElement.Details.Status != "Resolved"
-	//if exception || !isExistElement {
-	//
-	//	fmt.Println("!!! Received repeated TheHive element with rootId =", eventElement.RootId)
-	//
-	//	return
-	//}
-
 	//записываем информацию о событии полученном из TheHive
 	//idStorage := wh.storage.SetValue(eventElement.GetEventId(), "first")
+
+	/**************************************
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+		Здесь запись данных в Sqlite нужно будет убрать так как цикл планируется
+		прерывать на этапе получения команд от модулей находящихся за пределами NATS
+		сравнивая приходящие команды с командами которые есть в БД
+
+	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	**************************************/
 
 	fmt.Println("Received object with object type:", eventElement.ObjectType)
 	log.Println("Received JSON size =", len(bodyByte))
