@@ -1,27 +1,28 @@
 package webhookserver
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	temporarystorage "github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver/temporarystorage"
 )
 
 // WebHookServer непосредственно сам сервер
 type WebHookServer struct {
-	ttl       int
-	port      int
-	host      string
-	name      string //gcm, rcmmsk и т.д.
-	version   string
-	server    *http.Server
-	logger    commoninterfaces.Logger
-	storage   *temporarystorage.WebHookTemporaryStorage
-	chanInput chan<- ChanFromWebHookServer
+	ttl        int
+	port       int
+	host       string
+	name       string //gcm, rcmmsk и т.д.
+	version    string
+	pathSqlite string
+	server     *http.Server
+	logger     commoninterfaces.Logger
+	storage    *sql.DB
+	chanInput  chan<- ChanFromWebHookServer
 }
 
 // webHookServerOptions функциональные параметры
-type webHookServerOptions func(*WebHookServer)
+type webHookServerOptions func(*WebHookServer) error
 
 // WebHookServerOptions основные опции
 type WebHookServerOptions struct {

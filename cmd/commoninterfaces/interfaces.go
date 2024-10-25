@@ -33,3 +33,7 @@ type Messager interface {
 	SetType(v string)
 	SetMessage(v string)
 }
+
+type WriterLoggingData interface {
+	WriteLoggingData(str, typeLogFile string) bool
+}

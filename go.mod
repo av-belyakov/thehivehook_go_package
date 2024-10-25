@@ -3,7 +3,7 @@ module github.com/av-belyakov/thehivehook_go_package
 go 1.23
 
 require (
-	github.com/av-belyakov/simplelogger v0.0.0-20231113085635-45b8e06e6063
+	github.com/av-belyakov/simplelogger v0.0.0-20241025122435-67bb4d6f6ae4
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/google/uuid v1.4.0

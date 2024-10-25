@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/av-belyakov/simplelogger"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/zabbixapi"
 )
@@ -12,8 +11,8 @@ import (
 // LoggingHandler обработчик и распределитель логов
 func LoggingHandler(
 	ctx context.Context,
+	writerLoggingData commoninterfaces.WriterLoggingData,
 	channelZabbix chan<- commoninterfaces.Messager,
-	sl simplelogger.SimpleLoggerSettings,
 	logging <-chan commoninterfaces.Messager) {
 
 	for {
@@ -26,7 +25,7 @@ func LoggingHandler(
 			//здесь так же может быть вывод в консоль, с индикацией цветов соответствующих
 			//определенному типу сообщений но для этого надо включить вывод на stdout
 			//в конфигурационном фале
-			_ = sl.WriteLoggingData(msg.GetMessage(), msg.GetType())
+			_ = writerLoggingData.WriteLoggingData(msg.GetMessage(), msg.GetType())
 
 			if msg.GetType() == "error" || msg.GetType() == "warning" {
 				channelZabbix <- &zabbixapi.MessageSettings{

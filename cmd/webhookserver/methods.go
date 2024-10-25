@@ -3,9 +3,12 @@ package webhookserver
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
@@ -26,16 +29,23 @@ func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHook
 	}
 
 	for _, opt := range opts {
-		opt(whs)
-	}
-
-	/*
-		whts, err := temporarystorage.NewWebHookTemporaryStorage(whs.ttl)
-		if err != nil {
+		if err := opt(whs); err != nil {
 			return whs, chanOutput, err
 		}
-		whs.storage = whts
-	*/
+	}
+
+	dbConnect, err := sql.Open("sqlite3", whs.pathSqlite)
+	if err != nil {
+		return whs, chanOutput, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err = dbConnect.PingContext(ctx); err != nil {
+		return whs, chanOutput, err
+	}
+
+	whs.storage = dbConnect
 
 	return whs, chanOutput, nil
 }
@@ -83,36 +93,58 @@ func (wh *WebHookServer) Shutdown(ctx context.Context) {
 
 // WithTTL устанавливает время TimeToLive для временного хранилища информации в модуле
 func WithTTL(v int) webHookServerOptions {
-	return func(whs *WebHookServer) {
+	return func(whs *WebHookServer) error {
 		whs.ttl = v
+
+		return nil
 	}
 }
 
 // WithPort устанавливает порт для взаимодействия с модулем
 func WithPort(v int) webHookServerOptions {
-	return func(whs *WebHookServer) {
+	return func(whs *WebHookServer) error {
 		whs.port = v
+
+		return nil
 	}
 }
 
 // WithHost устанавливает хост для взаимодействия с модулем
 func WithHost(v string) webHookServerOptions {
-	return func(whs *WebHookServer) {
+	return func(whs *WebHookServer) error {
 		whs.host = v
+
+		return nil
 	}
 }
 
 // WithName устанавливает наименование модуля (обязательно). Наименование основывается
 // на имени организации или подразделения эксплуатирующем модуль. Например, gcm, rcmslx и т.д.
 func WithName(v string) webHookServerOptions {
-	return func(whs *WebHookServer) {
+	return func(whs *WebHookServer) error {
 		whs.name = v
+
+		return nil
 	}
 }
 
 // WithVersion устанавливает версию модуля (опционально)
 func WithVersion(v string) webHookServerOptions {
-	return func(whs *WebHookServer) {
+	return func(whs *WebHookServer) error {
 		whs.version = v
+
+		return nil
+	}
+}
+
+func WithPathSqlite(v string) webHookServerOptions {
+	return func(whs *WebHookServer) error {
+		if v == "" {
+			return errors.New("the path to the Sqlite file should not be empty")
+		}
+
+		whs.pathSqlite = v
+
+		return nil
 	}
 }
