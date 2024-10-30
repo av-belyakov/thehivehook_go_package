@@ -1,25 +1,45 @@
 package commoninterfaces
 
 type ChannelResponser interface {
+	RequestIdHandler
+	DataHandler
 	GetStatusCode() int
 	SetStatusCode(int)
-	GetRequestId() string
-	SetRequestId(string)
-	GetData() []byte
-	SetData([]byte)
 }
 
 type ChannelRequester interface {
-	GetRequestId() string
-	SetRequestId(string)
-	GetRootId() string
-	SetRootId(string)
-	GetCommand() string
-	SetCommand(string)
-	GetData() []byte
-	SetData([]byte)
+	RequestIdHandler
+	RootIdHandler
+	CommandHandler
+	OrderHandler
+	DataHandler
 	GetChanOutput() chan ChannelResponser
 	SetChanOutput(chan ChannelResponser)
+}
+
+type RequestIdHandler interface {
+	GetRequestId() string
+	SetRequestId(string)
+}
+
+type RootIdHandler interface {
+	GetRootId() string
+	SetRootId(string)
+}
+
+type OrderHandler interface {
+	GetOrder() string
+	SetOrder(string)
+}
+
+type CommandHandler interface {
+	GetCommand() string
+	SetCommand(string)
+}
+
+type DataHandler interface {
+	GetData() []byte
+	SetData([]byte)
 }
 
 type Logger interface {

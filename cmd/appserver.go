@@ -22,20 +22,20 @@ import (
 func server(ctx context.Context) {
 	rootPath, err := supportingfunctions.GetRootPath(ROOT_DIR)
 	if err != nil {
-		log.Fatalf("error, it is impossible to form root path (%v)", err)
+		log.Fatalf("error, it is impossible to form root path (%w)", err)
 	}
 
 	//чтение конфигурационного файла
 	confApp, err := confighandler.NewConfig(rootPath)
 	if err != nil {
-		log.Fatalf("error module 'confighandler': %v", err)
+		log.Fatalf("error module 'confighandler': %w", err)
 	}
 
 	//******************************************************
 	//********** инициализация модуля логирования **********
 	simpleLogger, err := simplelogger.NewSimpleLogger(ctx, ROOT_DIR, getLoggerSettings(confApp.GetListLogs()))
 	if err != nil {
-		log.Fatalf("error module 'simplelogger': %v", err)
+		log.Fatalf("error module 'simplelogger': %w", err)
 	}
 
 	//*****************************************************************
@@ -59,9 +59,9 @@ func server(ctx context.Context) {
 	}
 	if err := wrappers.WrappersZabbixInteraction(ctx, simpleLogger, wzis, channelZabbix); err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%w' %s:%d", err, f, l-3), "error")
 
-		log.Fatalf("error module 'zabbixinteraction': %v\n", err)
+		log.Fatalf("error module 'zabbixinteraction': %w\n", err)
 	}
 
 	//******************************************************************
@@ -79,9 +79,9 @@ func server(ctx context.Context) {
 		thehiveapi.WithPort(confTheHiveAPI.Port))
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%w' %s:%d", err, f, l-3), "error")
 
-		log.Fatalf("error module 'thehiveapi': %v\n", err)
+		log.Fatalf("error module 'thehiveapi': %w\n", err)
 	}
 	chanRequestTheHiveAPI := apiTheHive.Start(ctx)
 
@@ -111,11 +111,14 @@ func server(ctx context.Context) {
 		webhookserver.WithPathSqlite(confApp.GetApplicationSqlite().PathDatabase))
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%w' %s:%d", err, f, l-3), "error")
 
-		log.Fatalf("error module 'webhookserver': %v\n", err)
+		log.Fatalf("error module 'webhookserver': %w\n", err)
 	}
 
+	//мост между каналами различных модулей, где любой канал модуля должен
+	//удовлетворять интерфейсу commoninterfaces.ChannelRequester и каналом
+	//для взаимодействия с webhookserver
 	go router(chanForSomebody, chanRequestTheHiveAPI, chanRequestNatsAPI)
 
 	webHook.Start(ctx)

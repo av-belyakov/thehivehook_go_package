@@ -88,7 +88,7 @@ func (apisqlite *apiSqliteSettings) handlerSectionInsertTags(taskId, service str
 	result, err := stmt.Exec(taskId, service, data)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		apisqlite.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
+		apisqlite.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
 
 		chanResponse <- response
 
@@ -127,7 +127,7 @@ func (apisqlite *apiSqliteSettings) prepareTableExecutedCommands() *sql.Stmt {
 	stmt, err := apisqlite.db.Prepare("INSERT INTO table_executed_commands (id, service, command, name, description) values(?,?,?,?,?)")
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		apisqlite.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
+		apisqlite.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
 
 		return nil
 	}

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"runtime"
 
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
@@ -25,13 +26,13 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 // RouteWebHook маршрут при обращении к '/webhook'
 func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	bodyByte, err := io.ReadAll(r.Body)
-	defer r.Body.Close()
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
+		wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-3))
 
 		return
 	}
+	defer r.Body.Close()
 
 	//-------------------------------------------------------------------
 	//----------- ЗАПИСЬ в файл ЭТО ТОЛЬКО ДЛЯ ТЕСТОВ -------------------
@@ -41,11 +42,11 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	}
 	//-------------------------------------------------------------------
 
-	eventElement := EventElement{}
+	eventElement := datamodels.CaseEventElement{}
 	err = json.Unmarshal(bodyByte, &eventElement)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
+		wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-2))
 
 		return
 	}
@@ -74,7 +75,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			readyMadeEventCase, err := CreateEvenCase(idStorage, eventElement.RootId, wh.chanInput)
 			if err != nil {
 				_, f, l, _ := runtime.Caller(0)
-				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
+				wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-2))
 
 				return
 			}
@@ -82,7 +83,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			caseEvent := map[string]interface{}{}
 			if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
 				_, f, l, _ := runtime.Caller(0)
-				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
+				wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
 
 				return
 			}
@@ -99,7 +100,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			ec, err := json.Marshal(readyMadeEventCase)
 			if err != nil {
 				_, f, l, _ := runtime.Caller(0)
-				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
+				wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
 
 				return
 			}
@@ -128,7 +129,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		readyMadeEventAlert, err := CreateEvenAlert(idStorage, eventElement.RootId, wh.chanInput)
 		if err != nil {
 			_, f, l, _ := runtime.Caller(0)
-			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
+			wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-2))
 
 			return
 		}
@@ -137,7 +138,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		alertEvent := map[string]interface{}{}
 		if err := json.Unmarshal(bodyByte, &alertEvent); err != nil {
 			_, f, l, _ := runtime.Caller(0)
-			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
+			wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
 
 			return
 		}
@@ -154,7 +155,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		ea, err := json.Marshal(readyMadeEventAlert)
 		if err != nil {
 			_, f, l, _ := runtime.Caller(0)
-			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
+			wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
 
 			return
 		}

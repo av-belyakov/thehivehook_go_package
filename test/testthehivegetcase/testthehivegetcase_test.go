@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,6 +15,9 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
+	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
 var _ = Describe("Testthehivegetcase", Ordered, func() {
@@ -88,13 +92,43 @@ var _ = Describe("Testthehivegetcase", Ordered, func() {
 			fmt.Println(string(b))
 
 			Expect(true).Should(BeTrue())
+		})
+	})
 
-			/********************************
+	Context("Тест 2. Запрос кейса по его номеру через метод GetCaseEvent", func() {
+		It("При выполнении запроса на получении объекта 'event' Case ошибок быть не должно", func() {
+			logging := logginghandler.New()
+			conf := confighandler.AppConfigTheHive{
+				Port:   9000,
+				Host:   "1thehive.cloud.gcm",
+				ApiKey: os.Getenv("GO_HIVEHOOK_THAPIKEY"),
+			}
+			apiTheHive, err := thehiveapi.New(
+				logging,
+				thehiveapi.WithAPIKey(conf.ApiKey),
+				thehiveapi.WithHost(conf.Host),
+				thehiveapi.WithPort(conf.Port))
+			Expect(err).ShouldNot(HaveOccurred())
 
-			Этот тест с observables работает, теперь надо попробовать
-			с помощью него получить кейс
+			_ = apiTheHive.Start(context.Background())
 
-			*********************************/
+			b, code, err := apiTheHive.GetCaseEvent(context.Background(), "~88678416456" /*"~88325656792"*/)
+			fmt.Println("ERROR:", err)
+			fmt.Println("My error is exist:", errors.Is(err, datamodels.ConnectionError))
+			Expect(err).ShouldNot(HaveOccurred())
+			Expect(code).Should(Equal(http.StatusOK))
+
+			//caseEvent := []map[string]interface{}{}
+			caseEvent := []datamodels.BaseCaseEventElement(nil)
+			err = json.Unmarshal(b, &caseEvent)
+			Expect(err).ShouldNot(HaveOccurred())
+
+			b, err = json.MarshalIndent(caseEvent, "", " ")
+			Expect(err).ShouldNot(HaveOccurred())
+
+			fmt.Println(string(b))
+
+			Expect(true).Should(BeTrue())
 		})
 	})
 })
