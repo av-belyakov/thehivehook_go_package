@@ -50,7 +50,8 @@ var _ = Describe("Testthehivecasesettags", Ordered, func() {
 				thehiveapi.WithPort(conf.Port))
 			Expect(err).ShouldNot(HaveOccurred())
 
-			_ = apiTheHive.Start(context.Background())
+			_, err = apiTheHive.Start(context.Background())
+			Expect(err).ShouldNot(HaveOccurred())
 
 			b, code, err := apiTheHive.AddCaseTags(context.Background(), rootId, []string{"Webhook:send=\"WEBKOOK_mytest\""})
 			Expect(err).ShouldNot(HaveOccurred())

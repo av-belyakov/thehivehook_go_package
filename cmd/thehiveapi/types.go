@@ -2,17 +2,17 @@ package thehiveapi
 
 import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/temporarystorage"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/cacherunningmethods"
 )
 
 // apiTheHiveSettings настройки для API TheHive
 type apiTheHiveSettings struct {
-	port             int
-	host             string
-	apiKey           string
-	logger           commoninterfaces.Logger
-	receivingChannel chan commoninterfaces.ChannelRequester
-	temporaryStorage *temporarystoarge.TemporaryStorage
+	port                int
+	host                string
+	apiKey              string
+	logger              commoninterfaces.Logger
+	receivingChannel    chan commoninterfaces.ChannelRequester
+	cacheRunningMethods *cacherunningmethods.CacheRunningMethods
 }
 
 // theHiveAPIOptions функциональные опции

@@ -6,20 +6,14 @@ import (
 	"errors"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/temporarystorage"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/cacherunningmethods"
 )
 
 // New настраивает модуль взаимодействия с API TheHive
 func New(logger commoninterfaces.Logger, opts ...theHiveAPIOptions) (*apiTheHiveSettings, error) {
-	ts, err := temporarystoarge.NewTemporaryStorage(30)
-	if err != nil {
-		return &apiTheHiveSettings{}, err
-	}
-
 	api := &apiTheHiveSettings{
 		logger:           logger,
 		receivingChannel: make(chan commoninterfaces.ChannelRequester),
-		temporaryStorage: ts,
 	}
 
 	for _, opt := range opts {
@@ -34,10 +28,17 @@ func New(logger commoninterfaces.Logger, opts ...theHiveAPIOptions) (*apiTheHive
 // Start инициализирует новый модуль взаимодействия с API TheHive
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func (api *apiTheHiveSettings) Start(ctx context.Context) chan<- commoninterfaces.ChannelRequester {
+func (api *apiTheHiveSettings) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
+	crm, err := cacherunningmethods.New(ctx, 30)
+	if err != nil {
+		return api.receivingChannel, err
+	}
+
+	api.cacheRunningMethods = crm
+
 	go api.router(ctx)
 
-	return api.receivingChannel
+	return api.receivingChannel, nil
 }
 
 // WithAPIKey устанавливает идентификатор-ключ для API

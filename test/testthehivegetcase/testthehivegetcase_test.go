@@ -110,7 +110,8 @@ var _ = Describe("Testthehivegetcase", Ordered, func() {
 				thehiveapi.WithPort(conf.Port))
 			Expect(err).ShouldNot(HaveOccurred())
 
-			_ = apiTheHive.Start(context.Background())
+			_, err = apiTheHive.Start(context.Background())
+			Expect(err).ShouldNot(HaveOccurred())
 
 			b, code, err := apiTheHive.GetCaseEvent(context.Background(), "~88678416456" /*"~88325656792"*/)
 			fmt.Println("ERROR:", err)

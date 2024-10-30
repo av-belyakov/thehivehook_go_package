@@ -83,7 +83,15 @@ func server(ctx context.Context) {
 
 		log.Fatalf("error module 'thehiveapi': %w\n", err)
 	}
-	chanRequestTheHiveAPI := apiTheHive.Start(ctx)
+	chanRequestTheHiveAPI, err := apiTheHive.Start(ctx)
+	if err != nil {
+		if err != nil {
+			_, f, l, _ := runtime.Caller(0)
+			_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%w' %s:%d", err, f, l-3), "error")
+
+			log.Fatalf("error module 'thehiveapi': %w\n", err)
+		}
+	}
 
 	//***************************************************
 	//********** инициализация NATS API модуля **********

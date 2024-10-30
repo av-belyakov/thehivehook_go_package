@@ -67,7 +67,10 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 			thehiveapi.WithAPIKey(os.Getenv("GO_HIVEHOOK_THAPIKEY")),
 			thehiveapi.WithHost(confTheHive.Host),
 			thehiveapi.WithPort(confTheHive.Port))
-		chanTheHiveAPI = apiTheHive.Start(context.Background())
+		if err != nil {
+			errTheHiveApi = err
+		}
+		chanTheHiveAPI, err = apiTheHive.Start(context.Background())
 		if err != nil {
 			errTheHiveApi = err
 		}
@@ -97,6 +100,15 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 				chanResObservable chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
 				chanResTTL        chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
 			)
+
+			/********************************************
+
+			Сделал новый обработчик для thehiveapi с использованием
+			кеширования череьх объект cacheranningmethods, осталось
+			только протестировать но для этого надо поправить routers.go
+			webhookserver
+
+			*********************************************/
 
 			wg.Add(2)
 

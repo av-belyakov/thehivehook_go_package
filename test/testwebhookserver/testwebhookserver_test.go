@@ -110,7 +110,10 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 				thehiveapi.WithAPIKey(confTheHiveAPI.ApiKey),
 				thehiveapi.WithHost(confTheHiveAPI.Host),
 				thehiveapi.WithPort(confTheHiveAPI.Port))
-			chanRequestTheHiveAPI = apiTheHive.Start(context.Background())
+			if err != nil {
+				errTheHiveApi = err
+			}
+			chanRequestTheHiveAPI, err = apiTheHive.Start(context.Background())
 			if err != nil {
 				errTheHiveApi = err
 			}
