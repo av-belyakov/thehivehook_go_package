@@ -11,6 +11,7 @@ type CaseEventElement struct {
 
 // ObjectEventElement содержит информацию из поля 'object' приходящего из TheHive элемента
 type ObjectEventElement struct {
+	CaseId    string   `json:"caseId"`
 	CreatedAt int64    `json:"createdAt"`
 	Tags      []string `json:"tags"`
 }

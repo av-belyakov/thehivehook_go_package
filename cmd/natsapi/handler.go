@@ -87,10 +87,12 @@ func NewClientNATS(
 		return &mnats, fmt.Errorf("'there is not a single subscription available for NATS in the configuration file' %s:%d", f, l-1)
 	}
 
-	subjects := map[string]string{
-		"subject_case":  conf.SubjectCase,
-		"subject_alert": conf.SubjectAlert,
-	}
+	/*
+		subjects := map[string]string{
+			"subject_case":  conf.SubjectCase,
+			"subject_alert": conf.SubjectAlert,
+		}
+	*/
 
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", conf.Host, conf.Port),
@@ -109,16 +111,16 @@ func NewClientNATS(
 	//обработка разрыва соединения с NATS
 	nc.SetDisconnectErrHandler(func(c *nats.Conn, err error) {
 		logging <- logginghandler.MessageLogging{
-			MsgData: fmt.Sprintf("the connection with NATS has been disconnected %s:%d", f, l-4),
-			MsgType: "error",
+			Message: fmt.Sprintf("the connection with NATS has been disconnected %s:%d", f, l-4),
+			Type:    "error",
 		}
 	})
 
 	//обработка переподключения к NATS
 	nc.SetReconnectHandler(func(c *nats.Conn) {
 		logging <- logginghandler.MessageLogging{
-			MsgData: fmt.Sprintf("the connection to NATS has been re-established %s:%d", f, l-4),
-			MsgType: "info",
+			Message: fmt.Sprintf("the connection to NATS has been re-established %s:%d", f, l-4),
+			Type:    "info",
 		}
 	})
 
@@ -151,17 +153,17 @@ func NewClientNATS(
 
 	*****************************/
 
-	for k, v := range subjects {
+	for _, v := range conf.Subscribers {
 		//не добавляем обработчик если подписка пуста
-		if v == "" {
+		if v.Event == "" {
 			continue
 		}
 
-		nc.Subscribe(v, func(m *nats.Msg) {
+		nc.Subscribe(v.Event, func(m *nats.Msg) {
 			mnats.chanOutputNATS <- SettingsOutputChan{
-				MsgId:       ns.setElement(m),
-				SubjectType: k,
-				Data:        m.Data,
+				MsgId: ns.setElement(m),
+				//SubjectType: k,
+				Data: m.Data,
 			}
 		})
 

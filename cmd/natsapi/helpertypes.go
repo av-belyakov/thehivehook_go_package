@@ -1,19 +1,20 @@
-package thehiveapi
+package natsapi
 
 import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 
-// RequestChannelTheHive тип применяется для передачи запроса в модуль thehiveapi от сторонних модулей
-type RequestChannelTheHive struct {
-	RequestId  string                                 //UUID идентификатор запроса
+// RequestFromNats структура запроса из модуля
+type RequestFromNats struct {
+	RequestId  string                                 //id запроса
 	RootId     string                                 //идентификатор по которому в TheHive будет выполнятся поиск
 	CaseId     string                                 //идентификатор кейса в TheHive
 	Command    string                                 //команда
-	Data       []byte                                 //набор данных
+	Order      string                                 //распоряжение
+	Data       interface{}                            //набор данных
 	ChanOutput chan commoninterfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
 }
 
-// ResponseChannelTheHive структура ответа от API TheHive
-type ResponseChannelTheHive struct {
+// ResponsToNats структура ответа в модуля
+type ResponsToNats struct {
 	StatusCode int    //статус кода ответа
 	RequestId  string //UUID идентификатор ответа (соответствует идентификатору запроса)
 	Data       []byte //набор данных

@@ -1,20 +1,30 @@
 package commoninterfaces
 
+//************ каналы *************
+
 type ChannelResponser interface {
 	RequestIdHandler
-	DataHandler
+	GetData() []byte
+	SetData([]byte)
 	GetStatusCode() int
 	SetStatusCode(int)
 }
 
 type ChannelRequester interface {
 	RequestIdHandler
-	RootIdHandler
 	CommandHandler
+	RootIdHandler
+	CaseIdHandler
 	OrderHandler
-	DataHandler
+	GetData() interface{}
+	SetData(interface{})
 	GetChanOutput() chan ChannelResponser
 	SetChanOutput(chan ChannelResponser)
+}
+
+type CaseIdHandler interface {
+	GetCaseId() string
+	SetCaseId(string)
 }
 
 type RequestIdHandler interface {
@@ -37,10 +47,14 @@ type CommandHandler interface {
 	SetCommand(string)
 }
 
-type DataHandler interface {
-	GetData() []byte
-	SetData([]byte)
+//************** параметры типа CustomField TheHive ****************
+
+type ParametersCustomFieldKeeper interface {
+	GetType() string
+	GetValue() string
 }
+
+//************** логирование ***************
 
 type Logger interface {
 	GetChan() <-chan Messager
@@ -49,8 +63,8 @@ type Logger interface {
 
 type Messager interface {
 	GetType() string
-	GetMessage() string
 	SetType(v string)
+	GetMessage() string
 	SetMessage(v string)
 }
 

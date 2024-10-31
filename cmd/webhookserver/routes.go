@@ -28,7 +28,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	bodyByte, err := io.ReadAll(r.Body)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-3))
+		wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
 
 		return
 	}
@@ -46,23 +46,10 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(bodyByte, &eventElement)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-2))
+		wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
 
 		return
 	}
-
-	//записываем информацию о событии полученном из TheHive
-	//idStorage := wh.storage.SetValue(eventElement.GetEventId(), "first")
-
-	/**************************************
-	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-		Здесь запись данных в Sqlite нужно будет убрать так как цикл планируется
-		прерывать на этапе получения команд от модулей находящихся за пределами NATS
-		сравнивая приходящие команды с командами которые есть в БД
-
-	!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	**************************************/
 
 	fmt.Println("Received object with object type:", eventElement.ObjectType)
 	log.Println("Received JSON size =", len(bodyByte))
@@ -72,10 +59,10 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		go func() {
-			readyMadeEventCase, err := CreateEvenCase(idStorage, eventElement.RootId, wh.chanInput)
+			readyMadeEventCase, err := CreateEvenCase(eventElement.RootId, wh.chanInput)
 			if err != nil {
 				_, f, l, _ := runtime.Caller(0)
-				wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-2))
+				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
 
 				return
 			}
@@ -83,7 +70,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			caseEvent := map[string]interface{}{}
 			if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
 				_, f, l, _ := runtime.Caller(0)
-				wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
+				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
 
 				return
 			}
@@ -100,18 +87,17 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			ec, err := json.Marshal(readyMadeEventCase)
 			if err != nil {
 				_, f, l, _ := runtime.Caller(0)
-				wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
+				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
 
 				return
 			}
 
 			//отправка данных в NATS
 			sendData := NewChannelRequest()
-			sendData.SetRequestId(idStorage)
 			sendData.SetRootId(eventElement.RootId)
+			sendData.SetCaseId(eventElement.Object.CaseId)
 			sendData.SetCommand("send case")
 			sendData.SetData(ec)
-			//sendData.SetChanOutput(chanResObservable)
 			wh.chanInput <- ChanFromWebHookServer{
 				ForSomebody: "for nats",
 				Data:        sendData,
@@ -126,10 +112,14 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		readyMadeEventAlert, err := CreateEvenAlert(idStorage, eventElement.RootId, wh.chanInput)
+		//*****************************************************************
+		//ВНИМАНИЕ!!! На данный момент этот модуль еще ничего не обогащает
+		//нужно ли делать модуль обогатитель пока не ясно
+		//пока до решения этого впроса я еще не дошёл
+		readyMadeEventAlert, err := CreateEvenAlert(eventElement.RootId, wh.chanInput)
 		if err != nil {
 			_, f, l, _ := runtime.Caller(0)
-			wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-2))
+			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
 
 			return
 		}
@@ -138,7 +128,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		alertEvent := map[string]interface{}{}
 		if err := json.Unmarshal(bodyByte, &alertEvent); err != nil {
 			_, f, l, _ := runtime.Caller(0)
-			wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
+			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
 
 			return
 		}
@@ -155,14 +145,13 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		ea, err := json.Marshal(readyMadeEventAlert)
 		if err != nil {
 			_, f, l, _ := runtime.Caller(0)
-			wh.logger.Send("error", fmt.Sprintf(" '%w' %s:%d", err, f, l-1))
+			wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
 
 			return
 		}
 
 		//отправка данных в NATS
 		sendData := NewChannelRequest()
-		sendData.SetRequestId(idStorage)
 		sendData.SetRootId(eventElement.RootId)
 		sendData.SetCommand("send alert")
 		sendData.SetData(ea)

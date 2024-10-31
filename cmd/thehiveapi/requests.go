@@ -10,7 +10,9 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 // GetObservables формирует запрос на получения из TheHive объекта типа 'observables'
@@ -26,7 +28,10 @@ func (api *apiTheHiveSettings) GetObservables(ctx context.Context, rootId string
 		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
 	}
 
-	res, statusCode, err := api.query(ctx, "/api/v1/query?name=case-observables", req, "POST")
+	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer ctxCancel()
+
+	res, statusCode, err := api.query(ctxTimeout, "/api/v1/query?name=case-observables", req, "POST")
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
@@ -57,7 +62,10 @@ func (api *apiTheHiveSettings) GetTTP(ctx context.Context, rootId string) ([]byt
 		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
 	}
 
-	res, statusCode, err := api.query(ctx, "/api/v1/query?name=case-procedures", req, "POST")
+	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer ctxCancel()
+
+	res, statusCode, err := api.query(ctxTimeout, "/api/v1/query?name=case-procedures", req, "POST")
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
@@ -79,7 +87,10 @@ func (api *apiTheHiveSettings) GetCaseEvent(ctx context.Context, rootId string) 
 		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
 	}
 
-	res, statusCode, err := api.query(ctx, "/api/v1/query?name=case", req, "POST")
+	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer ctxCancel()
+
+	res, statusCode, err := api.query(ctxTimeout, "/api/v1/query?name=case", req, "POST")
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
@@ -100,10 +111,8 @@ func (api *apiTheHiveSettings) AddCaseTags(ctx context.Context, rootId string, i
 		return nil, 0, fmt.Errorf("'it is not possible to convert a value to a []string' %s:%d", f, l-2)
 	}
 
-	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer ctxCancel()
 	//получаем информацию по кейсу
-	bodyByte, statusCode, err := api.GetCaseEvent(ctxTimeout, rootId)
+	bodyByte, statusCode, err := api.GetCaseEvent(ctx, rootId)
 	_, f, l, _ := runtime.Caller(0)
 	if err != nil {
 		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-1)
@@ -123,9 +132,22 @@ func (api *apiTheHiveSettings) AddCaseTags(ctx context.Context, rootId string, i
 		return nil, 0, fmt.Errorf("'no events were found in TheHive by rootId %s' %s:%d", rootId, f, l-1)
 	}
 
+	//получаем список тегов которых нет bcee[0].Tags, но есть в tags
+	listUniqTags := supportingfunctions.CompareTwoSlices(bcee[0].Tags, tags)
+	//если listUniqTags пустой то команда на добавление в TheHive дополнительных
+	//тегов бессмыслена, так как либо список tags пустой, либо в bcee[0].Tags есть все
+	//значения из tags
+	if len(listUniqTags) == 0 {
+		api.logger.Send("info", fmt.Sprintf("the command to add the tags list '%v' to TheHive for rootId '%s' was not executed", tags, rootId))
+
+		fmt.Println("func 'AddCaseTags' 555.5, listUniqTags:", listUniqTags)
+
+		return nil, 0, nil
+	}
+
 	//формируем тело запроса из новых тегов и уже существующих
 	newTagsQuery := tagsQuery{Tags: bcee[0].Tags}
-	newTagsQuery.Tags = append(newTagsQuery.Tags, tags...)
+	newTagsQuery.Tags = append(newTagsQuery.Tags, listUniqTags...)
 
 	req, err := json.Marshal(newTagsQuery)
 	if err != nil {
@@ -133,7 +155,31 @@ func (api *apiTheHiveSettings) AddCaseTags(ctx context.Context, rootId string, i
 		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
 	}
 
-	res, statusCode, err := api.query(ctx, fmt.Sprintf("/api/case/%s", rootId), req, "PATCH")
+	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer ctxCancel()
+
+	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/case/%s", rootId), req, "PATCH")
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
+		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
+	}
+
+	return res, statusCode, err
+}
+
+// AddCaseTags добавляет новые customFields в TheHive
+func (api *apiTheHiveSettings) AddCaseCustomFields(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
+	cfp, ok := i.(commoninterfaces.ParametersCustomFieldKeeper)
+	if !ok {
+		_, f, l, _ := runtime.Caller(0)
+		return nil, 0, fmt.Errorf("'it is not possible to convert a value to a commoninterfaces.ParametersCustomFieldKeeper interface' %s:%d", f, l-2)
+	}
+
+	req := []byte(fmt.Sprintf(`{"customFields.%s": %q}`, cfp.GetType(), cfp.GetValue()))
+	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer ctxCancel()
+
+	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/case/%s", rootId), req, "PATCH")
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)

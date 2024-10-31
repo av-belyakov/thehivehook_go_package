@@ -66,6 +66,16 @@ func (r *RequestChannelTheHive) SetRootId(v string) {
 	r.RootId = v
 }
 
+// GetCaseId метод возвращает идентификатор кейса
+func (r *RequestChannelTheHive) GetCaseId() string {
+	return r.CaseId
+}
+
+// SetCaseId метод устанавливает идентификатор кейса
+func (r *RequestChannelTheHive) SetCaseId(v string) {
+	r.CaseId = v
+}
+
 // GetCommand метод возвращает команду, на основе которой выполняются определенные действия
 func (r *RequestChannelTheHive) GetCommand() string {
 	return r.Command

@@ -3,7 +3,6 @@ package thehiveapi
 import (
 	"context"
 	"fmt"
-	"time"
 )
 
 func (api *apiTheHiveSettings) router(ctx context.Context) {
@@ -16,10 +15,7 @@ func (api *apiTheHiveSettings) router(ctx context.Context) {
 			switch msg.GetCommand() {
 			case "get_observables":
 				api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
-					ctxTimeout, ctxClose := context.WithTimeout(ctx, 5*time.Second)
-					defer ctxClose()
-
-					res, statusCode, err := api.GetObservables(ctxTimeout, msg.GetRootId())
+					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", err.Error())
 
@@ -39,10 +35,7 @@ func (api *apiTheHiveSettings) router(ctx context.Context) {
 
 			case "get_ttp":
 				api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
-					ctxTimeout, ctxClose := context.WithTimeout(ctx, 5*time.Second)
-					defer ctxClose()
-
-					res, statusCode, err := api.GetTTP(ctxTimeout, msg.GetRootId())
+					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", err.Error())
 
@@ -64,21 +57,30 @@ func (api *apiTheHiveSettings) router(ctx context.Context) {
 				switch msg.GetOrder() {
 				case "add case tags":
 					api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
-						ctxTimeout, ctxClose := context.WithTimeout(ctx, 5*time.Second)
-						defer ctxClose()
-
-						_, statusCode, err := api.AddCaseTags(ctxTimeout, msg.GetRootId(), msg.GetData())
+						_, statusCode, err := api.AddCaseTags(ctx, msg.GetRootId(), msg.GetData())
 						if err != nil {
 							api.logger.Send("error", err.Error())
 
 							return false
 						}
 
-						api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', the following is received status code '%d'", msg.GetRootId(), statusCode))
+						api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", msg.GetRootId(), msg.GetCaseId(), statusCode))
 
 						return true
 					})
 				case "add case custom fields":
+					api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
+						_, statusCode, err := api.AddCaseCustomFields(ctx, msg.GetRootId(), msg.GetData())
+						if err != nil {
+							api.logger.Send("error", err.Error())
+
+							return false
+						}
+
+						api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", msg.GetRootId(), msg.GetCaseId(), statusCode))
+
+						return true
+					})
 
 				case "add case task":
 				}

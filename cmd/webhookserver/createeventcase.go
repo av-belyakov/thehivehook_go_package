@@ -7,9 +7,9 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 )
 
-// CreateEvenCase генератор кейса содержащего в себе дополнительную информацию, такую как
-// перечень значений observables и ttp
-func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFromWebHookServer) (ReadyMadeEventCase, error) {
+// CreateEvenCase создает новый объект case, содержащий дополнительную информацию типа объектов observables
+// и ttp информацию по которым дополнительно запрашивают из TheHive
+func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (ReadyMadeEventCase, error) {
 	var (
 		wg   sync.WaitGroup
 		rmec ReadyMadeEventCase = ReadyMadeEventCase{}
@@ -53,7 +53,6 @@ func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFromWebHook
 
 	//запрос на поиск дополнительной информации об Observables
 	reqObservable := NewChannelRequest()
-	reqObservable.SetRequestId(uuidStorage)
 	reqObservable.SetRootId(rootId)
 	reqObservable.SetCommand("get_observables")
 	reqObservable.SetChanOutput(chanResObservable)
@@ -64,7 +63,6 @@ func CreateEvenCase(uuidStorage, rootId string, chanInput chan<- ChanFromWebHook
 
 	//запрос на поиск дополнительной информации об TTL
 	reqTTP := NewChannelRequest()
-	reqTTP.SetRequestId(uuidStorage)
 	reqTTP.SetRootId(rootId)
 	reqTTP.SetCommand("get_ttp")
 	reqTTP.SetChanOutput(chanResTTL)

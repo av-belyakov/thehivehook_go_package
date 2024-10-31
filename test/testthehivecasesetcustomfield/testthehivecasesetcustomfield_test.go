@@ -1,4 +1,4 @@
-package testthehivecasesettags_test
+package testthehivecasesetcustomfield_test
 
 import (
 	"context"
@@ -16,7 +16,20 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
-var _ = Describe("Testthehivecasesettags", Ordered, func() {
+type CustomFieldParameters struct {
+	Type  string
+	Value string
+}
+
+func (cfp CustomFieldParameters) GetType() string {
+	return cfp.Type
+}
+
+func (cfp CustomFieldParameters) GetValue() string {
+	return cfp.Value
+}
+
+var _ = Describe("Testthehivecasesetcustomfield", Ordered, func() {
 	var (
 		chApiTheHive chan<- commoninterfaces.ChannelRequester
 		caseId       string = "39100"
@@ -37,7 +50,7 @@ var _ = Describe("Testthehivecasesettags", Ordered, func() {
 		})
 	})
 
-	Context("Тест 1. Добавление тегов к заданному кейсы TheHive", func() {
+	Context("Тест 1. Добавление CustomFiled к заданному кейсы TheHive", func() {
 		It("При выполнении запроса ошибок быть не должно", func() {
 			logging := logginghandler.New()
 
@@ -59,12 +72,12 @@ var _ = Describe("Testthehivecasesettags", Ordered, func() {
 
 			req := natsapi.NewChannelRequest()
 			req.SetCommand("send command")
-			req.SetOrder("add case tags")
+			req.SetOrder("add case custom fields")
 			req.SetRootId(rootId)
 			req.SetCaseId(caseId)
-			req.SetData([]string{
-				"Webhook:send=\"WEBKOOK_tags_test_111\"",
-				"Webhook:send=\"WEBKOOK_helpers\"",
+			req.SetData(CustomFieldParameters{
+				Type:  "class-attack.string", //Type:  "misp-event-id.string",
+				Value: "sql-injection",       //Value: "73f",
 			})
 
 			chApiTheHive <- req
