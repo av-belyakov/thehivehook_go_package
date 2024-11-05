@@ -49,6 +49,33 @@ GO_HIVEHOOK_SLPATHDB //путь к файлу базы данных SQLite, об
 
 Приоритет значений заданных через переменные окружения выше чем значений полученных из конфигурационных файлов.
 
+## Примеры команд передаваемые TheHiveHook_go_Package
+
+`{
+  "success": true,
+  "service": "SERVICE_NAME",
+  "error": "ERROR_IF_EXISTS",
+  "commands": [
+    {
+      "command": "addtag",
+      "string": "Webhook: send=\"MISP\""
+    },
+    {
+      "command": "setcustomfield",
+      "name": "misp-event-id.string",
+      "string": "123"
+    },
+    {
+      "command": "addtask",
+      "name": "Developers",
+      "string": "not added",
+      "username": "architector@33c.rcm"
+    }
+  ]
+}`
+
+##
+
 ## Настройка TheHive
 
 curl -XPUT -u <имя*пользователя>:'пароль_org-admin' -H 'Content-type: application/json' <url*или*ip*и*сетевой*порт>/api/config/organisation/notification -d '

@@ -52,6 +52,7 @@ type CommandHandler interface {
 type ParametersCustomFieldKeeper interface {
 	GetType() string
 	GetValue() string
+	GetUsername() string
 }
 
 //************** логирование ***************

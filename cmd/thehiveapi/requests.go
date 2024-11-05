@@ -188,6 +188,33 @@ func (api *apiTheHiveSettings) AddCaseCustomFields(ctx context.Context, rootId s
 	return res, statusCode, err
 }
 
+// AddCaseTask добавляет новую задачу в TheHive
+func (api *apiTheHiveSettings) AddCaseTask(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
+	tp, ok := i.(commoninterfaces.ParametersCustomFieldKeeper)
+	if !ok {
+		_, f, l, _ := runtime.Caller(0)
+		return nil, 0, fmt.Errorf("'it is not possible to convert a value to a commoninterfaces.ParametersCustomFieldKeeper interface' %s:%d", f, l-2)
+	}
+
+	var req []byte
+	if tp.GetUsername() == "" {
+		req = []byte(fmt.Sprintf(`{"status":"Waiting","group":%q,"title":%q}`, tp.GetType(), tp.GetValue()))
+	} else {
+		req = []byte(fmt.Sprintf(`{"status":"Waiting","group":%q,"title":%q,"owner":%q}`, tp.GetType(), tp.GetValue(), tp.GetUsername()))
+	}
+
+	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer ctxCancel()
+
+	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/case/%s/task", rootId), req, "POST")
+	if err != nil {
+		_, f, l, _ := runtime.Caller(0)
+		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
+	}
+
+	return res, statusCode, err
+}
+
 // query функция реализующая непосредственно сам HTTP запрос
 func (api *apiTheHiveSettings) query(ctx context.Context, reqpath string, query []byte, method string) ([]byte, int, error) {
 	apiKey := "Bearer " + api.apiKey

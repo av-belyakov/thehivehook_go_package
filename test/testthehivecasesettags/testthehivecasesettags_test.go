@@ -70,9 +70,9 @@ var _ = Describe("Testthehivecasesettags", Ordered, func() {
 			chApiTheHive <- req
 
 			msg := <-logging.GetChan()
-			fmt.Println("LOG:", msg.GetMessage())
+			fmt.Println("Type:", msg.GetType(), " LOG:", msg.GetMessage())
 
-			Expect(true).Should(BeTrue())
+			Expect(msg.GetType()).ShouldNot(Equal("error"))
 		})
 	})
 })

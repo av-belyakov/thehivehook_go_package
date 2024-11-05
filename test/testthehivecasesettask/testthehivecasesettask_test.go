@@ -1,4 +1,4 @@
-package testthehivecasesetcustomfield_test
+package testthehivecasesettask_test
 
 import (
 	"context"
@@ -16,20 +16,25 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
-type CustomFieldParameters struct {
-	Type  string
-	Value string
+type TaskParameters struct {
+	Type     string
+	Value    string
+	Username string
 }
 
-func (cfp CustomFieldParameters) GetType() string {
-	return cfp.Type
+func (tp TaskParameters) GetType() string {
+	return tp.Type
 }
 
-func (cfp CustomFieldParameters) GetValue() string {
-	return cfp.Value
+func (tp TaskParameters) GetValue() string {
+	return tp.Value
 }
 
-var _ = Describe("Testthehivecasesetcustomfield", Ordered, func() {
+func (tp TaskParameters) GetUsername() string {
+	return tp.Username
+}
+
+var _ = Describe("Testthehivecasesettask", Ordered, func() {
 	var (
 		chApiTheHive chan<- commoninterfaces.ChannelRequester
 		caseId       string = "39100"
@@ -70,14 +75,24 @@ var _ = Describe("Testthehivecasesetcustomfield", Ordered, func() {
 			chApiTheHive, err = apiTheHive.Start(context.Background())
 			Expect(err).ShouldNot(HaveOccurred())
 
+			/*
+			   {
+			         "command": "addtask",
+			         "name": "Developers",
+			         "string": "not added",
+			         "username": "architector@33c.rcm"
+			       }
+			*/
+
 			req := natsapi.NewChannelRequest()
 			req.SetCommand("send command")
-			req.SetOrder("add case custom fields")
+			req.SetOrder("add case task")
 			req.SetRootId(rootId)
 			req.SetCaseId(caseId)
-			req.SetData(CustomFieldParameters{
-				Type:  "class-attack.string", //Type:  "misp-event-id.string",
-				Value: "sql-injection",       //Value: "73f",
+			req.SetData(TaskParameters{
+				Type:     "Developers",
+				Value:    "new filtration",
+				Username: "	a.belyakov@cloud.gcm",
 			})
 
 			chApiTheHive <- req

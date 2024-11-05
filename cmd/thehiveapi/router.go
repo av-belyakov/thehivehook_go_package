@@ -83,6 +83,21 @@ func (api *apiTheHiveSettings) router(ctx context.Context) {
 					})
 
 				case "add case task":
+					api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
+						_, statusCode, err := api.AddCaseTask(ctx, msg.GetRootId(), msg.GetData())
+						if err != nil {
+							api.logger.Send("error", err.Error())
+
+							return false
+						}
+
+						api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", msg.GetRootId(), msg.GetCaseId(), statusCode))
+
+						return true
+					})
+
+				case "set severity":
+
 				}
 			}
 		}
