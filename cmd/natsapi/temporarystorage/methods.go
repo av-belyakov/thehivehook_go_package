@@ -19,7 +19,7 @@ var (
 // что соответствует 1-им суткам.
 // Внимание! Чрезмерно большое время жизни временной информации может повлечь за
 // собой утечку памяти.
-func NewTemporaryStorage(ttl int) (*TemporaryStorage, error) {
+func NewTemporaryStorage( /*ctx context.Context, */ ttl int) (*TemporaryStorage, error) {
 	ts = TemporaryStorage{}
 
 	if ttl < 5 || ttl > 86400 {
@@ -30,7 +30,7 @@ func NewTemporaryStorage(ttl int) (*TemporaryStorage, error) {
 	once.Do(func() {
 		timeToLive, newErr := time.ParseDuration(fmt.Sprintf("%ds", ttl))
 		if newErr != nil {
-			err = newErr
+			err = errors.Join(err, newErr)
 
 			return
 		}

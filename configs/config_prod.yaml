@@ -3,6 +3,7 @@ COMMONINFO:
 NATS:
   host: "nats.cloud.gcm"
   port: 4222
+  cacheTtl: 43200
   subscribers:
     - event: "caseupdate"
       responders:
@@ -17,10 +18,9 @@ NATS:
 THEHIVE:
   host: "thehive.cloud.gcm"
   port: 9000
+  cacheTtl: 43200
 WEBHOOKSERVER:
   name: "gcm"
   host: "192.168.13.3"
   port: 5000
   ttlTmpInfo: 10
-SQLITE:
-  pathDatabase: "../../../../../_sqlite/database/db.sqlite"

@@ -4,7 +4,6 @@ type ConfigApp struct {
 	CommonInfo
 	CommonAppConfig
 	AppConfigNATS
-	AppConfigSqlite
 	AppConfigTheHive
 	AppConfigWebHookServer
 }
@@ -53,20 +52,18 @@ type Handshake struct {
 	Message      string `validate:"required" yaml:"message"`
 }
 
-type AppConfigSqlite struct {
-	PathDatabase string `validate:"required" yaml:"pathDatabase"`
-}
-
 type AppConfigNATS struct {
 	Port        int              `validate:"gt=0,lte=65535" yaml:"port"`
+	CacheTTL    int              `validate:"gt=10,lte=86400" yaml:"cacheTtl"`
 	Host        string           `validate:"required" yaml:"host"`
 	Subscribers []SubscriberNATS `yaml:"subscribers"`
 }
 
 type AppConfigTheHive struct {
-	Port   int    `validate:"gt=0,lte=65535" yaml:"port"`
-	Host   string `validate:"required" yaml:"host"`
-	ApiKey string `validate:"required"`
+	Port     int    `validate:"gt=0,lte=65535" yaml:"port"`
+	CacheTTL int    `validate:"gt=10,lte=86400" yaml:"cacheTtl"`
+	Host     string `validate:"required" yaml:"host"`
+	ApiKey   string `validate:"required"`
 }
 
 type AppConfigWebHookServer struct {

@@ -6,12 +6,13 @@ import (
 	"errors"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/cacherunningmethods"
+	"github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions"
 )
 
 // New настраивает модуль взаимодействия с API TheHive
-func New(logger commoninterfaces.Logger, opts ...theHiveAPIOptions) (*apiTheHiveSettings, error) {
-	api := &apiTheHiveSettings{
+func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHiveModule, error) {
+	api := &apiTheHiveModule{
+		cachettl:         10,
 		logger:           logger,
 		receivingChannel: make(chan commoninterfaces.ChannelRequester),
 	}
@@ -28,13 +29,13 @@ func New(logger commoninterfaces.Logger, opts ...theHiveAPIOptions) (*apiTheHive
 // Start инициализирует новый модуль взаимодействия с API TheHive
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func (api *apiTheHiveSettings) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
-	crm, err := cacherunningmethods.New(ctx, 30)
+func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
+	crf, err := cacherunningfunctions.CreateCach(ctx, api.cachettl)
 	if err != nil {
 		return api.receivingChannel, err
 	}
 
-	api.cacheRunningMethods = crm
+	api.cacheRunningFunction = crf
 
 	go api.router(ctx)
 
@@ -42,8 +43,8 @@ func (api *apiTheHiveSettings) Start(ctx context.Context) (chan<- commoninterfac
 }
 
 // WithAPIKey устанавливает идентификатор-ключ для API
-func WithAPIKey(v string) theHiveAPIOptions {
-	return func(th *apiTheHiveSettings) error {
+func WithAPIKey(v string) theHiveApiOptions {
+	return func(th *apiTheHiveModule) error {
 		if v == "" {
 			return errors.New("the value of 'apiKey' cannot be empty")
 		}
@@ -55,8 +56,8 @@ func WithAPIKey(v string) theHiveAPIOptions {
 }
 
 // WithHost устанавливает имя или ip адрес хоста API
-func WithHost(v string) theHiveAPIOptions {
-	return func(th *apiTheHiveSettings) error {
+func WithHost(v string) theHiveApiOptions {
+	return func(th *apiTheHiveModule) error {
 		if v == "" {
 			return errors.New("the value of 'host' cannot be empty")
 		}
@@ -68,13 +69,27 @@ func WithHost(v string) theHiveAPIOptions {
 }
 
 // WithPort устанавливает порт API
-func WithPort(v int) theHiveAPIOptions {
-	return func(th *apiTheHiveSettings) error {
+func WithPort(v int) theHiveApiOptions {
+	return func(th *apiTheHiveModule) error {
 		if v <= 0 || v > 65535 {
 			return errors.New("an incorrect network port value was received")
 		}
 
 		th.port = v
+
+		return nil
+	}
+}
+
+// WithCacheTTL устанавливает время жизни для кэша хранящего функции-обработчики
+// запросов к модулю
+func WithCacheTTL(v int) theHiveApiOptions {
+	return func(th *apiTheHiveModule) error {
+		if v <= 10 || v > 86400 {
+			return errors.New("the lifetime of a cache entry should be between 10 and 86400 seconds")
+		}
+
+		th.cachettl = v
 
 		return nil
 	}

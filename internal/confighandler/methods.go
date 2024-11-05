@@ -29,11 +29,6 @@ func (conf *ConfigApp) GetApplicationWebHookServer() *AppConfigWebHookServer {
 	return &conf.AppConfigWebHookServer
 }
 
-// GetApplicationSqlite настройки подключения к SQLite
-func (conf *ConfigApp) GetApplicationSqlite() *AppConfigSqlite {
-	return &conf.AppConfigSqlite
-}
-
 // Clean
 func (conf *ConfigApp) Clean() {
 	conf = &ConfigApp{}

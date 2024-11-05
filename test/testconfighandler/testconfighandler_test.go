@@ -27,20 +27,19 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		//настройки NATS
 		os.Unsetenv("GO_HIVEHOOK_NHOST")
 		os.Unsetenv("GO_HIVEHOOK_NPORT")
+		os.Unsetenv("GO_HIVEHOOK_NCACHETTL")
 		os.Unsetenv("GO_HIVEHOOK_NSUBSCRIBERS")
 
 		//настройки TheHive
 		os.Unsetenv("GO_HIVEHOOK_THHOST")
 		os.Unsetenv("GO_HIVEHOOK_THPORT")
+		os.Unsetenv("GO_HIVEHOOK_THCACHETTL")
 
 		//настройки WebHook сервера
 		os.Unsetenv("GO_HIVEHOOK_WEBHNAME")
 		os.Unsetenv("GO_HIVEHOOK_WEBHHOST")
 		os.Unsetenv("GO_HIVEHOOK_WEBHPORT")
 		os.Unsetenv("GO_HIVEHOOK_WEBHTTLTMPINFO")
-
-		//настройки SQLite
-		os.Unsetenv("GO_HIVEHOOK_SLPATHDB")
 	}
 
 	BeforeAll(func() {
@@ -77,6 +76,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 			Expect(cn.Host).Should(Equal("nats.cloud.gcm"))
 			Expect(cn.Port).Should(Equal(4222))
+			Expect(cn.CacheTTL).Should(Equal(43200))
 			Expect(len(cn.Subscribers)).Should(Equal(2))
 			for _, v := range cn.Subscribers {
 				if v.Event == "caseupdate" {
@@ -92,6 +92,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			cth := conf.GetApplicationTheHive()
 			Expect(cth.Host).Should(Equal("thehive.cloud.gcm"))
 			Expect(cth.Port).Should(Equal(9000))
+			Expect(cth.CacheTTL).Should(Equal(43200))
 			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
 		})
 
@@ -121,6 +122,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			cn := conf.GetApplicationNATS()
 			Expect(cn.Host).Should(Equal("nats.cloud.gcmtest"))
 			Expect(cn.Port).Should(Equal(4223))
+			Expect(cn.CacheTTL).Should(Equal(3600))
 			Expect(len(cn.Subscribers)).Should(Equal(2))
 			for _, v := range cn.Subscribers {
 				if v.Event == "caseupdate" {
@@ -136,6 +138,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			cth := conf.GetApplicationTheHive()
 			Expect(cth.Host).Should(Equal("thehive.cloud.gcm"))
 			Expect(cth.Port).Should(Equal(9001))
+			Expect(cth.CacheTTL).Should(Equal(3600))
 			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
 		})
 
@@ -152,12 +155,14 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		const (
 			NATS_HOST        = "nats.cloud.gcm.test.test"
 			NATS_PORT        = 4545
+			NATS_CACHETTL    = 3600
 			NATS_SUBSCRIBERS = "main_caseupdate:gcm,rcmmsk,rcmnvs;main_alertupdate:gcm"
 		)
 
 		BeforeAll(func() {
 			os.Setenv("GO_HIVEHOOK_NHOST", NATS_HOST)
 			os.Setenv("GO_HIVEHOOK_NPORT", strconv.Itoa(NATS_PORT))
+			os.Setenv("GO_HIVEHOOK_NCACHETTL", strconv.Itoa(NATS_CACHETTL))
 			os.Setenv("GO_HIVEHOOK_NSUBSCRIBERS", NATS_SUBSCRIBERS)
 
 			conf, err = confighandler.NewConfig(rootDir)
@@ -182,14 +187,16 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 	Context("Тест 4. Проверяем установленные для THEHIVE значения переменных окружения", func() {
 		const (
-			THEHIVE_HOST    = "thehive.cloud.gcm.test"
-			THEHIVE_PORT    = 1122
-			THEHIVE_THUNAME = "test_hive_name"
+			THEHIVE_HOST     = "thehive.cloud.gcm.test"
+			THEHIVE_PORT     = 1122
+			THEHIVE_CACHETTL = 3636
+			THEHIVE_THUNAME  = "test_hive_name"
 		)
 
 		BeforeAll(func() {
 			os.Setenv("GO_HIVEHOOK_THHOST", THEHIVE_HOST)
 			os.Setenv("GO_HIVEHOOK_THPORT", strconv.Itoa(THEHIVE_PORT))
+			os.Setenv("GO_HIVEHOOK_THCACHETTL", strconv.Itoa(THEHIVE_CACHETTL))
 
 			conf, err = confighandler.NewConfig(rootDir)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -259,25 +266,6 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 			//*** настройки логирования ***
 			Expect(len(confApp.GetListLogs())).Should(Equal(4))
-		})
-	})
-
-	Context("Тест 7. Проверяем настройки для доступа к SQLite", func() {
-		const (
-			SQLITE_PATH = "../../path"
-		)
-
-		BeforeAll(func() {
-			os.Setenv("GO_HIVEHOOK_SLPATHDB", SQLITE_PATH)
-
-			conf, err = confighandler.NewConfig(rootDir)
-			Expect(err).ShouldNot(HaveOccurred())
-		})
-
-		It("Все параметры конфигурации для SQLITE должны быть успешно установлены через соответствующие переменные окружения", func() {
-			csql := conf.GetApplicationSqlite()
-
-			Expect(csql.PathDatabase).Should(Equal(SQLITE_PATH))
 		})
 	})
 

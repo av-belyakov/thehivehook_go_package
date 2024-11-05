@@ -100,7 +100,7 @@ var _ = Describe("Testthehivegetcase", Ordered, func() {
 			logging := logginghandler.New()
 			conf := confighandler.AppConfigTheHive{
 				Port:   9000,
-				Host:   "1thehive.cloud.gcm",
+				Host:   "thehive.cloud.gcm",
 				ApiKey: os.Getenv("GO_HIVEHOOK_THAPIKEY"),
 			}
 			apiTheHive, err := thehiveapi.New(
@@ -130,6 +130,29 @@ var _ = Describe("Testthehivegetcase", Ordered, func() {
 			fmt.Println(string(b))
 
 			Expect(true).Should(BeTrue())
+		})
+	})
+
+	Context("Тест 3. Запрос кейса по его номеру через метод GetCaseEvent", func() {
+		It("Должна быть получена специальная ошибка datamodels.ConnectionError при подключении к неверному доменному имени", func() {
+			logging := logginghandler.New()
+			conf := confighandler.AppConfigTheHive{
+				Port:   9000,
+				Host:   "1thehive.cloud.gcm",
+				ApiKey: os.Getenv("GO_HIVEHOOK_THAPIKEY"),
+			}
+			apiTheHive, err := thehiveapi.New(
+				logging,
+				thehiveapi.WithAPIKey(conf.ApiKey),
+				thehiveapi.WithHost(conf.Host),
+				thehiveapi.WithPort(conf.Port))
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, err = apiTheHive.Start(context.Background())
+			Expect(err).ShouldNot(HaveOccurred())
+
+			_, _, err = apiTheHive.GetCaseEvent(context.Background(), "~88678416456")
+			Expect(errors.Is(err, datamodels.ConnectionError)).Should(BeTrue())
 		})
 	})
 })

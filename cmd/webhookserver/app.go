@@ -3,12 +3,9 @@ package webhookserver
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
@@ -33,19 +30,6 @@ func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHook
 			return whs, chanOutput, err
 		}
 	}
-
-	dbConnect, err := sql.Open("sqlite3", whs.pathSqlite)
-	if err != nil {
-		return whs, chanOutput, err
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	if err = dbConnect.PingContext(ctx); err != nil {
-		return whs, chanOutput, err
-	}
-
-	whs.storage = dbConnect
 
 	return whs, chanOutput, nil
 }
@@ -132,18 +116,6 @@ func WithName(v string) webHookServerOptions {
 func WithVersion(v string) webHookServerOptions {
 	return func(whs *WebHookServer) error {
 		whs.version = v
-
-		return nil
-	}
-}
-
-func WithPathSqlite(v string) webHookServerOptions {
-	return func(whs *WebHookServer) error {
-		if v == "" {
-			return errors.New("the path to the Sqlite file should not be empty")
-		}
-
-		whs.pathSqlite = v
 
 		return nil
 	}

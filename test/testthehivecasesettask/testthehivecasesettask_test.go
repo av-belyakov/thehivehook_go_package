@@ -75,15 +75,6 @@ var _ = Describe("Testthehivecasesettask", Ordered, func() {
 			chApiTheHive, err = apiTheHive.Start(context.Background())
 			Expect(err).ShouldNot(HaveOccurred())
 
-			/*
-			   {
-			         "command": "addtask",
-			         "name": "Developers",
-			         "string": "not added",
-			         "username": "architector@33c.rcm"
-			       }
-			*/
-
 			req := natsapi.NewChannelRequest()
 			req.SetCommand("send command")
 			req.SetOrder("add case task")
@@ -91,8 +82,8 @@ var _ = Describe("Testthehivecasesettask", Ordered, func() {
 			req.SetCaseId(caseId)
 			req.SetData(TaskParameters{
 				Type:     "Developers",
-				Value:    "new filtration",
-				Username: "	a.belyakov@cloud.gcm",
+				Value:    "new filtration data",
+				Username: "a.belyakov@cloud.gcm",
 			})
 
 			chApiTheHive <- req

@@ -16,7 +16,7 @@ import (
 )
 
 // GetObservables формирует запрос на получения из TheHive объекта типа 'observables'
-func (api *apiTheHiveSettings) GetObservables(ctx context.Context, rootId string) ([]byte, int, error) {
+func (api *apiTheHiveModule) GetObservables(ctx context.Context, rootId string) ([]byte, int, error) {
 	req, err := json.Marshal(Querys{
 		Query: []Query{
 			{Name: "getCase", IDOrName: rootId},
@@ -41,7 +41,7 @@ func (api *apiTheHiveSettings) GetObservables(ctx context.Context, rootId string
 }
 
 // GetTTP формирует запрос на получения из TheHive объекта типа 'ttp'
-func (api *apiTheHiveSettings) GetTTP(ctx context.Context, rootId string) ([]byte, int, error) {
+func (api *apiTheHiveModule) GetTTP(ctx context.Context, rootId string) ([]byte, int, error) {
 	req, err := json.Marshal(&Querys{
 		Query: []Query{
 			{Name: "getCase", IDOrName: rootId},
@@ -76,7 +76,7 @@ func (api *apiTheHiveSettings) GetTTP(ctx context.Context, rootId string) ([]byt
 
 // GetCaseEvent формирует запрос на получения из TheHive объекта типа 'event' являющегося
 // основой Case
-func (api *apiTheHiveSettings) GetCaseEvent(ctx context.Context, rootId string) ([]byte, int, error) {
+func (api *apiTheHiveModule) GetCaseEvent(ctx context.Context, rootId string) ([]byte, int, error) {
 	req, err := json.Marshal(&Querys{
 		Query: []Query{
 			{Name: "getCase", IDOrName: rootId},
@@ -99,8 +99,10 @@ func (api *apiTheHiveSettings) GetCaseEvent(ctx context.Context, rootId string) 
 	return res, statusCode, err
 }
 
-// AddCaseTags добавляет новые теги, при этом получает от TheHive уже существующие теги и объединяет их с новыми
-func (api *apiTheHiveSettings) AddCaseTags(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
+// AddCaseTags добавляет новые теги в объект Case, при этом получает от TheHive уже
+// существующие теги и объединяет их с новыми, если добавляемые теги уже существуют
+// то ничего не делает
+func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
 	type tagsQuery struct {
 		Tags []string `json:"tags"`
 	}
@@ -140,8 +142,6 @@ func (api *apiTheHiveSettings) AddCaseTags(ctx context.Context, rootId string, i
 	if len(listUniqTags) == 0 {
 		api.logger.Send("info", fmt.Sprintf("the command to add the tags list '%v' to TheHive for rootId '%s' was not executed", tags, rootId))
 
-		fmt.Println("func 'AddCaseTags' 555.5, listUniqTags:", listUniqTags)
-
 		return nil, 0, nil
 	}
 
@@ -167,8 +167,9 @@ func (api *apiTheHiveSettings) AddCaseTags(ctx context.Context, rootId string, i
 	return res, statusCode, err
 }
 
-// AddCaseTags добавляет новые customFields в TheHive
-func (api *apiTheHiveSettings) AddCaseCustomFields(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
+// AddCaseTags просто добавляет новые customFields в объект Case TheHive без
+// какого либо предварительного поиска и сверки customFields
+func (api *apiTheHiveModule) AddCaseCustomFields(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
 	cfp, ok := i.(commoninterfaces.ParametersCustomFieldKeeper)
 	if !ok {
 		_, f, l, _ := runtime.Caller(0)
@@ -188,8 +189,9 @@ func (api *apiTheHiveSettings) AddCaseCustomFields(ctx context.Context, rootId s
 	return res, statusCode, err
 }
 
-// AddCaseTask добавляет новую задачу в TheHive
-func (api *apiTheHiveSettings) AddCaseTask(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
+// AddCaseTask просто добавляет новую задачу в объект Case TheHive без какого либо
+// поиска и сравнения схожей задачи
+func (api *apiTheHiveModule) AddCaseTask(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
 	tp, ok := i.(commoninterfaces.ParametersCustomFieldKeeper)
 	if !ok {
 		_, f, l, _ := runtime.Caller(0)
@@ -216,7 +218,7 @@ func (api *apiTheHiveSettings) AddCaseTask(ctx context.Context, rootId string, i
 }
 
 // query функция реализующая непосредственно сам HTTP запрос
-func (api *apiTheHiveSettings) query(ctx context.Context, reqpath string, query []byte, method string) ([]byte, int, error) {
+func (api *apiTheHiveModule) query(ctx context.Context, reqpath string, query []byte, method string) ([]byte, int, error) {
 	apiKey := "Bearer " + api.apiKey
 	url := fmt.Sprintf("http://%s:%d%s", api.host, api.port, reqpath)
 
@@ -231,20 +233,25 @@ func (api *apiTheHiveSettings) query(ctx context.Context, reqpath string, query 
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, 0, fmt.Errorf("%w, %w", err, datamodels.ConnectionError) //errors.Join(err, datamodels.ConnectionError)
+		return nil, 0, fmt.Errorf("%w, %w", err, datamodels.ConnectionError)
 	}
 	defer func(body io.ReadCloser) {
 		body.Close()
 	}(res.Body)
 
-	if res.StatusCode != http.StatusOK {
-		return nil, res.StatusCode, fmt.Errorf("error request, status is '%s'", res.Status)
+	if res.StatusCode == http.StatusOK || res.StatusCode == http.StatusCreated {
+		resBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		return resBody, res.StatusCode, nil
 	}
 
-	resBody, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, 0, err
+	var msg string
+	if m, err := supportingfunctions.GetDetailedMessage(res.Body); err == nil {
+		msg = m
 	}
 
-	return resBody, res.StatusCode, nil
+	return nil, res.StatusCode, fmt.Errorf("error request, status is '%s' %s", res.Status, msg)
 }

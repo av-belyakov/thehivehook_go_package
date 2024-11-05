@@ -72,3 +72,11 @@ type Messager interface {
 type WriterLoggingData interface {
 	WriteLoggingData(str, typeLogFile string) bool
 }
+
+//************** кэширование функций *****************
+
+type CacheFuncRunner interface {
+	SetMethod(id string, f func() bool) string
+	GetMethod(id string) (func() bool, bool)
+	DeleteElement(id string)
+}

@@ -6,13 +6,15 @@ import (
 )
 
 // apiNatsSettings настройки для API NATS
-type apiNatsSettings struct {
-	port             int
-	host             string
-	subscribers      []SubscriberNATS
-	logger           commoninterfaces.Logger
-	receivingChannel chan commoninterfaces.ChannelRequester
-	temporaryStorage *temporarystoarge.TemporaryStorage
+type apiNatsModule struct {
+	cachettl             int
+	port                 int
+	host                 string
+	subscribers          []SubscriberNATS
+	logger               commoninterfaces.Logger
+	receivingChannel     chan commoninterfaces.ChannelRequester
+	temporaryStorage     *temporarystoarge.TemporaryStorage
+	cacheRunningFunction commoninterfaces.CacheFuncRunner
 }
 
 // SubscriberNATS абоненты NATS
@@ -21,8 +23,8 @@ type SubscriberNATS struct {
 	Responders []string `yaml:"responders"`
 }
 
-// NatsAPIOptions функциональные опции
-type NatsAPIOptions func(*apiNatsSettings) error
+// NatsApiOptions функциональные опции
+type NatsApiOptions func(*apiNatsModule) error
 
 // ModuleNATS инициализированный модуль
 type ModuleNATS struct {

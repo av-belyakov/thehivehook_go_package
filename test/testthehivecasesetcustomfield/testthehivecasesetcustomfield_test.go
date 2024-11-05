@@ -17,8 +17,9 @@ import (
 )
 
 type CustomFieldParameters struct {
-	Type  string
-	Value string
+	Type     string
+	Value    string
+	Username string
 }
 
 func (cfp CustomFieldParameters) GetType() string {
@@ -27,6 +28,10 @@ func (cfp CustomFieldParameters) GetType() string {
 
 func (cfp CustomFieldParameters) GetValue() string {
 	return cfp.Value
+}
+
+func (cfp CustomFieldParameters) GetUsername() string {
+	return cfp.Username
 }
 
 var _ = Describe("Testthehivecasesetcustomfield", Ordered, func() {
@@ -76,8 +81,8 @@ var _ = Describe("Testthehivecasesetcustomfield", Ordered, func() {
 			req.SetRootId(rootId)
 			req.SetCaseId(caseId)
 			req.SetData(CustomFieldParameters{
-				Type:  "class-attack.string", //Type:  "misp-event-id.string",
-				Value: "sql-injection",       //Value: "73f",
+				Type:  "attack-type.string",                   //Type:  "misp-event-id.string",
+				Value: "выполнение произвольного SQL запроса", //Value: "73f",
 			})
 
 			chApiTheHive <- req

@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (api *apiTheHiveSettings) router(ctx context.Context) {
+func (api *apiTheHiveModule) router(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -14,7 +14,7 @@ func (api *apiTheHiveSettings) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
-				api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
+				api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
 					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", err.Error())
@@ -34,7 +34,7 @@ func (api *apiTheHiveSettings) router(ctx context.Context) {
 				})
 
 			case "get_ttp":
-				api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
+				api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
 					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", err.Error())
@@ -56,7 +56,7 @@ func (api *apiTheHiveSettings) router(ctx context.Context) {
 			case "send command":
 				switch msg.GetOrder() {
 				case "add case tags":
-					api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
+					api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
 						_, statusCode, err := api.AddCaseTags(ctx, msg.GetRootId(), msg.GetData())
 						if err != nil {
 							api.logger.Send("error", err.Error())
@@ -69,7 +69,7 @@ func (api *apiTheHiveSettings) router(ctx context.Context) {
 						return true
 					})
 				case "add case custom fields":
-					api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
+					api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
 						_, statusCode, err := api.AddCaseCustomFields(ctx, msg.GetRootId(), msg.GetData())
 						if err != nil {
 							api.logger.Send("error", err.Error())
@@ -83,7 +83,7 @@ func (api *apiTheHiveSettings) router(ctx context.Context) {
 					})
 
 				case "add case task":
-					api.cacheRunningMethods.SetMethod(msg.GetRootId(), func() bool {
+					api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
 						_, statusCode, err := api.AddCaseTask(ctx, msg.GetRootId(), msg.GetData())
 						if err != nil {
 							api.logger.Send("error", err.Error())

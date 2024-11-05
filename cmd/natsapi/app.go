@@ -7,21 +7,16 @@ import (
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/temporarystorage"
-	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions"
 )
 
 // New настраивает новый модуль взаимодействия с API NATS
-func New(logger *logginghandler.LoggingChan, opts ...NatsAPIOptions) (*apiNatsSettings, error) {
-	ts, err := temporarystoarge.NewTemporaryStorage(30)
-	if err != nil {
-		return &apiNatsSettings{}, err
-	}
-
-	api := &apiNatsSettings{
+func New(logger commoninterfaces.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
+	api := &apiNatsModule{
+		cachettl:         10,
 		subscribers:      []SubscriberNATS(nil),
 		logger:           logger,
 		receivingChannel: make(chan commoninterfaces.ChannelRequester),
-		temporaryStorage: ts,
 	}
 
 	for _, opt := range opts {
@@ -36,8 +31,24 @@ func New(logger *logginghandler.LoggingChan, opts ...NatsAPIOptions) (*apiNatsSe
 // Start инициализирует новый модуль взаимодействия с API NATS
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func (api *apiNatsSettings) Start(ctx context.Context) chan<- commoninterfaces.ChannelRequester {
+func (api *apiNatsModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
+	ts, err := temporarystoarge.NewTemporaryStorage( /*ctx, */ 30)
+	if err != nil {
+
+		return api.receivingChannel, err
+	}
+
+	api.temporaryStorage = ts
+
+	crf, err := cacherunningfunctions.CreateCach(ctx, api.cachettl)
+	if err != nil {
+		return api.receivingChannel, err
+	}
+
+	api.cacheRunningFunction = crf
+
 	go func() {
+
 		//здесь temporarystorage будет использоватся для хранения двух
 		// основных типов данных:
 		// 1. хранение дескрипторов соединения с NATS
@@ -48,12 +59,12 @@ func (api *apiNatsSettings) Start(ctx context.Context) chan<- commoninterfaces.C
 		// их можно будет удалить
 	}()
 
-	return api.receivingChannel
+	return api.receivingChannel, nil
 }
 
 // WithHost метод устанавливает имя или ip адрес хоста API
-func WithHost(v string) NatsAPIOptions {
-	return func(n *apiNatsSettings) error {
+func WithHost(v string) NatsApiOptions {
+	return func(n *apiNatsModule) error {
 		if v == "" {
 			return errors.New("the value of 'host' cannot be empty")
 		}
@@ -65,8 +76,8 @@ func WithHost(v string) NatsAPIOptions {
 }
 
 // WithPort метод устанавливает порт API
-func WithPort(v int) NatsAPIOptions {
-	return func(n *apiNatsSettings) error {
+func WithPort(v int) NatsApiOptions {
+	return func(n *apiNatsModule) error {
 		if v <= 0 || v > 65535 {
 			return errors.New("an incorrect network port value was received")
 		}
@@ -77,9 +88,23 @@ func WithPort(v int) NatsAPIOptions {
 	}
 }
 
+// WithCacheTTL устанавливает время жизни для кэша хранящего функции-обработчики
+// запросов к модулю
+func WithCacheTTL(v int) NatsApiOptions {
+	return func(th *apiNatsModule) error {
+		if v <= 10 || v > 86400 {
+			return errors.New("the lifetime of a cache entry should be between 10 and 86400 seconds")
+		}
+
+		th.cachettl = v
+
+		return nil
+	}
+}
+
 // WithSubscribers метод добавляет абонентов NATS
-func WithSubscribers(event string, responders []string) NatsAPIOptions {
-	return func(n *apiNatsSettings) error {
+func WithSubscribers(event string, responders []string) NatsApiOptions {
+	return func(n *apiNatsModule) error {
 		if event == "" {
 			return errors.New("the subscriber element 'event' must not be empty")
 		}

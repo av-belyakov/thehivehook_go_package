@@ -2,21 +2,21 @@ package thehiveapi
 
 import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/cacherunningmethods"
 )
 
-// apiTheHiveSettings настройки для API TheHive
-type apiTheHiveSettings struct {
-	port                int
-	host                string
-	apiKey              string
-	logger              commoninterfaces.Logger
-	receivingChannel    chan commoninterfaces.ChannelRequester
-	cacheRunningMethods *cacherunningmethods.CacheRunningMethods
+// apiTheHiveModule модуль для взаимодействия с API TheHive
+type apiTheHiveModule struct {
+	cachettl             int
+	port                 int
+	host                 string
+	apiKey               string
+	logger               commoninterfaces.Logger
+	receivingChannel     chan commoninterfaces.ChannelRequester
+	cacheRunningFunction commoninterfaces.CacheFuncRunner
 }
 
 // theHiveAPIOptions функциональные опции
-type theHiveAPIOptions func(*apiTheHiveSettings) error
+type theHiveApiOptions func(*apiTheHiveModule) error
 
 // Querys перечень запросов к TheHive
 type Querys struct {

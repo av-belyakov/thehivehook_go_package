@@ -1,7 +1,6 @@
 package webhookserver
 
 import (
-	"database/sql"
 	"net/http"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
@@ -17,7 +16,6 @@ type WebHookServer struct {
 	pathSqlite string
 	server     *http.Server
 	logger     commoninterfaces.Logger
-	storage    *sql.DB
 	chanInput  chan<- ChanFromWebHookServer
 }
 
