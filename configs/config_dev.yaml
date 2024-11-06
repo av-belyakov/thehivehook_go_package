@@ -1,8 +1,9 @@
 COMMONINFO:
   file_name: "config_dev"
 NATS:
-  host: "nats.cloud.gcmtest"
-  port: 4223
+  prefix: "test"
+  host: "nats.cloud.gcm"
+  port: 4222
   cacheTtl: 3600
   subscribers:
     - event: "caseupdate"

@@ -58,6 +58,16 @@ func (r *RequestFromWebHook) SetRequestId(v string) {
 	r.RequestId = v
 }
 
+// GetElementType метод возвращает тип элемента
+func (r *RequestFromWebHook) GetElementType() string {
+	return r.ElementType
+}
+
+// SetElementType метод устанавливает тип элемента
+func (r *RequestFromWebHook) SetElementType(v string) {
+	r.ElementType = v
+}
+
 // GetRootId метод возвращает основной идентификатор кейса или алерта
 func (r *RequestFromWebHook) GetRootId() string {
 	return r.RootId

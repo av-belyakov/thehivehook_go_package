@@ -25,6 +25,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		os.Unsetenv("GO_HIVEHOOK_MAIN")
 
 		//настройки NATS
+		os.Unsetenv("GO_HIVEHOOK_NPREFIX")
 		os.Unsetenv("GO_HIVEHOOK_NHOST")
 		os.Unsetenv("GO_HIVEHOOK_NPORT")
 		os.Unsetenv("GO_HIVEHOOK_NCACHETTL")
@@ -73,7 +74,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 			fmt.Println("Application NATS config:")
 			fmt.Println(cn)
-
+			Expect(cn.Prefix).Should(Equal("test"))
 			Expect(cn.Host).Should(Equal("nats.cloud.gcm"))
 			Expect(cn.Port).Should(Equal(4222))
 			Expect(cn.CacheTTL).Should(Equal(43200))
@@ -120,6 +121,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 		It("Все пораметры конфигурационного файла 'config_dev.yaml' для NATS должны быть успешно получены", func() {
 			cn := conf.GetApplicationNATS()
+			Expect(cn.Prefix).Should(Equal("test"))
 			Expect(cn.Host).Should(Equal("nats.cloud.gcmtest"))
 			Expect(cn.Port).Should(Equal(4223))
 			Expect(cn.CacheTTL).Should(Equal(3600))
@@ -153,6 +155,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 	Context("Тест 3. Проверяем установленные для NATS значения переменных окружения", func() {
 		const (
+			NATS_PREFIX      = "main"
 			NATS_HOST        = "nats.cloud.gcm.test.test"
 			NATS_PORT        = 4545
 			NATS_CACHETTL    = 3600
@@ -160,6 +163,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		)
 
 		BeforeAll(func() {
+			os.Setenv("GO_HIVEHOOK_NPREFIX", NATS_PREFIX)
 			os.Setenv("GO_HIVEHOOK_NHOST", NATS_HOST)
 			os.Setenv("GO_HIVEHOOK_NPORT", strconv.Itoa(NATS_PORT))
 			os.Setenv("GO_HIVEHOOK_NCACHETTL", strconv.Itoa(NATS_CACHETTL))
@@ -172,6 +176,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		It("Все параметры конфигурации для NATS должны быть успешно установлены через соответствующие переменные окружения", func() {
 			cn := conf.GetApplicationNATS()
 
+			Expect(cn.Prefix).Should(Equal(NATS_PREFIX))
 			Expect(cn.Host).Should(Equal(NATS_HOST))
 			Expect(cn.Port).Should(Equal(NATS_PORT))
 			for _, v := range cn.Subscribers {

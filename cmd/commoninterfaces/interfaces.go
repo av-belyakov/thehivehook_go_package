@@ -13,6 +13,7 @@ type ChannelResponser interface {
 type ChannelRequester interface {
 	RequestIdHandler
 	CommandHandler
+	ElementTypeHandler
 	RootIdHandler
 	CaseIdHandler
 	OrderHandler
@@ -40,6 +41,11 @@ type RootIdHandler interface {
 type OrderHandler interface {
 	GetOrder() string
 	SetOrder(string)
+}
+
+type ElementTypeHandler interface {
+	GetElementType() string
+	SetElementType(string)
 }
 
 type CommandHandler interface {

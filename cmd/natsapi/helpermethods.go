@@ -56,6 +56,16 @@ func (r *RequestFromNats) SetRequestId(v string) {
 	r.RequestId = v
 }
 
+// GetElementType метод возвращает тип элемента
+func (r *RequestFromNats) GetElementType() string {
+	return r.ElementType
+}
+
+// SetElementType метод устанавливает тип элемента
+func (r *RequestFromNats) SetElementType(v string) {
+	r.ElementType = v
+}
+
 // GetRootId метод возвращает основной идентификатор кейса или алерта
 func (r *RequestFromNats) GetRootId() string {
 	return r.RootId

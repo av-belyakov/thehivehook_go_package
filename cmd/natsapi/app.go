@@ -4,10 +4,14 @@ package natsapi
 import (
 	"context"
 	"errors"
+	"fmt"
+	"runtime"
+	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/temporarystorage"
 	"github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions"
+	"github.com/nats-io/nats.go"
 )
 
 // New настраивает новый модуль взаимодействия с API NATS
@@ -47,16 +51,43 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- commoninterfaces.Ch
 
 	api.cacheRunningFunction = crf
 
-	go func() {
+	nc, err := nats.Connect(
+		fmt.Sprintf("%s:%d", api.host, api.port),
+		nats.MaxReconnects(-1),
+		nats.ReconnectWait(3*time.Second))
+	_, f, l, _ := runtime.Caller(0)
+	if err != nil {
+		return api.receivingChannel, fmt.Errorf("'%w' %s:%d", err, f, l-4)
+	}
 
-		//здесь temporarystorage будет использоватся для хранения двух
-		// основных типов данных:
-		// 1. хранение дескрипторов соединения с NATS
-		// 2. выполнение функции кеширования case или alert которые отправляются
-		// в NATS. Если NATS по какой то причине не будет доступен, то хранить
-		// вышеуказанные виды объектов и пытатся их отправить до тех пор
-		// пока они не будут отправлены или не истечет заданный срок после которых
-		// их можно будет удалить
+	//обработка разрыва соединения с NATS
+	nc.SetDisconnectErrHandler(func(c *nats.Conn, err error) {
+		api.logger.Send("error", fmt.Sprintf("the connection with NATS has been disconnected (%s) %s:%d", err.Error(), f, l-4))
+	})
+
+	//обработка переподключения к NATS
+	nc.SetReconnectHandler(func(c *nats.Conn) {
+		api.logger.Send("info", fmt.Sprintf("the connection to NATS has been re-established (%s) %s:%d", err.Error(), f, l-4))
+	})
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				nc.Close()
+
+				return
+
+			case msg := <-api.receivingChannel:
+				switch msg.GetElementType() {
+				case "case":
+
+				case "alert":
+
+				}
+
+			}
+		}
 	}()
 
 	return api.receivingChannel, nil

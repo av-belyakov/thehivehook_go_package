@@ -4,13 +4,14 @@ import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 
 // RequestFromWebHook структура запроса из модуля
 type RequestFromWebHook struct {
-	RequestId  string                                 //id запроса
-	RootId     string                                 //идентификатор по которому в TheHive будет выполнятся поиск
-	CaseId     string                                 //идентификатор кейса в TheHive
-	Command    string                                 //команда
-	Order      string                                 //распоряжение
-	Data       interface{}                            //набор данных
-	ChanOutput chan commoninterfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
+	RequestId   string                                 //id запроса
+	ElementType string                                 //тип элемента
+	RootId      string                                 //идентификатор по которому в TheHive будет выполнятся поиск
+	CaseId      string                                 //идентификатор кейса в TheHive
+	Command     string                                 //команда
+	Order       string                                 //распоряжение
+	Data        interface{}                            //набор данных
+	ChanOutput  chan commoninterfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
 }
 
 // ResponsToWebHook структура ответа в модуля

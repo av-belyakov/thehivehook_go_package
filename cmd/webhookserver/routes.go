@@ -95,6 +95,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			//отправка данных в NATS
 			sendData := NewChannelRequest()
 			sendData.SetRootId(eventElement.RootId)
+			sendData.SetElementType(eventElement.ObjectType)
 			sendData.SetCaseId(eventElement.Object.CaseId)
 			sendData.SetCommand("send case")
 			sendData.SetData(ec)
@@ -153,6 +154,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//отправка данных в NATS
 		sendData := NewChannelRequest()
 		sendData.SetRootId(eventElement.RootId)
+		sendData.SetElementType(eventElement.ObjectType)
 		sendData.SetCommand("send alert")
 		sendData.SetData(ea)
 		//sendData.SetChanOutput(chanResObservable)
