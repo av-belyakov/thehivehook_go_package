@@ -8,17 +8,16 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/nats-io/nats.go"
+
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/temporarystorage"
-	"github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions"
-	"github.com/nats-io/nats.go"
 )
 
 // New настраивает новый модуль взаимодействия с API NATS
 func New(logger commoninterfaces.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 	api := &apiNatsModule{
 		cachettl:         10,
-		subscribers:      []SubscriberNATS(nil),
 		logger:           logger,
 		receivingChannel: make(chan commoninterfaces.ChannelRequester),
 	}
@@ -36,20 +35,12 @@ func New(logger commoninterfaces.Logger, opts ...NatsApiOptions) (*apiNatsModule
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
 func (api *apiNatsModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
-	ts, err := temporarystoarge.NewTemporaryStorage( /*ctx, */ 30)
+	//временное хранилище
+	ts, err := temporarystoarge.NewTemporaryStorage(ctx, 30)
 	if err != nil {
-
 		return api.receivingChannel, err
 	}
-
 	api.temporaryStorage = ts
-
-	crf, err := cacherunningfunctions.CreateCach(ctx, api.cachettl)
-	if err != nil {
-		return api.receivingChannel, err
-	}
-
-	api.cacheRunningFunction = crf
 
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", api.host, api.port),
@@ -70,27 +61,70 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- commoninterfaces.Ch
 		api.logger.Send("info", fmt.Sprintf("the connection to NATS has been re-established (%s) %s:%d", err.Error(), f, l-4))
 	})
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				nc.Close()
+	//обработчик подписки
+	go api.subscriptionHandler(ctx, nc)
 
-				return
+	//обработчик данных изнутри приложения
+	go api.receivingChannelHandler(ctx, nc)
 
-			case msg := <-api.receivingChannel:
-				switch msg.GetElementType() {
-				case "case":
-
-				case "alert":
-
-				}
-
-			}
-		}
-	}()
+	go func(ctx context.Context, nc *nats.Conn) {
+		<-ctx.Done()
+		nc.Close()
+	}(ctx, nc)
 
 	return api.receivingChannel, nil
+}
+
+// subscriptionHandler обработчик команд
+func (api *apiNatsModule) subscriptionHandler(ctx context.Context, nc *nats.Conn) {
+	nc.Subscribe(api.subscriptions.listenerCommand, func(m *nats.Msg) {
+
+	})
+
+	<-ctx.Done()
+}
+
+// receivingChannelHandler обработчик данных изнутри приложения
+func (api *apiNatsModule) receivingChannelHandler(ctx context.Context, nc *nats.Conn) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+
+		case msg := <-api.receivingChannel:
+			data, ok := msg.GetData().([]byte)
+			if !ok {
+				_, f, l, _ := runtime.Caller(0)
+				api.logger.Send("error", fmt.Sprintf("it is not possible to convert a value to a %s:%d", f, l-2))
+
+				continue
+			}
+
+			var subscription string
+			switch msg.GetElementType() {
+			case "case":
+				subscription = api.subscriptions.senderCase
+			case "alert":
+				subscription = api.subscriptions.senderAlert
+			case "comman_handler":
+				//здесь нужно получить из temporarystoarge.NewTemporaryStorage
+				// дескриптор запрашивающего, отправить результата в дескриптор
+				// через nc.Publish(m.Reply, []byte())
+
+				continue
+			default:
+				_, f, l, _ := runtime.Caller(0)
+				api.logger.Send("error", fmt.Sprintf("undefined type '%s' for sending a message to NATS, cannot be processed %s:%d", msg.GetElementType(), f, l-6))
+
+				continue
+			}
+
+			if err := nc.Publish(subscription, data); err != nil {
+				_, f, l, _ := runtime.Caller(0)
+				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-1))
+			}
+		}
+	}
 }
 
 // WithHost метод устанавливает имя или ip адрес хоста API
@@ -133,21 +167,41 @@ func WithCacheTTL(v int) NatsApiOptions {
 	}
 }
 
-// WithSubscribers метод добавляет абонентов NATS
-func WithSubscribers(event string, responders []string) NatsApiOptions {
+// WithSubSenderCase устанавливает канал в который будут отправлятся объекты типа 'case'
+func WithSubSenderCase(v string) NatsApiOptions {
 	return func(n *apiNatsModule) error {
-		if event == "" {
-			return errors.New("the subscriber element 'event' must not be empty")
+		if v == "" {
+			return errors.New("the value of 'sender_case' cannot be empty")
 		}
 
-		if len(responders) == 0 {
-			return errors.New("the subscriber element 'responders' must not be empty")
+		n.subscriptions.senderCase = v
+
+		return nil
+	}
+}
+
+// WithSubSenderAlert устанавливает канал в который будут отправлятся объекты типа 'alert'
+func WithSubSenderAlert(v string) NatsApiOptions {
+	return func(n *apiNatsModule) error {
+		if v == "" {
+			return errors.New("the value of 'sender_alert' cannot be empty")
 		}
 
-		n.subscribers = append(n.subscribers, SubscriberNATS{
-			Event:      event,
-			Responders: responders,
-		})
+		n.subscriptions.senderAlert = v
+
+		return nil
+	}
+}
+
+// WithSubListenerCommand устанавливает канал через которые будут приходить команды для
+// выполнения определенных действий в TheHive
+func WithSubListenerCommand(v string) NatsApiOptions {
+	return func(n *apiNatsModule) error {
+		if v == "" {
+			return errors.New("the value of 'listener_command' cannot be empty")
+		}
+
+		n.subscriptions.listenerCommand = v
 
 		return nil
 	}
@@ -160,3 +214,23 @@ func (mnats *ModuleNATS) GetDataReceptionChannel() <-chan SettingsOutputChan {
 func (mnats *ModuleNATS) SendingData(data SettingsOutputChan) {
 	mnats.chanOutputNATS <- data
 }
+
+// WithSubscribers метод добавляет абонентов NATS
+//func WithSubscribers(event string, responders []string) NatsApiOptions {
+//	return func(n *apiNatsModule) error {
+//		if event == "" {
+//			return errors.New("the subscriber element 'event' must not be empty")
+//		}
+//
+//		if len(responders) == 0 {
+//			return errors.New("the subscriber element 'responders' must not be empty")
+//		}
+//
+//		n.subscribers = append(n.subscribers, SubscriberNATS{
+//			Event:      event,
+//			Responders: responders,
+//		})
+//
+//		return nil
+//	}
+//}

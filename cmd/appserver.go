@@ -62,9 +62,7 @@ func server(ctx context.Context) {
 
 	if err := wrappers.WrappersZabbixInteraction(ctx, simpleLogger, wzis, channelZabbix); err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
-
-		log.Fatalf("error module 'zabbixinteraction': %s\n", err.Error())
+		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1), "error")
 	}
 
 	//******************************************************************
@@ -101,10 +99,10 @@ func server(ctx context.Context) {
 	natsOptsAPI := []natsapi.NatsApiOptions{
 		natsapi.WithHost(confNatsSAPI.Host),
 		natsapi.WithPort(confNatsSAPI.Port),
-	}
-	for _, v := range confNatsSAPI.Subscribers {
-		natsOptsAPI = append(natsOptsAPI, natsapi.WithSubscribers(v.Event, v.Responders))
-	}
+		natsapi.WithCacheTTL(confNatsSAPI.CacheTTL),
+		natsapi.WithSubSenderCase(confNatsSAPI.Subscriptions.SenderCase),
+		natsapi.WithSubSenderAlert(confNatsSAPI.Subscriptions.SenderAlert),
+		natsapi.WithSubListenerCommand(confNatsSAPI.Subscriptions.ListenerCommand)}
 	apiNats, err := natsapi.New(logging, natsOptsAPI...)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)

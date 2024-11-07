@@ -11,6 +11,12 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
 )
 
+const (
+	ansiReset             = "\033[0m"
+	ansiWhite             = "\033[97m"
+	ansiDarkRedbackground = "\033[41m"
+)
+
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
 func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFromWebHookServer, error) {
 	chanOutput := make(chan ChanFromWebHookServer)
@@ -61,7 +67,7 @@ func (wh *WebHookServer) Start(ctx context.Context) {
 	}()
 
 	msg := fmt.Sprintf("Application '%s' v%s was successfully launched, %s:%d", versionandname.GetName(), versionandname.GetVersion(), wh.host, wh.port)
-	log.Println(msg)
+	log.Printf("%v%v%s%v\n", ansiDarkRedbackground, ansiWhite, msg, ansiReset)
 	wh.logger.Send("info", msg)
 
 	<-ctx.Done()

@@ -53,11 +53,11 @@ type Handshake struct {
 }
 
 type AppConfigNATS struct {
-	Port        int              `validate:"gt=0,lte=65535" yaml:"port"`
-	CacheTTL    int              `validate:"gt=10,lte=86400" yaml:"cacheTtl"`
-	Host        string           `validate:"required" yaml:"host"`
-	Prefix      string           `yaml:"prefix"`
-	Subscribers []SubscriberNATS `yaml:"subscribers"`
+	Port          int               `validate:"gt=0,lte=65535" yaml:"port"`
+	CacheTTL      int               `validate:"gt=10,lte=86400" yaml:"cacheTtl"`
+	Host          string            `validate:"required" yaml:"host"`
+	Prefix        string            `yaml:"prefix"`
+	Subscriptions SubscriptionsNATS `yaml:"subscriptions"`
 }
 
 type AppConfigTheHive struct {
@@ -74,12 +74,10 @@ type AppConfigWebHookServer struct {
 	Name       string `validate:"required" yaml:"name"`
 }
 
-type NATS struct {
-	NATS SubscribersNATS
-}
-
-type SubscribersNATS struct {
-	Subscribers []SubscriberNATS `yaml:"subscribers"`
+type SubscriptionsNATS struct {
+	SenderCase      string `validate:"required" yaml:"sender_case"`
+	SenderAlert     string `validate:"required" yaml:"sender_alert"`
+	ListenerCommand string `validate:"required" yaml:"listener_command"`
 }
 
 type SubscriberNATS struct {

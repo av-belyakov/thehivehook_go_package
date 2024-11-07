@@ -7,20 +7,20 @@ import (
 
 // apiNatsSettings настройки для API NATS
 type apiNatsModule struct {
-	cachettl             int
-	port                 int
-	host                 string
-	subscribers          []SubscriberNATS
-	logger               commoninterfaces.Logger
-	receivingChannel     chan commoninterfaces.ChannelRequester
-	temporaryStorage     *temporarystoarge.TemporaryStorage
-	cacheRunningFunction commoninterfaces.CacheFuncRunner
+	cachettl         int
+	port             int
+	host             string
+	subscriptions    subscription
+	logger           commoninterfaces.Logger
+	receivingChannel chan commoninterfaces.ChannelRequester
+	responseChannel  chan commoninterfaces.ChannelResponser
+	temporaryStorage *temporarystoarge.TemporaryStorage
 }
 
-// SubscriberNATS абоненты NATS
-type SubscriberNATS struct {
-	Event      string   `validate:"required" yaml:"event"`
-	Responders []string `yaml:"responders"`
+type subscription struct {
+	senderCase      string
+	senderAlert     string
+	listenerCommand string
 }
 
 // NatsApiOptions функциональные опции

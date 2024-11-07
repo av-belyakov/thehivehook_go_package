@@ -22,8 +22,8 @@ func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (Read
 
 	wg.Add(2)
 
-	go func() {
-		for res := range chanResObservable {
+	go func(wg *sync.WaitGroup, chRes <-chan commoninterfaces.ChannelResponser) {
+		for res := range chRes {
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				mainErr = err
@@ -35,9 +35,9 @@ func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (Read
 		}
 
 		wg.Done()
-	}()
-	go func() {
-		for res := range chanResTTL {
+	}(&wg, chanResObservable)
+	go func(wg *sync.WaitGroup, chRes <-chan commoninterfaces.ChannelResponser) {
+		for res := range chRes {
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				mainErr = err
@@ -49,7 +49,7 @@ func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (Read
 		}
 
 		wg.Done()
-	}()
+	}(&wg, chanResTTL)
 
 	//запрос на поиск дополнительной информации об Observables
 	reqObservable := NewChannelRequest()

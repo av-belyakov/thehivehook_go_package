@@ -3,6 +3,8 @@ package temporarystoarge
 import (
 	"sync"
 	"time"
+
+	"github.com/nats-io/nats.go"
 )
 
 // TemporaryStorage временное хранилище
@@ -14,11 +16,14 @@ type TemporaryStorage struct {
 // ttlStorage хранилище данных со сроком жизни
 type ttlStorage struct {
 	mutex   sync.RWMutex
-	storage map[string]messageDescriptors
+	storage map[string]repository
 }
 
-// messageDescriptors структура с описанием хранящихся значений
-type messageDescriptors struct {
+type repository struct {
 	timeExpiry time.Time
-	value      string
+	service    string
+	command    string
+	rootId     string
+	caseId     string
+	nsMsg      *nats.Msg
 }

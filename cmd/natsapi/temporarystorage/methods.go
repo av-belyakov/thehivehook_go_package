@@ -1,94 +1,178 @@
-// - модуль реализующий хранилище временной информации
 package temporarystoarge
 
 import (
-	"errors"
 	"fmt"
-	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 )
 
-var (
-	once sync.Once
-	ts   TemporaryStorage
-)
-
-// NewTemporaryStorage конструктор временного хранилища
-// ttl - time-to-live время жизни хранящейся информации в секундах,
-// минимальное значение 5 секунд, максимальное не должно превышать 86400 секунд
-// что соответствует 1-им суткам.
-// Внимание! Чрезмерно большое время жизни временной информации может повлечь за
-// собой утечку памяти.
-func NewTemporaryStorage( /*ctx context.Context, */ ttl int) (*TemporaryStorage, error) {
-	ts = TemporaryStorage{}
-
-	if ttl < 5 || ttl > 86400 {
-		return &ts, errors.New("the lifetime of the temporary information should not be less than 10 seconds and more than 86400 seconds")
-	}
-
-	var err error
-	once.Do(func() {
-		timeToLive, newErr := time.ParseDuration(fmt.Sprintf("%ds", ttl))
-		if newErr != nil {
-			err = errors.Join(err, newErr)
-
-			return
-		}
-
-		ts.ttl = timeToLive
-		ts.ttlStorage = ttlStorage{
-			storage: make(map[string]messageDescriptors),
-		}
-
-		go checkLiveTime(&ts)
-	})
-
-	return &ts, err
-}
-
-// checkLiveTime удаляет устаревшую временную информацию
-func checkLiveTime(ts *TemporaryStorage) {
-	for range time.Tick(5 * time.Second) {
-		go func() {
-			ts.ttlStorage.mutex.Lock()
-			defer ts.ttlStorage.mutex.Unlock()
-
-			for k, v := range ts.ttlStorage.storage {
-				if v.timeExpiry.Before(time.Now()) {
-					delete(ts.ttlStorage.storage, k)
-				}
-			}
-		}()
-	}
-}
-
-// SetValue создает новую запись, принимает значение которое нужно сохранить и
-// id по которому данное значение можно будет найти
-func (ts *TemporaryStorage) SetValue(id, value string) string {
+// NewMessageDescriptor создает новый дескриптор, нужен для инициализации хранилища
+func (ts *TemporaryStorage) NewMessageDescriptor() string {
 	ts.ttlStorage.mutex.Lock()
 	defer ts.ttlStorage.mutex.Unlock()
 
-	ts.ttlStorage.storage[id] = messageDescriptors{
+	id := uuid.New().String()
+	ts.ttlStorage.storage[id] = repository{
 		timeExpiry: time.Now().Add(ts.ttl),
-		value:      value,
 	}
 
 	return id
 }
 
-// GetValue возвращает данные по полученому id
-func (ts *TemporaryStorage) GetValue(id string) (string, bool) {
-	if data, ok := ts.ttlStorage.storage[id]; ok {
-		return data.value, ok
+// SetService добавляет наименование сервиса
+func (ts *TemporaryStorage) SetService(id, v string) error {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return fmt.Errorf("the parameter 'service' cannot be set, repository with id '%s' was not found", id)
 	}
 
-	return "", false
+	tmp := ts.ttlStorage.storage[id]
+	tmp.service = v
+	ts.ttlStorage.storage[id] = tmp
+
+	return nil
 }
 
-// DeleteElement удаляет заданный элемент по его uuid
+// GetService возвращает наименование сервиса
+func (ts *TemporaryStorage) GetService(id string) (string, error) {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return "", fmt.Errorf("repository with id '%s' was not found", id)
+	}
+
+	return ts.ttlStorage.storage[id].service, nil
+}
+
+// SetCommand добавляет наименование команды
+func (ts *TemporaryStorage) SetCommand(id, v string) error {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return fmt.Errorf("the parameter 'command' cannot be set, repository with id '%s' was not found", id)
+	}
+
+	tmp := ts.ttlStorage.storage[id]
+	tmp.command = v
+	ts.ttlStorage.storage[id] = tmp
+
+	return nil
+}
+
+// GetCommand возвращает наименование команды
+func (ts *TemporaryStorage) GetCommand(id string) (string, error) {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return "", fmt.Errorf("repository with id '%s' was not found", id)
+	}
+
+	return ts.ttlStorage.storage[id].command, nil
+}
+
+// SetRootId добавляет rootId
+func (ts *TemporaryStorage) SetRootId(id, v string) error {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return fmt.Errorf("the parameter 'rootId' cannot be set, repository with id '%s' was not found", id)
+	}
+
+	tmp := ts.ttlStorage.storage[id]
+	tmp.rootId = v
+	ts.ttlStorage.storage[id] = tmp
+
+	return nil
+}
+
+// GetRootId возвращает rootId
+func (ts *TemporaryStorage) GetRootId(id string) (string, error) {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return "", fmt.Errorf("repository with id '%s' was not found", id)
+	}
+
+	return ts.ttlStorage.storage[id].rootId, nil
+}
+
+// SetCaseId добавляет caseId
+func (ts *TemporaryStorage) SetCaseId(id, v string) error {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return fmt.Errorf("the parameter 'caseId' cannot be set, repository with id '%s' was not found", id)
+	}
+
+	tmp := ts.ttlStorage.storage[id]
+	tmp.caseId = v
+	ts.ttlStorage.storage[id] = tmp
+
+	return nil
+}
+
+// GetCaseId возвращает caseId
+func (ts *TemporaryStorage) GetCaseId(id string) (string, error) {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return "", fmt.Errorf("repository with id '%s' was not found", id)
+	}
+
+	return ts.ttlStorage.storage[id].caseId, nil
+}
+
+// SetNsMsg добавляет дескриптор запроса NATS
+func (ts *TemporaryStorage) SetNsMsg(id string, v *nats.Msg) error {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return fmt.Errorf("the parameter 'nats message' cannot be set, repository with id '%s' was not found", id)
+	}
+
+	tmp := ts.ttlStorage.storage[id]
+	tmp.nsMsg = v
+	ts.ttlStorage.storage[id] = tmp
+
+	return nil
+}
+
+// GetNsMsg возвращает дескриптор запроса NATS
+func (ts *TemporaryStorage) GetNsMsg(id string) (*nats.Msg, error) {
+	ts.ttlStorage.mutex.Lock()
+	defer ts.ttlStorage.mutex.Unlock()
+
+	if !ts.repositoryIsExist(id) {
+		return nil, fmt.Errorf("repository with id '%s' was not found", id)
+	}
+
+	return ts.ttlStorage.storage[id].nsMsg, nil
+}
+
+// DeleteElement удаляет заданный элемент по его id
 func (ts *TemporaryStorage) DeleteElement(id string) {
 	ts.ttlStorage.mutex.Lock()
 	defer ts.ttlStorage.mutex.Unlock()
 
 	delete(ts.ttlStorage.storage, id)
+}
+
+func (ts *TemporaryStorage) repositoryIsExist(id string) bool {
+	if _, ok := ts.ttlStorage.storage[id]; !ok {
+		return false
+	}
+
+	return true
 }

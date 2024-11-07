@@ -5,17 +5,10 @@ NATS:
   host: "nats.cloud.gcm"
   port: 4222
   cacheTtl: 43200
-  subscribers:
-    - event: "caseupdate"
-      responders:
-        - "ATD"
-        - "ES"
-        - "MISP"
-        - "MISP_TEST"
-        - "NCIRCC"
-    - event: "alertupdate"
-      responders:
-        - "ES"
+  subscriptions:
+    sender_case: "object.casetype"
+    sender_alert: "object.alerttype"
+    listener_command: "object.commandstype"
 THEHIVE:
   host: "thehive.cloud.gcm"
   port: 9000

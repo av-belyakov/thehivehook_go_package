@@ -23,10 +23,12 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			"GO_HIVEHOOK_MAIN": "",
 
 			//Подключение к NATS
-			"GO_HIVEHOOK_NPREFIX":      "",
-			"GO_HIVEHOOK_NHOST":        "",
-			"GO_HIVEHOOK_NPORT":        "",
-			"GO_HIVEHOOK_NSUBSCRIBERS": "",
+			"GO_HIVEHOOK_NPREFIX":             "",
+			"GO_HIVEHOOK_NHOST":               "",
+			"GO_HIVEHOOK_NPORT":               "",
+			"GO_HIVEHOOK_NSUBSENDERCASE":      "",
+			"GO_HIVEHOOK_NSUBSENDERALERT":     "",
+			"GO_HIVEHOOK_NSUBLISTENERCOMMAND": "",
 
 			//Подключение к TheHive
 			"GO_HIVEHOOK_THHOST":   "",
@@ -39,9 +41,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			"GO_HIVEHOOK_WEBHHOST":       "",
 			"GO_HIVEHOOK_WEBHPORT":       "",
 			"GO_HIVEHOOK_WEBHTTLTMPINFO": "",
-
-			//Настройки SQLite
-			"GO_HIVEHOOK_SLPATHDB": "",
 		}
 	)
 
@@ -119,14 +118,24 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			conf.AppConfigNATS.CacheTTL = viper.GetInt("NATS.cacheTtl")
 		}
 
-		if viper.IsSet("NATS.subscribers") {
-			nats := NATS{}
-			if err := viper.GetViper().Unmarshal(&nats); err != nil {
-				return err
-			}
-
-			conf.AppConfigNATS.Subscribers = nats.NATS.Subscribers
+		if viper.IsSet("NATS.subscriptions.sender_case") {
+			conf.AppConfigNATS.Subscriptions.SenderCase = viper.GetString("NATS.subscriptions.sender_case")
 		}
+		if viper.IsSet("NATS.subscriptions.sender_alert") {
+			conf.AppConfigNATS.Subscriptions.SenderAlert = viper.GetString("NATS.subscriptions.sender_alert")
+		}
+		if viper.IsSet("NATS.subscriptions.listener_command") {
+			conf.AppConfigNATS.Subscriptions.ListenerCommand = viper.GetString("NATS.subscriptions.listener_command")
+		}
+
+		//if viper.IsSet("NATS.subscribers") {
+		//	nats := NATS{}
+		//	if err := viper.GetViper().Unmarshal(&nats); err != nil {
+		//		return err
+		//	}
+		//
+		//	conf.AppConfigNATS.Subscribers = nats.NATS.Subscribers
+		//}
 
 		//Настройки для модуля подключения к TheHive
 		if viper.IsSet("THEHIVE.host") {
@@ -224,25 +233,35 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		}
 	}
 
-	if envList["GO_HIVEHOOK_NSUBSCRIBERS"] != "" {
-		subscribers := []SubscriberNATS{}
-		if strings.Contains(envList["GO_HIVEHOOK_NSUBSCRIBERS"], ";") {
-			tmp := strings.Split(envList["GO_HIVEHOOK_NSUBSCRIBERS"], ";")
-			if len(tmp) > 0 {
-				for _, v := range tmp {
-					if subscriber, err := hundlerSubscribersString(v); err == nil {
-						subscribers = append(subscribers, subscriber)
-					}
-				}
-			}
-		} else {
-			if subscriber, err := hundlerSubscribersString(envList["GO_HIVEHOOK_NSUBSCRIBERS"]); err == nil {
-				subscribers = append(subscribers, subscriber)
-			}
-		}
-
-		conf.AppConfigNATS.Subscribers = subscribers
+	if envList["GO_HIVEHOOK_NSUBSENDERCASE"] != "" {
+		conf.AppConfigNATS.Subscriptions.SenderCase = envList["GO_HIVEHOOK_NSUBSENDERCASE"]
 	}
+	if envList["GO_HIVEHOOK_NSUBSENDERALERT"] != "" {
+		conf.AppConfigNATS.Subscriptions.SenderAlert = envList["GO_HIVEHOOK_NSUBSENDERALERT"]
+	}
+	if envList["GO_HIVEHOOK_NSUBLISTENERCOMMAND"] != "" {
+		conf.AppConfigNATS.Subscriptions.ListenerCommand = envList["GO_HIVEHOOK_NSUBLISTENERCOMMAND"]
+	}
+
+	//if envList["GO_HIVEHOOK_NSUBSCRIBERS"] != "" {
+	//	subscribers := []SubscriberNATS{}
+	//	if strings.Contains(envList["GO_HIVEHOOK_NSUBSCRIBERS"], ";") {
+	//		tmp := strings.Split(envList["GO_HIVEHOOK_NSUBSCRIBERS"], ";")
+	//		if len(tmp) > 0 {
+	//			for _, v := range tmp {
+	//				if subscriber, err := hundlerSubscribersString(v); err == nil {
+	//					subscribers = append(subscribers, subscriber)
+	//				}
+	//			}
+	//		}
+	//	} else {
+	//		if subscriber, err := hundlerSubscribersString(envList["GO_HIVEHOOK_NSUBSCRIBERS"]); err == nil {
+	//			subscribers = append(subscribers, subscriber)
+	//		}
+	//	}
+	//
+	//	conf.AppConfigNATS.Subscribers = subscribers
+	//}
 
 	//Настройки для модуля подключения к TheHive
 	if envList["GO_HIVEHOOK_THHOST"] != "" {
