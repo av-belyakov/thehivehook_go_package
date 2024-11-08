@@ -8,12 +8,13 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-// NewMessageDescriptor создает новый дескриптор, нужен для инициализации хранилища
-func (ts *TemporaryStorage) NewMessageDescriptor() string {
+// NewCell создает новую ячейку в хранилище в которую осуществляется запись,
+// возвращает id новой ячейки, без корректного id запись в хранилище не возможна
+func (ts *TemporaryStorage) NewCell() (id string) {
 	ts.ttlStorage.mutex.Lock()
 	defer ts.ttlStorage.mutex.Unlock()
 
-	id := uuid.New().String()
+	id = uuid.New().String()
 	ts.ttlStorage.storage[id] = repository{
 		timeExpiry: time.Now().Add(ts.ttl),
 	}

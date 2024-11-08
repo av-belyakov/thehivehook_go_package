@@ -59,17 +59,13 @@ GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной инфор
 ```
 {
   "service": "<наименование сервиса>" //обязательный параметр
-  "commands": [
-    {
-      "command": <команда>
-      "root_id": "<основной id, как правило это rootId case или alert>" //обязательный параметр только для некоторых действий выполняемых с конкретным кейсом или алертом
-      "case_id": "<id кейса, если есть>"
-      "username": <имя пользователя> //необходим если нужно указать пользователя выполнившего действие
-      "field_name": <некое ключевое поле>
-      "value": <устанавливаемое значение>
-      "byteData": <набор данных в бинарном виде>
-    }
-  ]
+  "command": <команда>
+  "root_id": "<основной id, как правило это rootId case или alert>" //обязательный параметр только для некоторых действий выполняемых с конкретным кейсом или алертом
+  "case_id": "<id кейса, если есть>"
+  "username": <имя пользователя> //необходим если нужно указать пользователя выполнившего действие
+  "field_name": <некое ключевое поле>
+  "value": <устанавливаемое значение>
+  "byte_data": <набор данных в бинарном виде>
 }
 ```
 
@@ -84,14 +80,10 @@ GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной инфор
 ```
 {
   "service": "MISP",
-  "commands": [
-    {
-      "command": "add_tag",
-      "root_id": "~74395656",
-      "case_id": "13435",
-      "value": "Webhook: send=\"MISP\""
-    }
-  ]
+  "command": "add_tag",
+  "root_id": "~74395656",
+  "case_id": "13435",
+  "value": "Webhook: send=\"MISP\""
 }
 ```
 
@@ -100,15 +92,11 @@ GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной инфор
 ```
 {
   "service": "MISP",
-  "commands": [
-    {
-      "command": "add_task",
-      "root_id": "~74395656",
-      "username": "architector@33c.rcm",
-      "field_name": "Developers",
-      "value": "handling request"
-    }
-  ]
+  "command": "add_task",
+  "root_id": "~74395656",
+  "username": "architector@33c.rcm",
+  "field_name": "Developers",
+  "value": "handling request"
 }
 ```
 
@@ -117,14 +105,10 @@ GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной инфор
 ```
 {
   "service": "MISP",
-  "commands": [
-    {
-      "command": "set_custom_field",
-      "root_id": "~74395656",
-      "field_name": "misp-event-id.string",
-      "value": "3221"
-    }
-  ]
+  "command": "set_custom_field",
+  "root_id": "~74395656",
+  "field_name": "misp-event-id.string",
+  "value": "3221"
 }
 ```
 

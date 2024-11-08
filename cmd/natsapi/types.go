@@ -1,6 +1,8 @@
 package natsapi
 
 import (
+	"github.com/nats-io/nats.go"
+
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/temporarystorage"
 )
@@ -13,7 +15,8 @@ type apiNatsModule struct {
 	subscriptions    subscription
 	logger           commoninterfaces.Logger
 	receivingChannel chan commoninterfaces.ChannelRequester
-	responseChannel  chan commoninterfaces.ChannelResponser
+	sendingChannel   chan commoninterfaces.ChannelRequester
+	natsConnection   *nats.Conn
 	temporaryStorage *temporarystoarge.TemporaryStorage
 }
 

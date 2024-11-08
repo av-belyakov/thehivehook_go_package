@@ -3,6 +3,7 @@ package natsapi
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"runtime"
@@ -10,16 +11,19 @@ import (
 
 	"github.com/nats-io/nats.go"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/temporarystorage"
 )
 
 // New настраивает новый модуль взаимодействия с API NATS
-func New(logger commoninterfaces.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
+func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 	api := &apiNatsModule{
-		cachettl:         10,
-		logger:           logger,
-		receivingChannel: make(chan commoninterfaces.ChannelRequester),
+		cachettl: 10,
+		logger:   logger,
+		//прием запросов в NATS
+		receivingChannel: make(chan cint.ChannelRequester),
+		//передача запросов из NATS
+		sendingChannel: make(chan cint.ChannelRequester),
 	}
 
 	for _, opt := range opts {
@@ -34,11 +38,11 @@ func New(logger commoninterfaces.Logger, opts ...NatsApiOptions) (*apiNatsModule
 // Start инициализирует новый модуль взаимодействия с API NATS
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func (api *apiNatsModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
+func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequester, <-chan cint.ChannelRequester, error) {
 	//временное хранилище
-	ts, err := temporarystoarge.NewTemporaryStorage(ctx, 30)
+	ts, err := temporarystoarge.NewTemporaryStorage(ctx, api.cachettl)
 	if err != nil {
-		return api.receivingChannel, err
+		return api.receivingChannel, api.sendingChannel, err
 	}
 	api.temporaryStorage = ts
 
@@ -48,7 +52,7 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- commoninterfaces.Ch
 		nats.ReconnectWait(3*time.Second))
 	_, f, l, _ := runtime.Caller(0)
 	if err != nil {
-		return api.receivingChannel, fmt.Errorf("'%w' %s:%d", err, f, l-4)
+		return api.receivingChannel, api.sendingChannel, fmt.Errorf("'%w' %s:%d", err, f, l-4)
 	}
 
 	//обработка разрыва соединения с NATS
@@ -61,31 +65,101 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- commoninterfaces.Ch
 		api.logger.Send("info", fmt.Sprintf("the connection to NATS has been re-established (%s) %s:%d", err.Error(), f, l-4))
 	})
 
+	api.natsConnection = nc
+
 	//обработчик подписки
-	go api.subscriptionHandler(ctx, nc)
+	go api.subscriptionHandler(ctx)
 
 	//обработчик данных изнутри приложения
-	go api.receivingChannelHandler(ctx, nc)
+	go api.receivingChannelHandler(ctx)
 
 	go func(ctx context.Context, nc *nats.Conn) {
 		<-ctx.Done()
 		nc.Close()
 	}(ctx, nc)
 
-	return api.receivingChannel, nil
+	return api.receivingChannel, api.sendingChannel, nil
 }
 
 // subscriptionHandler обработчик команд
-func (api *apiNatsModule) subscriptionHandler(ctx context.Context, nc *nats.Conn) {
-	nc.Subscribe(api.subscriptions.listenerCommand, func(m *nats.Msg) {
+func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
+	api.natsConnection.Subscribe(api.subscriptions.listenerCommand, func(m *nats.Msg) {
+		rc := RequestCommand{}
+		if err := json.Unmarshal(m.Data, &rc); err != nil {
+			_, f, l, _ := runtime.Caller(0)
+			api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
+
+			return
+		}
+
+		//
+		// Взаимодействие с модулями за пределом NatsAPI должно
+		// осуществлятся через обратный канал и заварачиватся в
+		// горутну которая будет ждать результата из этого канала
+		// либо истечении таймаута после которого канал будет закрыт
+		// а гроутина удалена. Однако непонятно что делать с возможной
+		// попыткой функций-обработчиков отправить данные в уже закрытый
+		// по таймауту канал.
+		//
+		go api.handlerIncomingCommands(ctx, rc, m)
+
+		// При такой реализации временное хранилище может и не нужно уже?
+		//
+		//id := api.temporaryStorage.NewCell()
+		//api.temporaryStorage.SetNsMsg(id, m)
+		//api.temporaryStorage.SetService(id, rc.Service)
+		//api.temporaryStorage.SetCommand(id, rc.Command)
+		//api.temporaryStorage.SetRootId(id, rc.RootId)
+		//api.temporaryStorage.SetCaseId(id, rc.CaseId)
 
 	})
+}
 
-	<-ctx.Done()
+// handlerIncomingCommands обработчик входящих, через NATS, команд
+func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc RequestCommand, m *nats.Msg) {
+	t := (time.Duration(api.cachettl) * time.Second)
+	ctxTimeout, ctxTimeoutCancel := context.WithTimeout(ctx, t)
+	defer func(cancel context.CancelFunc) {
+		cancel()
+	}(ctxTimeoutCancel)
+
+	//				 !!!!!!!!!!!!!
+	//вопрос что если таймаут ожидания гроутины истечет,
+	//и будет попытка выполнить ответ в закрытый канал
+	//		сделать его nil?
+	// надо потестировать
+
+	chRes := make(chan cint.ChannelResponser)
+	req := RequestFromNats{
+		//RequestId: id,
+		Command:    rc.Command,
+		Data:       rc,
+		ChanOutput: chRes,
+	}
+	api.sendingChannel <- &req
+
+	for {
+		select {
+		case <-ctxTimeout.Done():
+			return
+
+		case msg := <-chRes:
+
+			//						 !!!!!!!!!!!!!!!
+			// вот с формированием ответа в таком ключе или через специальную
+			// структуру и преобразование в json надо еще подумать
+			// ....
+			res := []byte(fmt.Sprintf("{status_code: \"%d\", data: %v}", msg.GetStatusCode(), msg.GetData()))
+			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
+				_, f, l, _ := runtime.Caller(0)
+				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
+			}
+		}
+	}
 }
 
 // receivingChannelHandler обработчик данных изнутри приложения
-func (api *apiNatsModule) receivingChannelHandler(ctx context.Context, nc *nats.Conn) {
+func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -106,12 +180,7 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context, nc *nats.
 				subscription = api.subscriptions.senderCase
 			case "alert":
 				subscription = api.subscriptions.senderAlert
-			case "comman_handler":
-				//здесь нужно получить из temporarystoarge.NewTemporaryStorage
-				// дескриптор запрашивающего, отправить результата в дескриптор
-				// через nc.Publish(m.Reply, []byte())
 
-				continue
 			default:
 				_, f, l, _ := runtime.Caller(0)
 				api.logger.Send("error", fmt.Sprintf("undefined type '%s' for sending a message to NATS, cannot be processed %s:%d", msg.GetElementType(), f, l-6))
@@ -119,7 +188,7 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context, nc *nats.
 				continue
 			}
 
-			if err := nc.Publish(subscription, data); err != nil {
+			if err := api.natsConnection.Publish(subscription, data); err != nil {
 				_, f, l, _ := runtime.Caller(0)
 				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-1))
 			}

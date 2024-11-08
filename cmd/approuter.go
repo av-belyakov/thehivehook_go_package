@@ -1,22 +1,36 @@
 package main
 
 import (
+	"context"
+
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 )
 
 func router(
+	ctx context.Context,
 	fromWebHook <-chan webhookserver.ChanFromWebHookServer,
+	fromNatsAPI <-chan commoninterfaces.ChannelRequester,
 	toTheHiveAPI chan<- commoninterfaces.ChannelRequester,
 	toNatsAPI chan<- commoninterfaces.ChannelRequester) {
 
-	for msg := range fromWebHook {
-		switch msg.ForSomebody {
-		case "for thehive":
-			toTheHiveAPI <- msg.Data
+	for {
+		select {
+		case <-ctx.Done():
+			return
 
-		case "for nats":
-			toNatsAPI <- msg.Data
+		case msg := <-fromWebHook:
+			switch msg.ForSomebody {
+			case "for thehive":
+				toTheHiveAPI <- msg.Data
+
+			case "for nats":
+				toNatsAPI <- msg.Data
+			}
+
+		case msg := <-fromNatsAPI:
+			toTheHiveAPI <- msg
+
 		}
 	}
 }

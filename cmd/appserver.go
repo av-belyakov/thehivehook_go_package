@@ -85,7 +85,7 @@ func server(ctx context.Context) {
 
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
 	}
-	chanRequestTheHiveAPI, err := apiTheHive.Start(ctx)
+	chReqTheHiveAPI, err := apiTheHive.Start(ctx)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
@@ -110,7 +110,7 @@ func server(ctx context.Context) {
 
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
-	chanRequestNatsAPI, err := apiNats.Start(ctx)
+	chReqNatsAPI, chNatsAPIReq, err := apiNats.Start(ctx)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
@@ -121,7 +121,7 @@ func server(ctx context.Context) {
 	//*********************************************************
 	//********** инициализация WEBHOOKSERVER сервера **********
 	confWebHook := confApp.GetApplicationWebHookServer()
-	webHook, chanForSomebody, err := webhookserver.New(
+	webHook, chForSomebody, err := webhookserver.New(
 		logging,
 		webhookserver.WithTTL(confApp.TTLTmpInfo),
 		webhookserver.WithPort(confWebHook.Port),
@@ -138,7 +138,7 @@ func server(ctx context.Context) {
 	//мост между каналами различных модулей, где любой канал модуля должен
 	//удовлетворять интерфейсу commoninterfaces.ChannelRequester и каналом
 	//для взаимодействия с webhookserver
-	go router(chanForSomebody, chanRequestTheHiveAPI, chanRequestNatsAPI)
+	go router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
 
 	webHook.Start(ctx)
 	webHook.Shutdown(ctx)

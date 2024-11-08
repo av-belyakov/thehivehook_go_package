@@ -17,7 +17,7 @@ func TestTemporaryStorage(t *testing.T) {
 	err = ts.SetService("34d11", "TestService")
 	assert.Error(t, err)
 
-	id := ts.NewMessageDescriptor()
+	id := ts.NewCell()
 
 	//**** Service
 	err = ts.SetService(id, "TestService")
@@ -58,7 +58,7 @@ func TestTemporaryStorage(t *testing.T) {
 	assert.NoError(t, err)
 
 	//******************** another id ********************
-	anotherId := ts.NewMessageDescriptor()
+	anotherId := ts.NewCell()
 
 	//**** Service
 	err = ts.SetService(anotherId, "TestAnyIdService")
