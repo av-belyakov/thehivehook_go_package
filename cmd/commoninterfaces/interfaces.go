@@ -4,10 +4,12 @@ package commoninterfaces
 
 type ChannelResponser interface {
 	RequestIdHandler
-	GetData() []byte
-	SetData([]byte)
 	GetStatusCode() int
 	SetStatusCode(int)
+	GetError() error
+	SetError(error)
+	GetData() []byte
+	SetData([]byte)
 }
 
 type ChannelRequester interface {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -19,8 +20,9 @@ import (
 var _ = Describe("Testthehivecasesettags", Ordered, func() {
 	var (
 		chApiTheHive chan<- commoninterfaces.ChannelRequester
-		caseId       string = "39100"
-		rootId       string = "~88678416456" //это мой тестовый кейс с id 39100
+		requestId    string = uuid.New().String()
+		//caseId       string = "39100"
+		//rootId       string = "~88678416456" //это мой тестовый кейс с id 39100
 
 		errLoadEnv error
 	)
@@ -58,14 +60,16 @@ var _ = Describe("Testthehivecasesettags", Ordered, func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			req := natsapi.NewChannelRequest()
-			req.SetCommand("send command")
-			req.SetOrder("add case tags")
-			req.SetRootId(rootId)
-			req.SetCaseId(caseId)
-			req.SetData([]string{
-				"Webhook:send=\"WEBKOOK_tags_test_111\"",
-				"Webhook:send=\"WEBKOOK_helpers\"",
-			})
+			req.SetCommand("send_command")
+			req.SetOrder("add_case_tags")
+			req.SetRequestId(requestId)
+			req.SetData([]byte(`{
+			  "service": "MISP",
+  			  "command": "add_case_tags",
+  			  "root_id": "~88678416456",
+  			  "case_id": "39100",
+  			  "value": "Webhook: send=\"WEBKOOK_Elasticsearch TEST new tag\""
+			}`))
 
 			chApiTheHive <- req
 

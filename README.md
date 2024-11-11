@@ -71,16 +71,16 @@ GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной инфор
 
 ##### Перечень видов обрабатываемых команд:
 
-- "add_tag"
-- "add_task"
-- "set_custom_field"
+- "add_case_tag"
+- "add_case_task"
+- "set_case_custom_field"
 
 Пример команды для добавления тега:
 
 ```
 {
   "service": "MISP",
-  "command": "add_tag",
+  "command": "add_case_tag",
   "root_id": "~74395656",
   "case_id": "13435",
   "value": "Webhook: send=\"MISP\""
@@ -92,7 +92,7 @@ GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной инфор
 ```
 {
   "service": "MISP",
-  "command": "add_task",
+  "command": "add_case_task",
   "root_id": "~74395656",
   "username": "architector@33c.rcm",
   "field_name": "Developers",
@@ -105,12 +105,14 @@ GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной инфор
 ```
 {
   "service": "MISP",
-  "command": "set_custom_field",
+  "command": "set_case_custom_field",
   "root_id": "~74395656",
   "field_name": "misp-event-id.string",
   "value": "3221"
 }
 ```
+
+### ЭТО НЕ АКТУАЛЬНО УЖЕ, актуальные команды выше
 
 Пример набора команд для объектов типа Case, где команда
 

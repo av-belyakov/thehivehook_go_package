@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -37,8 +38,9 @@ func (tp TaskParameters) GetUsername() string {
 var _ = Describe("Testthehivecasesettask", Ordered, func() {
 	var (
 		chApiTheHive chan<- commoninterfaces.ChannelRequester
-		caseId       string = "39100"
-		rootId       string = "~88678416456" //это мой тестовый кейс с id 39100
+		requestId    string = uuid.New().String()
+		//caseId       string = "39100"
+		//rootId       string = "~88678416456" //это мой тестовый кейс с id 39100
 
 		errLoadEnv error
 	)
@@ -76,16 +78,19 @@ var _ = Describe("Testthehivecasesettask", Ordered, func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			req := natsapi.NewChannelRequest()
-			req.SetCommand("send command")
-			req.SetOrder("add case task")
-			req.SetRootId(rootId)
-			req.SetCaseId(caseId)
-			req.SetData(TaskParameters{
-				Type:     "Developers",
-				Value:    "new filtration data",
-				Username: "a.belyakov@cloud.gcm",
-			})
-
+			req.SetCommand("send_command")
+			req.SetOrder("add_case_task")
+			req.SetRequestId(requestId)
+			req.SetData([]byte(`{
+              "service": "MISP",
+	          "command": "add_case_task",
+	          "root_id": "~88678416456",
+	          "case_id": "39100",
+	          "field_name": "NewGroup",
+	          "value": "analise new attack type - SQL-injection",
+			  "username": "a.belyakov@cloud.gcm"
+            }`))
+			//"field_name": "Developers"
 			chApiTheHive <- req
 
 			msg := <-logging.GetChan()

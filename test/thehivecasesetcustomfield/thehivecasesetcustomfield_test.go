@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -37,8 +38,9 @@ func (cfp CustomFieldParameters) GetUsername() string {
 var _ = Describe("Testthehivecasesetcustomfield", Ordered, func() {
 	var (
 		chApiTheHive chan<- commoninterfaces.ChannelRequester
-		caseId       string = "39100"
-		rootId       string = "~88678416456" //это мой тестовый кейс с id 39100
+		//caseId       string = "39100"
+		//rootId       string = "~88678416456" //это мой тестовый кейс с id 39100
+		requestId string = uuid.New().String()
 
 		errLoadEnv error
 	)
@@ -76,14 +78,17 @@ var _ = Describe("Testthehivecasesetcustomfield", Ordered, func() {
 			Expect(err).ShouldNot(HaveOccurred())
 
 			req := natsapi.NewChannelRequest()
-			req.SetCommand("send command")
-			req.SetOrder("add case custom fields")
-			req.SetRootId(rootId)
-			req.SetCaseId(caseId)
-			req.SetData(CustomFieldParameters{
-				Type:  "attack-type.string",                   //Type:  "misp-event-id.string",
-				Value: "выполнение произвольного SQL запроса", //Value: "73f",
-			})
+			req.SetCommand("send_command")
+			req.SetOrder("set_case_custom_field")
+			req.SetRequestId(requestId)
+			req.SetData([]byte(`{
+              "service": "MISP",
+	          "command": "set_case_custom_field",
+	          "root_id": "~88678416456",
+	          "case_id": "39100",
+	          "field_name": "attack-type.string",
+	          "value": "attack type XSS (XJS)"
+            }`))
 
 			chApiTheHive <- req
 

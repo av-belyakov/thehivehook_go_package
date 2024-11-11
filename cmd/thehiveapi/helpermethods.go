@@ -29,6 +29,16 @@ func (r *ResponseChannelTheHive) SetRequestId(v string) {
 	r.RequestId = v
 }
 
+// GetError метод возвращает объект ошибки
+func (r *ResponseChannelTheHive) GetError() error {
+	return r.Err
+}
+
+// SetError метод устанавливает объект ошибки
+func (r *ResponseChannelTheHive) SetError(e error) {
+	r.Err = e
+}
+
 // GetData метод возвращает данные
 func (r *ResponseChannelTheHive) GetData() []byte {
 	return r.Data
@@ -37,6 +47,12 @@ func (r *ResponseChannelTheHive) GetData() []byte {
 // SetData метод устанавливает определенные данные
 func (r *ResponseChannelTheHive) SetData(v []byte) {
 	r.Data = v
+}
+
+func (r *ResponseChannelTheHive) sendToChan(ch chan<- commoninterfaces.ChannelResponser) {
+	if ch != nil {
+		ch <- r
+	}
 }
 
 //******************* Request *********************
@@ -87,13 +103,13 @@ func (r *RequestChannelTheHive) SetCommand(v string) {
 }
 
 // GetData метод возвращает данные
-func (r *RequestChannelTheHive) GetData() []byte {
+func (r *RequestChannelTheHive) GetData() interface{} {
 	return r.Data
 }
 
 // SetData метод устанавливает определенные данные
-func (r *RequestChannelTheHive) SetData(v []byte) {
-	r.Data = v
+func (r *RequestChannelTheHive) SetData(i interface{}) {
+	r.Data = i
 }
 
 // GetChanOutput метод возвращает канал через который ответ от модуля apithehive передается

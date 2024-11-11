@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 
 	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
@@ -39,6 +40,10 @@ func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
 func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequester, <-chan cint.ChannelRequester, error) {
+	//
+	//похоже что временное хранилище для данного модуля
+	// вообще не очень то и нужно, надо обдумать
+	//этот момент
 	//временное хранилище
 	ts, err := temporarystoarge.NewTemporaryStorage(ctx, api.cachettl)
 	if err != nil {
@@ -92,48 +97,29 @@ func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 			return
 		}
 
-		//
-		// Взаимодействие с модулями за пределом NatsAPI должно
-		// осуществлятся через обратный канал и заварачиватся в
-		// горутну которая будет ждать результата из этого канала
-		// либо истечении таймаута после которого канал будет закрыт
-		// а гроутина удалена. Однако непонятно что делать с возможной
-		// попыткой функций-обработчиков отправить данные в уже закрытый
-		// по таймауту канал.
-		//
 		go api.handlerIncomingCommands(ctx, rc, m)
-
-		// При такой реализации временное хранилище может и не нужно уже?
-		//
-		//id := api.temporaryStorage.NewCell()
-		//api.temporaryStorage.SetNsMsg(id, m)
-		//api.temporaryStorage.SetService(id, rc.Service)
-		//api.temporaryStorage.SetCommand(id, rc.Command)
-		//api.temporaryStorage.SetRootId(id, rc.RootId)
-		//api.temporaryStorage.SetCaseId(id, rc.CaseId)
-
 	})
 }
 
 // handlerIncomingCommands обработчик входящих, через NATS, команд
 func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc RequestCommand, m *nats.Msg) {
-	t := (time.Duration(api.cachettl) * time.Second)
-	ctxTimeout, ctxTimeoutCancel := context.WithTimeout(ctx, t)
-	defer func(cancel context.CancelFunc) {
-		cancel()
-	}(ctxTimeoutCancel)
-
-	//				 !!!!!!!!!!!!!
-	//вопрос что если таймаут ожидания гроутины истечет,
-	//и будет попытка выполнить ответ в закрытый канал
-	//		сделать его nil?
-	// надо потестировать
-
+	id := uuid.New().String()
 	chRes := make(chan cint.ChannelResponser)
+
+	ttlTime := (time.Duration(api.cachettl) * time.Second)
+	ctxTimeout, ctxTimeoutCancel := context.WithTimeout(ctx, ttlTime)
+	defer func(cancel context.CancelFunc, ch chan cint.ChannelResponser) {
+		cancel()
+
+		close(ch)
+		ch = nil
+	}(ctxTimeoutCancel, chRes)
+
 	req := RequestFromNats{
-		//RequestId: id,
-		Command:    rc.Command,
-		Data:       rc,
+		RequestId:  id,
+		Command:    "send_command",
+		Order:      rc.Command,
+		Data:       m.Data,
 		ChanOutput: chRes,
 	}
 	api.sendingChannel <- &req
@@ -144,16 +130,15 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 			return
 
 		case msg := <-chRes:
+			api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
 
-			//						 !!!!!!!!!!!!!!!
-			// вот с формированием ответа в таком ключе или через специальную
-			// структуру и преобразование в json надо еще подумать
-			// ....
-			res := []byte(fmt.Sprintf("{status_code: \"%d\", data: %v}", msg.GetStatusCode(), msg.GetData()))
+			res := []byte(fmt.Sprintf("{id: \"%s\", status_code: \"%d\", data: %v}", msg.GetRequestId(), msg.GetStatusCode(), msg.GetData()))
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
 				_, f, l, _ := runtime.Caller(0)
 				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
 			}
+
+			return
 		}
 	}
 }
