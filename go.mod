@@ -1,6 +1,6 @@
 module github.com/av-belyakov/thehivehook_go_package
 
-go 1.23
+go 1.23.3
 
 require (
 	github.com/av-belyakov/simplelogger v0.0.0-20241025122435-67bb4d6f6ae4
@@ -17,6 +17,7 @@ require (
 )
 
 require (
+	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20241119103208-79c3b0ff4c2b // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect

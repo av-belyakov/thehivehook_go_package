@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/zabbixapi"
+	zabbixapicommunicator "github.com/av-belyakov/zabbixapicommunicator/cmd"
 )
 
 // WrappersZabbixInteraction обертка для взаимодействия с модулем zabbixapi
@@ -18,7 +18,7 @@ func WrappersZabbixInteraction(
 	channelZabbix <-chan commoninterfaces.Messager) error {
 
 	connTimeout := time.Duration(7 * time.Second)
-	hz, err := zabbixapi.New(zabbixapi.SettingsZabbixConnection{
+	zc, err := zabbixapicommunicator.New(zabbixapicommunicator.SettingsZabbixConnection{
 		Port:              settings.NetworkPort,
 		Host:              settings.NetworkHost,
 		NetProto:          "tcp",
@@ -29,18 +29,18 @@ func WrappersZabbixInteraction(
 		return err
 	}
 
-	et := make([]zabbixapi.EventType, len(settings.EventTypes))
+	et := make([]zabbixapicommunicator.EventType, len(settings.EventTypes))
 	for _, v := range settings.EventTypes {
-		et = append(et, zabbixapi.EventType{
+		et = append(et, zabbixapicommunicator.EventType{
 			IsTransmit: v.IsTransmit,
 			EventType:  v.EventType,
 			ZabbixKey:  v.ZabbixKey,
-			Handshake:  zabbixapi.Handshake(v.Handshake),
+			Handshake:  zabbixapicommunicator.Handshake(v.Handshake),
 		})
 	}
 
-	recipient := make(chan zabbixapi.Messager)
-	if err = hz.Start(ctx, et, recipient); err != nil {
+	recipient := make(chan zabbixapicommunicator.Messager)
+	if err = zc.Start(ctx, et, recipient); err != nil {
 		return err
 	}
 
@@ -51,7 +51,7 @@ func WrappersZabbixInteraction(
 				return
 
 			case msg := <-channelZabbix:
-				newMessageSettings := &zabbixapi.MessageSettings{}
+				newMessageSettings := &zabbixapicommunicator.MessageSettings{}
 				newMessageSettings.SetType(msg.GetType())
 				newMessageSettings.SetMessage(msg.GetMessage())
 
@@ -61,7 +61,7 @@ func WrappersZabbixInteraction(
 	}()
 
 	go func() {
-		for err := range hz.GetChanErr() {
+		for err := range zc.GetChanErr() {
 			_, f, l, _ := runtime.Caller(0)
 			writerLoggingData.WriteLoggingData(fmt.Sprintf("zabbix module: '%w' %s:%d", err, f, l-1), "error")
 		}

@@ -1,5 +1,7 @@
 github.com/av-belyakov/simplelogger v0.0.0-20241025122435-67bb4d6f6ae4 h1:sIT6BPdH12iQoIDZKqrfP0g5rjIffJnpNuCxmG/QZvA=
 github.com/av-belyakov/simplelogger v0.0.0-20241025122435-67bb4d6f6ae4/go.mod h1:NGvAPMeVHkAPNroGgrQzNvQBbXVmhj0g25+9y7ZUjsg=
+github.com/av-belyakov/zabbixapicommunicator v0.0.0-20241119103208-79c3b0ff4c2b h1:/pNhsBK+7WXUSQTnxMVPuO7K+j37N8xsvj6SqYAlVDk=
+github.com/av-belyakov/zabbixapicommunicator v0.0.0-20241119103208-79c3b0ff4c2b/go.mod h1:/9uIlkIPp366cZZt/m3skUb3zREYjWB034aw8+mshQA=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=

@@ -5,14 +5,12 @@ import (
 	"fmt"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/zabbixapi"
 )
 
-// LoggingHandler обработчик и распределитель логов
 func LoggingHandler(
 	ctx context.Context,
 	writerLoggingData commoninterfaces.WriterLoggingData,
-	channelZabbix chan<- commoninterfaces.Messager,
+	chanSystemMonitoring chan<- commoninterfaces.Messager,
 	logging <-chan commoninterfaces.Messager) {
 
 	for {
@@ -28,17 +26,19 @@ func LoggingHandler(
 			_ = writerLoggingData.WriteLoggingData(msg.GetMessage(), msg.GetType())
 
 			if msg.GetType() == "error" || msg.GetType() == "warning" {
-				channelZabbix <- &zabbixapi.MessageSettings{
-					EventType: "error",
-					Message:   fmt.Sprintf("%s: %s", msg.GetType(), msg.GetMessage()),
-				}
+				msg := NewMessageLogging()
+				msg.SetType("error")
+				msg.SetMessage(fmt.Sprintf("%s: %s", msg.GetType(), msg.GetMessage()))
+
+				chanSystemMonitoring <- msg
 			}
 
 			if msg.GetType() == "info" {
-				channelZabbix <- &zabbixapi.MessageSettings{
-					EventType: "info",
-					Message:   msg.GetMessage(),
-				}
+				msg := NewMessageLogging()
+				msg.SetType("info")
+				msg.SetMessage(msg.GetMessage())
+
+				chanSystemMonitoring <- msg
 			}
 		}
 	}
