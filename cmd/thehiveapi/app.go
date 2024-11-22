@@ -30,7 +30,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
 func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
-	crf, err := cacherunningfunctions.CreateCach(ctx, api.cachettl)
+	crf, err := cacherunningfunctions.CreateCache(ctx, api.cachettl)
 	if err != nil {
 		return api.receivingChannel, err
 	}

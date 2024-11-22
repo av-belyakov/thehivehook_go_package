@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
-// CreateCach создает новое хранилище кэширующее исполняемые функции. Время по
+// CreateCache создает новое хранилище кэширующее исполняемые функции. Время по
 // истечение которого кэшированная функция будет удалена, задается в секундах и
 // варьируется в диапазоне от 10 до 86400 секунд, что эквивалентно одним суткам.
-func CreateCach(ctx context.Context, ttl int) (*CacheRunningFunctions, error) {
+func CreateCache(ctx context.Context, ttl int) (*CacheRunningFunctions, error) {
 	cacheRunCom := CacheRunningFunctions{}
 
 	if ttl < 10 || ttl > 86400 {
@@ -43,13 +43,21 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 	for range tick.C {
 		crm.cacheStorage.mutex.Lock()
 		for k, v := range crm.cacheStorage.storages {
+			fmt.Println("func 'automaticExecutionMethods' new tick:")
+
 			//удаляем если записи слишком старые
 			if v.timeExpiry.Before(time.Now()) {
+				fmt.Println("func 'automaticExecutionMethods' new tick: before delete")
+
 				delete(crm.cacheStorage.storages, k)
 			}
 
+			fmt.Println("func 'automaticExecutionMethods' new tick: cacheFunc")
+
 			//выполнение кешированной функции
 			if v.cacheFunc() {
+				fmt.Println("func 'automaticExecutionMethods' new tick: delete")
+
 				delete(crm.cacheStorage.storages, k)
 			}
 		}

@@ -17,9 +17,25 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
+				fmt.Printf("func 'router', 'get_observables' msg.GetCommand():'%s', msg.GetRootId():'%s'\n", msg.GetCommand(), msg.GetRootId())
+				fmt.Println("________________________________________________")
+
+				//*****
+				// !!!!!!!!!!!!!!!!!!!!!!!!!!
+				// очень похоже что где то здесь в cacheRunningFunction есть какая то проблемма
+				// хотя по тесту, который app_test.go вроде нормально отрабатывае cacheRunningFunction
+				// однако по более глобальному тесту через ginkgo test/thehiverequest все
+				// 			как то не понятно отрабатывает
+				// !!!!!!!!!!!!!!!!!!!!!!!!!!
+				//*****
+
 				api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
+					fmt.Println("____________ === func 'router', GOROUTIN START...")
+
 					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
+						fmt.Println("____________ === func 'router', GOROUTIN ERROR =", err)
+
 						api.logger.Send("error", err.Error())
 
 						return false
@@ -30,8 +46,12 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					newRes.SetStatusCode(statusCode)
 					newRes.SetData(res)
 
+					fmt.Println("____________ === func 'router', GOROUTIN newRes =", newRes)
+
 					msg.GetChanOutput() <- newRes
 					close(msg.GetChanOutput())
+
+					fmt.Println("____________ === func 'router', AFTER GOROUTIN newRes =", newRes)
 
 					return true
 				})

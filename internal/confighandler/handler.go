@@ -181,7 +181,7 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		return &conf, err
 	}
 
-	confPath := path.Join(rootPath, "configs")
+	confPath := path.Join(rootPath, "config")
 
 	list, err := os.ReadDir(confPath)
 	if err != nil {
