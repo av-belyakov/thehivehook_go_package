@@ -79,7 +79,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(cn.Prefix).Should(Equal("test"))
 			Expect(cn.Host).Should(Equal("nats.cloud.gcm"))
 			Expect(cn.Port).Should(Equal(4222))
-			Expect(cn.CacheTTL).Should(Equal(43200))
+			Expect(cn.CacheTTL).Should(Equal(3600))
 			Expect(cn.Subscriptions.SenderCase).Should(Equal("object.casetype"))
 			Expect(cn.Subscriptions.SenderAlert).Should(Equal("object.alerttype"))
 			Expect(cn.Subscriptions.ListenerCommand).Should(Equal("object.commandstype"))

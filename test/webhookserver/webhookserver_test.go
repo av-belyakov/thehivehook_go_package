@@ -130,10 +130,10 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			go func() {
 				for msg := range chanForSomebody {
 					switch msg.ForSomebody {
-					case "for thehive":
+					case "to thehive":
 						chanRequestTheHiveAPI <- msg.Data
 
-					case "for nats":
+					case "to nats":
 					}
 				}
 			}()

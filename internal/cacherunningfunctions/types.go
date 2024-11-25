@@ -9,8 +9,10 @@ import (
 )
 
 type storageParameters struct {
-	timeExpiry time.Time
-	cacheFunc  func() bool
+	isFunctionRunning       bool
+	isCompletedSuccessfully bool
+	timeExpiry              time.Time
+	cacheFunc               func() bool
 }
 
 type cacheStorageParameters struct {

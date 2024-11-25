@@ -160,31 +160,6 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 	return res, statusCode, err
 }
 
-/*
-// AddCaseTags просто добавляет новые customFields в объект Case TheHive без
-// какого либо предварительного поиска и сверки customFields
-func (api *apiTheHiveModule) AddCaseCustomFields(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
-	cfp, ok := i.(commoninterfaces.ParametersCustomFieldKeeper)
-	if !ok {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, 0, fmt.Errorf("'it is not possible to convert a value to a commoninterfaces.ParametersCustomFieldKeeper interface' %s:%d", f, l-2)
-	}
-
-	req := []byte(fmt.Sprintf(`{"customFields.%s": %q}`, cfp.GetType(), cfp.GetValue()))
-	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer ctxCancel()
-
-	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/case/%s", rootId), req, "PATCH")
-	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
-	}
-
-	return res, statusCode, err
-}
-
-*/
-
 // AddCaseCustomFields просто добавляет новые customFields в объект Case TheHive без
 // какого либо предварительного поиска и сверки customFields
 func (api *apiTheHiveModule) AddCaseCustomFields(ctx context.Context, rc RequestCommand) ([]byte, int, error) {
@@ -200,36 +175,6 @@ func (api *apiTheHiveModule) AddCaseCustomFields(ctx context.Context, rc Request
 
 	return res, statusCode, err
 }
-
-/*
-// AddCaseTask просто добавляет новую задачу в объект Case TheHive без какого либо
-// поиска и сравнения схожей задачи
-func (api *apiTheHiveModule) AddCaseTask(ctx context.Context, rootId string, i interface{}) ([]byte, int, error) {
-	tp, ok := i.(commoninterfaces.ParametersCustomFieldKeeper)
-	if !ok {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, 0, fmt.Errorf("'it is not possible to convert a value to a commoninterfaces.ParametersCustomFieldKeeper interface' %s:%d", f, l-2)
-	}
-
-	var req []byte
-	if tp.GetUsername() == "" {
-		req = []byte(fmt.Sprintf(`{"status":"Waiting","group":%q,"title":%q}`, tp.GetType(), tp.GetValue()))
-	} else {
-		req = []byte(fmt.Sprintf(`{"status":"Waiting","group":%q,"title":%q,"owner":%q}`, tp.GetType(), tp.GetValue(), tp.GetUsername()))
-	}
-
-	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer ctxCancel()
-
-	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/case/%s/task", rootId), req, "POST")
-	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
-	}
-
-	return res, statusCode, err
-}
-*/
 
 // AddCaseTask просто добавляет новую задачу в объект Case TheHive без какого либо
 // поиска и сравнения схожей задачи

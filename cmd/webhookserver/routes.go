@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"runtime"
+	"strconv"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
@@ -38,7 +38,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	//----------- ЗАПИСЬ в файл ЭТО ТОЛЬКО ДЛЯ ТЕСТОВ -------------------
 	//-------------------------------------------------------------------
 	if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
-		wh.logger.Send("log_for_test", str)
+		wh.logger.Send("log_for_test", fmt.Sprintf("\n%s\n", str))
 	}
 	//-------------------------------------------------------------------
 
@@ -51,11 +51,11 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Received object with object type:", eventElement.ObjectType)
-	log.Println("Received JSON size =", len(bodyByte))
-
 	switch eventElement.ObjectType {
 	case "case":
+		fmt.Println("Received object with object type:", eventElement.ObjectType)
+		fmt.Println("Received JSON size =", len(bodyByte))
+
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		go func() {
@@ -78,11 +78,10 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			readyMadeEventCase.Source = wh.name
 			readyMadeEventCase.Case = caseEvent
 
-			fmt.Println("------ func 'RouteWebHook' ------- CASE -----")
 			if res, err := json.MarshalIndent(readyMadeEventCase, "", " "); err == nil {
+				fmt.Println("------------- NEW CASE --------------")
 				fmt.Println(string(res))
 			}
-			fmt.Println("------ func 'RouteWebHook' ------- CASE -----")
 
 			ec, err := json.Marshal(readyMadeEventCase)
 			if err != nil {
@@ -96,11 +95,14 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			sendData := NewChannelRequest()
 			sendData.SetRootId(eventElement.RootId)
 			sendData.SetElementType(eventElement.ObjectType)
-			sendData.SetCaseId(eventElement.Object.CaseId)
+			sendData.SetCaseId(strconv.Itoa(eventElement.Object.CaseId))
 			sendData.SetCommand("send case")
 			sendData.SetData(ec)
+
+			fmt.Println("!!!!!!!!!!!!!!!!!! func 'RouteWebHook', ObjectType:", eventElement.ObjectType, " send data to NATS")
+
 			wh.chanInput <- ChanFromWebHookServer{
-				ForSomebody: "for nats",
+				ForSomebody: "to nats",
 				Data:        sendData,
 			}
 		}()
@@ -137,12 +139,6 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		readyMadeEventAlert.Source = wh.name
 		readyMadeEventAlert.Event = alertEvent
 
-		fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
-		if res, err := json.MarshalIndent(readyMadeEventAlert, "", " "); err == nil {
-			fmt.Println(string(res))
-		}
-		fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
-
 		ea, err := json.Marshal(readyMadeEventAlert)
 		if err != nil {
 			_, f, l, _ := runtime.Caller(0)
@@ -151,6 +147,12 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		//fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
+		//if res, err := json.MarshalIndent(readyMadeEventAlert, "", " "); err == nil {
+		//	fmt.Println(string(res))
+		//}
+		//fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
+
 		//отправка данных в NATS
 		sendData := NewChannelRequest()
 		sendData.SetRootId(eventElement.RootId)
@@ -158,8 +160,9 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		sendData.SetCommand("send alert")
 		sendData.SetData(ea)
 		//sendData.SetChanOutput(chanResObservable)
+
 		wh.chanInput <- ChanFromWebHookServer{
-			ForSomebody: "for nats",
+			ForSomebody: "to nats",
 			Data:        sendData,
 		}
 	}

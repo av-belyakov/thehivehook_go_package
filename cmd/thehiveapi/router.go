@@ -17,9 +17,16 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
-				api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
+				fmt.Printf("func 'router', msg.GetCommand():'%s', msg.GetRootId():'%s'\n", msg.GetCommand(), msg.GetRootId())
+				fmt.Println("________________________________________________")
+
+				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
+					fmt.Println("____________ === func 'router', GOROUTIN START... ", msg.GetCommand())
+
 					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
+						fmt.Println("____________ === func 'router', GOROUTIN ERROR =", err, " msg.GetCommand()=", msg.GetCommand())
+
 						api.logger.Send("error", err.Error())
 
 						return false
@@ -32,14 +39,23 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 					msg.GetChanOutput() <- newRes
 					close(msg.GetChanOutput())
+
+					fmt.Println("func 'GOROUTINE' SEND DATA msg.GetCommand():", msg.GetCommand())
 
 					return true
 				})
 
 			case "get_ttp":
-				api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
+				fmt.Printf("func 'router', msg.GetCommand():'%s', msg.GetRootId():'%s'\n", msg.GetCommand(), msg.GetRootId())
+				fmt.Println("________________________________________________")
+
+				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
+					fmt.Println("____________ === func 'router', GOROUTIN START... ", msg.GetCommand())
+
 					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
 					if err != nil {
+						fmt.Println("____________ === func 'router', GOROUTIN ERROR =", err, " msg.GetCommand()=", msg.GetCommand())
+
 						api.logger.Send("error", err.Error())
 
 						return false
@@ -52,6 +68,8 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 					msg.GetChanOutput() <- newRes
 					close(msg.GetChanOutput())
+
+					fmt.Println("func 'GOROUTINE' SEND DATA msg.GetCommand():", msg.GetCommand())
 
 					return true
 				})
@@ -71,7 +89,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 				switch msg.GetOrder() {
 				case "add_case_tags":
-					api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
+					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
 						_, statusCode, err := api.AddCaseTags(ctx, rc)
 						if err != nil {
 							api.logger.Send("error", err.Error())
@@ -91,7 +109,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					})
 
 				case "add_case_task":
-					api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
+					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
 						_, statusCode, err := api.AddCaseTask(ctx, rc)
 						if err != nil {
 							api.logger.Send("error", err.Error())
@@ -111,7 +129,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					})
 
 				case "set_case_custom_field":
-					api.cacheRunningFunction.SetMethod(msg.GetRootId(), func() bool {
+					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
 						_, statusCode, err := api.AddCaseCustomFields(ctx, rc)
 						if err != nil {
 							api.logger.Send("error", err.Error())
@@ -129,7 +147,6 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 						return isSuccess
 					})
-
 				}
 			}
 		}

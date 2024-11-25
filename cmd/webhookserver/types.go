@@ -33,7 +33,7 @@ type WebHookServerOptions struct {
 
 // ChanFromWebHookServer структура канала для взаимодействия сторонних сервисов с webhookserver
 type ChanFromWebHookServer struct {
-	ForSomebody string //от кого данные
+	ForSomebody string //для кого данные
 	Data        commoninterfaces.ChannelRequester
 }
 

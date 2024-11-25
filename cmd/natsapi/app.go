@@ -151,6 +151,19 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			return
 
 		case msg := <-api.receivingChannel:
+			if msg.GetCommand() == "send case" {
+				fmt.Println("NATS func 'receivingChannelHandler', msg.GetCommand():", msg.GetCommand(), " msg.GetElementType():", msg.GetElementType(), " msg.GetCaseId():", msg.GetCaseId())
+			}
+
+			isSendCase := msg.GetCommand() != "send case"
+			isSendAlert := msg.GetCommand() != "send alert"
+
+			if !isSendCase && !isSendAlert {
+				continue
+			}
+
+			fmt.Println("NATS func 'receivingChannelHandler' 111111")
+
 			data, ok := msg.GetData().([]byte)
 			if !ok {
 				_, f, l, _ := runtime.Caller(0)
@@ -172,6 +185,8 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 
 				continue
 			}
+
+			fmt.Println("NATS func 'receivingChannelHandler' 2222222, subscription:", subscription)
 
 			if err := api.natsConnection.Publish(subscription, data); err != nil {
 				_, f, l, _ := runtime.Caller(0)
