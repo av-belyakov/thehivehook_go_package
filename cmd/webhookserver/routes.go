@@ -59,21 +59,31 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		go func() {
+			fmt.Println("1111111 ------ func 'RouteWebHook' ------- CASE -----")
+
 			readyMadeEventCase, err := CreateEvenCase(eventElement.RootId, wh.chanInput)
 			if err != nil {
+				fmt.Println("------ func 'RouteWebHook' ------- CASE ----- ERROR 1:", err.Error())
+
 				_, f, l, _ := runtime.Caller(0)
 				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
 
 				return
 			}
 
+			fmt.Println("1222222 ------ func 'RouteWebHook' ------- CASE -----")
+
 			caseEvent := map[string]interface{}{}
 			if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
+				fmt.Println("------ func 'RouteWebHook' ------- CASE ----- ERROR 2:", err.Error())
+
 				_, f, l, _ := runtime.Caller(0)
 				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
 
 				return
 			}
+
+			fmt.Println("1333333 ------ func 'RouteWebHook' ------- CASE -----")
 
 			readyMadeEventCase.Source = wh.name
 			readyMadeEventCase.Case = caseEvent

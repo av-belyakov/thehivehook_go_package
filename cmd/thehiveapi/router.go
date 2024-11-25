@@ -37,6 +37,8 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					newRes.SetStatusCode(statusCode)
 					newRes.SetData(res)
 
+					fmt.Println("____________ === func 'router', GOROUTIN newRes =", newRes)
+
 					msg.GetChanOutput() <- newRes
 					close(msg.GetChanOutput())
 
