@@ -4,7 +4,6 @@ import (
 	"github.com/nats-io/nats.go"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/temporarystorage"
 )
 
 // apiNatsSettings настройки для API NATS
@@ -17,7 +16,6 @@ type apiNatsModule struct {
 	receivingChannel chan commoninterfaces.ChannelRequester
 	sendingChannel   chan commoninterfaces.ChannelRequester
 	natsConnection   *nats.Conn
-	temporaryStorage *temporarystoarge.TemporaryStorage
 }
 
 type subscription struct {

@@ -2,11 +2,11 @@ package webhookserver
 
 import (
 	"encoding/json"
-	"fmt"
 	"sync"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/google/uuid"
+
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 )
 
 // CreateEvenCase создает новый объект case, содержащий дополнительную информацию типа объектов observables
@@ -25,31 +25,20 @@ func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (Read
 		chanResTTL        chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
 	)
 
-	fmt.Println("func 'CreateEvenCase' .......... START")
-
 	wg.Add(1)
 	go func(wg *sync.WaitGroup, chRes <-chan commoninterfaces.ChannelResponser) {
 		defer wg.Done()
 
-		fmt.Println("GOROUTINE 1, func 'CreateEvenCase' START")
-
 		for res := range chRes {
-			fmt.Println("func 'CreateEvenCase' .......... RESPONSE 'observables'")
-
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				mainErr = err
-
-				fmt.Println("func 'CreateEvenCase' .......... RESPONSE 'observables' ERRORR:", err.Error())
 
 				return
 			}
 
 			rmec.Observables = msg
 		}
-
-		fmt.Println("func 'CreateEvenCase' GOROUTINE 'observables' STOP")
-
 	}(&wg, chanResObservable)
 
 	//запрос на поиск дополнительной информации об Observables
@@ -67,25 +56,16 @@ func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (Read
 	go func(wg *sync.WaitGroup, chRes <-chan commoninterfaces.ChannelResponser) {
 		defer wg.Done()
 
-		fmt.Println("GOROUTINE 2, func 'CreateEvenCase' START")
-
 		for res := range chRes {
-			fmt.Println("func 'CreateEvenCase' .......... RESPONSE 'ttp'")
-
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				mainErr = err
-
-				fmt.Println("func 'CreateEvenCase' .......... RESPONSE 'ttp' ERRORR:", err.Error())
 
 				return
 			}
 
 			rmec.TTPs = msg
 		}
-
-		fmt.Println("func 'CreateEvenCase' GOROUTINE 'ttp' STOP")
-
 	}(&wg, chanResTTL)
 
 	//запрос на поиск дополнительной информации об TTL

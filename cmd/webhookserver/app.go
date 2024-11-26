@@ -14,7 +14,8 @@ import (
 const (
 	ansiReset             = "\033[0m"
 	ansiWhite             = "\033[97m"
-	ansiDarkRedbackground = "\033[41m"
+	ansiDarkRedbackground = "\033[42m"
+	boldFont              = "\033[1m"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
@@ -67,7 +68,7 @@ func (wh *WebHookServer) Start(ctx context.Context) {
 	}()
 
 	msg := fmt.Sprintf("Application '%s' v%s was successfully launched, %s:%d", versionandname.GetName(), versionandname.GetVersion(), wh.host, wh.port)
-	log.Printf("%v%v%s%v\n", ansiDarkRedbackground, ansiWhite, msg, ansiReset)
+	log.Printf("%v%v%v%s%v\n", ansiDarkRedbackground, boldFont, ansiWhite, msg, ansiReset)
 	wh.logger.Send("info", msg)
 
 	<-ctx.Done()

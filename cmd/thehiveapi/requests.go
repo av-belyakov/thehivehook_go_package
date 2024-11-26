@@ -229,6 +229,26 @@ func (api *apiTheHiveModule) query(ctx context.Context, reqpath string, query []
 		return resBody, res.StatusCode, nil
 	}
 
+	/*
+
+	   надо понять почему приходят нулевые status code
+	   и разобратся с ошибкой соединения с TheHive
+
+	   ОШИБКИ! Возможно когда много кейсов
+
+	   func 'automaticExecutionMethods' new tick: cacheFunc, id: 5dceea4e-bcf2-4084-b734-f0bd05562d79
+	   func 'automaticExecutionMethods' new tick: cacheFunc, id: 5b5c371a-997f-4f86-aa67-0fd299e8562c
+	   2024-11-26 15:20:13 ERR - thehivehook_go_package - Post "http://thehive.cloud.gcm:9000/api/v1/query?name=case-observables": context deadline exceeded, network connection error /home/artemij/go/src/thehivehook_go_package/cmd/thehiveapi/requests.go:33
+	   func 'automaticExecutionMethods' new tick: cacheFunc, id: 2fe81847-3572-4475-82d3-f3fd52e6d6de
+	   func 'automaticExecutionMethods' new tick: cacheFunc, id: b082e476-1cf4-44c4-a898-b41e5d6af6a6
+	   func 'automaticExecutionMethods' new tick: cacheFunc, id: d011369e-9f85-48ed-9bbe-40baca020b48
+	   2024-11-26 15:20:13 ERR - thehivehook_go_package - Post "http://thehive.cloud.gcm:9000/api/v1/query?name=case-procedures": context deadline exceeded, network connection error /home/artemij/go/src/thehivehook_go_package/cmd/thehiveapi/requests.go:67
+	   2024-11-26 15:20:13 ERR - thehivehook_go_package - Post "http://thehive.cloud.gcm:9000/api/v1/query?name=case-observables": context deadline exceeded, network connection error /home/artemij/go/src/thehivehook_go_package/cmd/thehiveapi/requests.go:33
+	   2024-11-26 15:20:13 ERR - thehivehook_go_package - Post "http://thehive.cloud.gcm:9000/api/v1/query?name=case-procedures": context deadline exceeded, network connection error /home/artemij/go/src/thehivehook_go_package/cmd/thehiveapi/requests.go:67
+
+
+	*/
+
 	var msg string
 	if m, err := supportingfunctions.GetDetailedMessage(res.Body); err == nil {
 		msg = m

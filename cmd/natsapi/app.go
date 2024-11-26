@@ -13,7 +13,6 @@ import (
 	"github.com/nats-io/nats.go"
 
 	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	temporarystoarge "github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/temporarystorage"
 )
 
 // New настраивает новый модуль взаимодействия с API NATS
@@ -40,17 +39,6 @@ func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
 func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequester, <-chan cint.ChannelRequester, error) {
-	//
-	//похоже что временное хранилище для данного модуля
-	// вообще не очень то и нужно, надо обдумать
-	//этот момент
-	//временное хранилище
-	ts, err := temporarystoarge.NewTemporaryStorage(ctx, api.cachettl)
-	if err != nil {
-		return api.receivingChannel, api.sendingChannel, err
-	}
-	api.temporaryStorage = ts
-
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", api.host, api.port),
 		nats.MaxReconnects(-1),
@@ -86,9 +74,12 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 	return api.receivingChannel, api.sendingChannel, nil
 }
 
-// subscriptionHandler обработчик команд
+// subscriptionHandler обработчик подписки
 func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 	api.natsConnection.Subscribe(api.subscriptions.listenerCommand, func(m *nats.Msg) {
+
+		fmt.Println("((( subscriptionHandler ))) reseived ", string(m.Data))
+
 		rc := RequestCommand{}
 		if err := json.Unmarshal(m.Data, &rc); err != nil {
 			_, f, l, _ := runtime.Caller(0)
@@ -110,19 +101,17 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 	ctxTimeout, ctxTimeoutCancel := context.WithTimeout(ctx, ttlTime)
 	defer func(cancel context.CancelFunc, ch chan cint.ChannelResponser) {
 		cancel()
-
 		close(ch)
 		ch = nil
 	}(ctxTimeoutCancel, chRes)
 
-	req := RequestFromNats{
+	api.sendingChannel <- &RequestFromNats{
 		RequestId:  id,
 		Command:    "send_command",
 		Order:      rc.Command,
 		Data:       m.Data,
 		ChanOutput: chRes,
 	}
-	api.sendingChannel <- &req
 
 	for {
 		select {
@@ -132,7 +121,7 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 		case msg := <-chRes:
 			api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
 
-			res := []byte(fmt.Sprintf("{id: \"%s\", status_code: \"%d\", data: %v}", msg.GetRequestId(), msg.GetStatusCode(), msg.GetData()))
+			res := []byte(fmt.Sprintf("{id: \"%s\", command: \"%s\" status_code: \"%d\", data: %v}", msg.GetRequestId(), rc.Command, msg.GetStatusCode(), msg.GetData()))
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
 				_, f, l, _ := runtime.Caller(0)
 				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
@@ -151,18 +140,12 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			return
 
 		case msg := <-api.receivingChannel:
-			if msg.GetCommand() == "send case" {
-				fmt.Println("NATS func 'receivingChannelHandler', msg.GetCommand():", msg.GetCommand(), " msg.GetElementType():", msg.GetElementType(), " msg.GetCaseId():", msg.GetCaseId())
-			}
-
 			isSendCase := msg.GetCommand() != "send case"
 			isSendAlert := msg.GetCommand() != "send alert"
 
 			if !isSendCase && !isSendAlert {
 				continue
 			}
-
-			fmt.Println("NATS func 'receivingChannelHandler' 111111")
 
 			data, ok := msg.GetData().([]byte)
 			if !ok {
@@ -185,8 +168,6 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 
 				continue
 			}
-
-			fmt.Println("NATS func 'receivingChannelHandler' 2222222, subscription:", subscription)
 
 			if err := api.natsConnection.Publish(subscription, data); err != nil {
 				_, f, l, _ := runtime.Caller(0)
@@ -283,23 +264,3 @@ func (mnats *ModuleNATS) GetDataReceptionChannel() <-chan SettingsOutputChan {
 func (mnats *ModuleNATS) SendingData(data SettingsOutputChan) {
 	mnats.chanOutputNATS <- data
 }
-
-// WithSubscribers метод добавляет абонентов NATS
-//func WithSubscribers(event string, responders []string) NatsApiOptions {
-//	return func(n *apiNatsModule) error {
-//		if event == "" {
-//			return errors.New("the subscriber element 'event' must not be empty")
-//		}
-//
-//		if len(responders) == 0 {
-//			return errors.New("the subscriber element 'responders' must not be empty")
-//		}
-//
-//		n.subscribers = append(n.subscribers, SubscriberNATS{
-//			Event:      event,
-//			Responders: responders,
-//		})
-//
-//		return nil
-//	}
-//}

@@ -53,45 +53,27 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 	switch eventElement.ObjectType {
 	case "case":
-		fmt.Println("Received object with object type:", eventElement.ObjectType)
-		fmt.Println("Received JSON size =", len(bodyByte))
-
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		go func() {
-			fmt.Println("1111111 ------ func 'RouteWebHook' ------- CASE -----")
-
 			readyMadeEventCase, err := CreateEvenCase(eventElement.RootId, wh.chanInput)
 			if err != nil {
-				fmt.Println("------ func 'RouteWebHook' ------- CASE ----- ERROR 1:", err.Error())
-
 				_, f, l, _ := runtime.Caller(0)
 				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-2))
 
 				return
 			}
 
-			fmt.Println("1222222 ------ func 'RouteWebHook' ------- CASE -----")
-
 			caseEvent := map[string]interface{}{}
 			if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
-				fmt.Println("------ func 'RouteWebHook' ------- CASE ----- ERROR 2:", err.Error())
-
 				_, f, l, _ := runtime.Caller(0)
 				wh.logger.Send("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1))
 
 				return
 			}
 
-			fmt.Println("1333333 ------ func 'RouteWebHook' ------- CASE -----")
-
 			readyMadeEventCase.Source = wh.name
 			readyMadeEventCase.Case = caseEvent
-
-			if res, err := json.MarshalIndent(readyMadeEventCase, "", " "); err == nil {
-				fmt.Println("------------- NEW CASE --------------")
-				fmt.Println(string(res))
-			}
 
 			ec, err := json.Marshal(readyMadeEventCase)
 			if err != nil {
@@ -101,6 +83,10 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			if eventElement.Object.CaseId == 39100 {
+				fmt.Println("func 'Routers' resived case id 39100")
+			}
+
 			//отправка данных в NATS
 			sendData := NewChannelRequest()
 			sendData.SetRootId(eventElement.RootId)
@@ -108,8 +94,6 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			sendData.SetCaseId(strconv.Itoa(eventElement.Object.CaseId))
 			sendData.SetCommand("send case")
 			sendData.SetData(ec)
-
-			fmt.Println("!!!!!!!!!!!!!!!!!! func 'RouteWebHook', ObjectType:", eventElement.ObjectType, " send data to NATS")
 
 			wh.chanInput <- ChanFromWebHookServer{
 				ForSomebody: "to nats",
