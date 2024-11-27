@@ -84,7 +84,7 @@ type WriterLoggingData interface {
 //************** кэширование функций *****************
 
 type CacheFuncRunner interface {
-	SetMethod(id string, f func() bool) string
-	GetMethod(id string) (func() bool, bool)
+	SetMethod(id string, f func(int) bool) string
+	GetMethod(id string) (func(int) bool, bool)
 	DeleteElement(id string)
 }

@@ -50,7 +50,6 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 
 			//удаление слишком старых записей
 			if storage.timeExpiry.Before(time.Now()) {
-				//delete(crm.cacheStorage.storages, k)
 				go crm.DeleteElement(id)
 
 				fmt.Println("func 'automaticExecutionMethods' new tick: before delete id:", id)
@@ -60,8 +59,7 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 
 			//удаление записей если функция в настоящее время не выполняется и вернула
 			// положительный результат
-			if storage.isCompletedSuccessfully {
-				//delete(crm.cacheStorage.storages, k)
+			if !storage.isFunctionExecution && storage.isCompletedSuccessfully {
 				go crm.DeleteElement(id)
 
 				fmt.Println("func 'automaticExecutionMethods' new tick: delete id:", id)
@@ -69,93 +67,28 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 				continue
 			}
 
+			if storage.isFunctionExecution {
+				continue
+			}
+
 			//выполнение кешированной функции
-			go func(cache *CacheRunningFunctions, id string, f func() bool) {
+			go func(cache *CacheRunningFunctions, id string, f func(int) bool) {
 				fmt.Println("func 'automaticExecutionMethods' new tick: cacheFunc, id:", id)
 
-				cache.setIsFunctionRunning(id)
-				if f() {
+				//устанавливает что функция выполняется
+				cache.setIsFunctionExecution(id)
+				//увеличивает количество попыток выполения функции на 1
+				cache.increaseNumberAttempts(id)
+
+				//при вызове, функция принимает количество попыток обработки
+				if f(cache.getNumberAttempts(id)) {
 					cache.setIsCompletedSuccessfully(id)
 				}
-				cache.setIsFunctionNotRunning(id)
+
+				//отмечает что функция завершила выполнение
+				cache.setIsFunctionNotExecution(id)
 			}(crm, id, storage.cacheFunc)
 		}
 		crm.cacheStorage.mutex.RUnlock()
 	}
-}
-
-// SetMethod создает новую запись, принимает значение которое нужно сохранить
-// и id по которому данное значение можно будет найти
-func (crm *CacheRunningFunctions) SetMethod(id string, f func() bool) string {
-	crm.cacheStorage.mutex.Lock()
-	defer crm.cacheStorage.mutex.Unlock()
-
-	crm.cacheStorage.storages[id] = storageParameters{
-		timeExpiry: time.Now().Add(crm.ttl),
-		cacheFunc:  f,
-	}
-
-	return id
-}
-
-// GetMethod возвращает данные по полученому id
-func (crm *CacheRunningFunctions) GetMethod(id string) (func() bool, bool) {
-	crm.cacheStorage.mutex.RLock()
-	defer crm.cacheStorage.mutex.Unlock()
-
-	if storage, ok := crm.cacheStorage.storages[id]; ok {
-		return storage.cacheFunc, ok
-	}
-
-	return nil, false
-}
-
-// DeleteElement удаляет заданный элемент по его id
-func (crm *CacheRunningFunctions) DeleteElement(id string) {
-	crm.cacheStorage.mutex.Lock()
-	defer crm.cacheStorage.mutex.Unlock()
-
-	delete(crm.cacheStorage.storages, id)
-}
-
-// setIsCompletedSuccessfully выполняемая функция завершилась успехом
-func (crm *CacheRunningFunctions) setIsCompletedSuccessfully(id string) {
-	crm.cacheStorage.mutex.Lock()
-	defer crm.cacheStorage.mutex.Unlock()
-
-	storage, ok := crm.cacheStorage.storages[id]
-	if !ok {
-		return
-	}
-
-	storage.isCompletedSuccessfully = true
-	crm.cacheStorage.storages[id] = storage
-}
-
-// setIsFunctionRunning функция находится в процессе выполнения
-func (crm *CacheRunningFunctions) setIsFunctionRunning(id string) {
-	crm.cacheStorage.mutex.Lock()
-	defer crm.cacheStorage.mutex.Unlock()
-
-	storage, ok := crm.cacheStorage.storages[id]
-	if !ok {
-		return
-	}
-
-	storage.isFunctionRunning = true
-	crm.cacheStorage.storages[id] = storage
-}
-
-// setIsFunctionNotRunning функция не выполняется
-func (crm *CacheRunningFunctions) setIsFunctionNotRunning(id string) {
-	crm.cacheStorage.mutex.Lock()
-	defer crm.cacheStorage.mutex.Unlock()
-
-	storage, ok := crm.cacheStorage.storages[id]
-	if !ok {
-		return
-	}
-
-	storage.isFunctionRunning = false
-	crm.cacheStorage.storages[id] = storage
 }

@@ -9,10 +9,11 @@ import (
 )
 
 type storageParameters struct {
-	isFunctionRunning       bool
+	isFunctionExecution     bool
 	isCompletedSuccessfully bool
+	numberAttempts          int
 	timeExpiry              time.Time
-	cacheFunc               func() bool
+	cacheFunc               func(int) bool
 }
 
 type cacheStorageParameters struct {
