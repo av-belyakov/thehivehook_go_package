@@ -4,7 +4,7 @@ go 1.23.3
 
 require (
 	github.com/av-belyakov/simplelogger v0.0.0-20241025122435-67bb4d6f6ae4
-	github.com/go-playground/validator/v10 v10.22.0
+	github.com/go-playground/validator/v10 v10.23.0
 	github.com/google/uuid v1.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.24
