@@ -112,47 +112,28 @@ GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной инфор
 }
 ```
 
-### ЭТО НЕ АКТУАЛЬНО УЖЕ, актуальные команды выше
+##### Структура ответа на любую из переданных команд
 
-Пример набора команд для объектов типа Case, где команда
-
-- "addtag" добавляет тег если такого тега еще нет
-- "setcustomfield" устанавливает настраиваемые поля
-- "addtask" добавляет задачи
-  `{
-  "success": true,
-  "service": "SERVICE_NAME",
-  "error": "ERROR_IF_EXISTS",
-  "commands": [
-    {
-      "command": "addtag",
-      "string": "Webhook: send=\"MISP\""
-    },
-    {
-      "command": "setcustomfield",
-      "name": "misp-event-id.string",
-      "string": "123"
-    },
-    {
-      "command": "addtask",
-      "name": "Developers",
-      "string": "not added",
-      "username": "architector@33c.rcm"
-    }
-  ]
-}`
-
-##
+```
+{
+  id: "",
+  error: "",
+  command: "",
+  status_code: 0,
+  data: <дополнительные_данные_возможны_в_любом_типе>}
+```
 
 ## Настройка TheHive
 
-curl -XPUT -u <имя*пользователя>:'пароль_org-admin' -H 'Content-type: application/json' <url*или*ip*и*сетевой*порт>/api/config/organisation/notification -d '
-{
-"value": [
-{
-"delegate": false,
-"trigger": { "name": "AnyEvent"},
-"notifier": { "name": "webhook", "endpoint": "hivehook" }
-}
-]
-}'
+```
+curl -XPUT -u <имя*пользователя>:'пароль_org-admin' -H 'Content-type: application/json' <url*или*ip*и*сетевой*порт>/api/config/organisation/notification -d
+  '{
+    "value": [
+      {
+        "delegate": false,
+        "trigger": { "name": "AnyEvent"},
+        "notifier": { "name": "webhook", "endpoint": "hivehook" }
+      }
+    ]
+  }'
+```

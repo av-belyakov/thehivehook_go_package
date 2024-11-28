@@ -60,7 +60,18 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 		case msg := <-chRes:
 			api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
 
-			res := []byte(fmt.Sprintf("{id: \"%s\", command: \"%s\" status_code: \"%d\", data: %v}", msg.GetRequestId(), rc.Command, msg.GetStatusCode(), msg.GetData()))
+			res := []byte(
+				fmt.Sprintf(`{
+					id: \"%s\", 
+					error: \"%s\",
+					command: \"%s\", 
+					status_code: \"%d\", 
+					data: %v}`,
+					msg.GetRequestId(),
+					msg.GetError().Error(),
+					rc.Command,
+					msg.GetStatusCode(),
+					msg.GetData()))
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
 				_, f, l, _ := runtime.Caller(0)
 				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
