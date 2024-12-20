@@ -17,7 +17,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
-				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
+				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
 					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", err.Error())
@@ -37,7 +37,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				})
 
 			case "get_ttp":
-				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
+				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
 					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", err.Error())
@@ -68,7 +68,6 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 				chRes := msg.GetChanOutput()
 
-				var isSuccess bool = true
 				res := NewChannelRespons()
 				res.SetRequestId(msg.GetRequestId())
 
@@ -77,69 +76,81 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 				switch msg.GetOrder() {
 				case "add_case_tag":
-					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
+					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(countAttempts int) bool {
 						fmt.Println("========= ADD CASE TAGS")
 
 						_, statusCode, err := api.AddCaseTags(ctx, rc)
 						if err != nil {
 							api.logger.Send("error", err.Error())
-							res.SetError(err)
+							if countAttempts >= 10 {
+								res.SetStatusCode(statusCode)
+								res.SetError(err)
+								res.sendToChan(chRes)
 
-							isSuccess = false
+								return true
+							}
+
+							return false
 						}
 
-						if isSuccess {
-							api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
-						}
+						api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
 
 						res.SetStatusCode(statusCode)
 						res.sendToChan(chRes)
 
-						return isSuccess
+						return true
 					})
 
 				case "add_case_task":
-					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
+					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(countAttempts int) bool {
 						fmt.Println("========= ADD CASE TASSSSSSKKKKKK")
 
 						_, statusCode, err := api.AddCaseTask(ctx, rc)
 						if err != nil {
 							api.logger.Send("error", err.Error())
-							res.SetError(err)
+							if countAttempts >= 10 {
+								res.SetStatusCode(statusCode)
+								res.SetError(err)
+								res.sendToChan(chRes)
 
-							isSuccess = false
+								return true
+							}
+
+							return false
 						}
 
-						if isSuccess {
-							api.logger.Send("info", fmt.Sprintf("when making a request to add a new task for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
-						}
+						api.logger.Send("info", fmt.Sprintf("when making a request to add a new task for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
 
 						res.SetStatusCode(statusCode)
 						res.sendToChan(chRes)
 
-						return isSuccess
+						return true
 					})
 
 				case "set_case_custom_field":
-					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func() bool {
+					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(countAttempts int) bool {
 						fmt.Println("========= ADD CASE CUSTOM FIELD")
 
 						_, statusCode, err := api.AddCaseCustomFields(ctx, rc)
 						if err != nil {
 							api.logger.Send("error", err.Error())
-							res.SetError(err)
+							if countAttempts >= 10 {
+								res.SetStatusCode(statusCode)
+								res.SetError(err)
+								res.sendToChan(chRes)
 
-							isSuccess = false
+								return true
+							}
+
+							return false
 						}
 
-						if isSuccess {
-							api.logger.Send("info", fmt.Sprintf("when making a request to add a new custom field for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
-						}
+						api.logger.Send("info", fmt.Sprintf("when making a request to add a new custom field for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
 
 						res.SetStatusCode(statusCode)
 						res.sendToChan(chRes)
 
-						return isSuccess
+						return true
 					})
 				}
 			}
