@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
@@ -67,7 +68,13 @@ func (wh *WebHookServer) Start(ctx context.Context) {
 		}
 	}()
 
-	msg := fmt.Sprintf("Application '%s' v%s was successfully launched, %s:%d", versionandname.GetName(), versionandname.GetVersion(), wh.host, wh.port)
+	appStatus := "production"
+	envValue, ok := os.LookupEnv("GO_HIVEHOOK_MAIN")
+	if ok && envValue == "development" {
+		appStatus = envValue
+	}
+
+	msg := fmt.Sprintf("Application '%s' v%s was successfully launched, %s:%d. Application status is '%s'.", versionandname.GetName(), versionandname.GetVersion(), wh.host, wh.port, appStatus)
 	log.Printf("%v%v%v%s%v\n", ansiDarkGreenBackground, boldFont, ansiWhite, msg, ansiReset)
 	wh.logger.Send("info", msg)
 
