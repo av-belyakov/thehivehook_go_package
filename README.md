@@ -17,37 +17,37 @@ TheHiveHook_go_package является посредником между TheHiv
 
 #### Переменная окружения отвечающая за тип запуска приложения "development" или "production"
 
-GO_HIVEHOOK_MAIN
+- GO_HIVEHOOK_MAIN
 
 #### Переменные окружения отвечающие за подключение к NATS
 
-GO_HIVEHOOK_NPREFIX
-GO_HIVEHOOK_NHOST
-GO_HIVEHOOK_NPORT
-GO_HIVEHOOK_NCACHETTL - данный параметр должен содержать время жизни записи
-кэша, по истечение которого запись автоматически удаляется, значение задается
-в секундах в диапазоне от 10 до 86400 секунд
-GO_HIVEHOOK_NSUBSENDERCASE - канал для отправки в него информации по case
-GO_HIVEHOOK_NSUBSENDERALERT - канал для отправки в него информации по alert
-GO_HIVEHOOK_NSUBLISTENERCOMMAND - канал для приема команд которые нужно выполнить на TheHive
+- GO_HIVEHOOK_NPREFIX
+- GO_HIVEHOOK_NHOST
+- GO_HIVEHOOK_NPORT
+- GO_HIVEHOOK_NCACHETTL - данный параметр должен содержать время жизни записи
+  кэша, по истечение которого запись автоматически удаляется, значение задается
+  в секундах в диапазоне от 10 до 86400 секунд
+- GO_HIVEHOOK_NSUBSENDERCASE - канал для отправки в него информации по case
+- GO_HIVEHOOK_NSUBSENDERALERT - канал для отправки в него информации по alert
+- GO_HIVEHOOK_NSUBLISTENERCOMMAND - канал для приема команд которые нужно выполнить на TheHive
 
 #### Переменные окружения отвечающие за подключение к TheHive
 
-GO_HIVEHOOK_THHOST
-GO_HIVEHOOK_THPORT
-GO_HIVEHOOK_THCACHETTL - данный параметр должен содержать время жизни записи
-кэша, по истечение которого запись автоматически удаляется, значение задается
-в секундах в диапазоне от 10 до 86400 секунд
-GO_HIVEHOOK_THAPIKEY - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!!
-Он задается ТОЛЬКО через переменную окружения. В конфигурационном
-файле этого параметра нет.
+- GO_HIVEHOOK_THHOST
+- GO_HIVEHOOK_THPORT
+- GO_HIVEHOOK_THCACHETTL - данный параметр должен содержать время жизни записи
+  кэша, по истечение которого запись автоматически удаляется, значение задается
+  в секундах в диапазоне от 10 до 86400 секунд
+- GO_HIVEHOOK_THAPIKEY - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!!
+  Он задается ТОЛЬКО через переменную окружения. В конфигурационном
+  файле этого параметра нет.
 
 #### Переменные окружения отвечающие за настройки WebHook сервера
 
-GO_HIVEHOOK_WEBHNAME //наименование сервера (gcm, rcmnvs и т.д.)
-GO_HIVEHOOK_WEBHHOST
-GO_HIVEHOOK_WEBHPORT
-GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной информации, в секундах от 10 до 86400
+- GO_HIVEHOOK_WEBHNAME //наименование сервера (gcm, rcmnvs и т.д.)
+- GO_HIVEHOOK_WEBHHOST
+- GO_HIVEHOOK_WEBHPORT
+- GO_HIVEHOOK_WEBHTTLTMPINFO //время жизни временной информации, в секундах от 10 до 86400
 
 Приоритет значений заданных через переменные окружения выше чем значений полученных из конфигурационных файлов.
 
