@@ -39,6 +39,12 @@ func server(ctx context.Context) {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
 
+		//
+		// здесь надо сделать возможность отключение передачи данных в zabbix
+		// для этого в конфиге надо добавить дополнительную опцию или сделать
+		// не критичным ошибки модуля interactionZabbix
+		//
+
 		log.Fatalf("error module 'zabbixinteraction': %v\n", err)
 	}
 
