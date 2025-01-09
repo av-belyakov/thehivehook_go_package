@@ -1,4 +1,4 @@
-package versionandname
+package appname
 
 // GetName возвращает наименование приложения
 func GetName() string {

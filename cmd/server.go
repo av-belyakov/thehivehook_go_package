@@ -12,10 +12,10 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/wrappers"
+	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
-	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
 )
 
 // server здесь реализована вся логика запуска thehivehook_go_package
@@ -44,7 +44,8 @@ func server(ctx context.Context) {
 	wzis := wrappers.WrappersZabbixInteractionSettings{
 		NetworkPort: confApp.Zabbix.NetworkPort,
 		NetworkHost: confApp.Zabbix.NetworkHost,
-		ZabbixHost:  confApp.Zabbix.ZabbixHost}
+		ZabbixHost:  confApp.Zabbix.ZabbixHost,
+	}
 
 	eventTypes := []wrappers.EventType(nil)
 	for _, v := range confApp.Zabbix.EventTypes {
@@ -60,10 +61,7 @@ func server(ctx context.Context) {
 	}
 	wzis.EventTypes = eventTypes
 
-	if err := wrappers.WrappersZabbixInteraction(ctx, simpleLogger, wzis, channelZabbix); err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-1), "error")
-	}
+	wrappers.WrappersZabbixInteraction(ctx, wzis, simpleLogger, channelZabbix)
 
 	//******************************************************************
 	//********** инициализация обработчика логирования данных **********
@@ -127,7 +125,7 @@ func server(ctx context.Context) {
 		webhookserver.WithPort(confWebHook.Port),
 		webhookserver.WithHost(confWebHook.Host),
 		webhookserver.WithName(confWebHook.Name),
-		webhookserver.WithVersion(versionandname.GetVersion()))
+		webhookserver.WithVersion(appversion.GetVersion()))
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
@@ -135,9 +133,7 @@ func server(ctx context.Context) {
 		log.Fatalf("error module 'webhookserver': %s\n", err.Error())
 	}
 
-	//мост между каналами различных модулей, где любой канал модуля должен
-	//удовлетворять интерфейсу commoninterfaces.ChannelRequester и каналом
-	//для взаимодействия с webhookserver
+	//мост между каналами различных модулей
 	go router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
 
 	webHook.Start(ctx)

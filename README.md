@@ -120,7 +120,8 @@ TheHiveHook_go_package является посредником между TheHiv
   error: "",
   command: "",
   status_code: 0,
-  data: <дополнительные_данные_возможны_в_любом_типе>}
+  data: <дополнительные_данные_возможны_в_любом_типе>
+}
 ```
 
 ## Настройка TheHive
@@ -131,8 +132,8 @@ curl -XPUT -u <имя*пользователя>:'пароль_org-admin' -H 'Con
     "value": [
       {
         "delegate": false,
-        "trigger": { "name": "AnyEvent"},
-        "notifier": { "name": "webhook", "endpoint": "hivehook" }
+        "trigger": {"name": "AnyEvent"},
+        "notifier": {"name": "webhook", "endpoint": "hivehook"}
       }
     ]
   }'

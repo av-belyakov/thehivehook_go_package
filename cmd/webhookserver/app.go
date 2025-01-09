@@ -9,7 +9,8 @@ import (
 	"os"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/versionandname"
+	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
+	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
 )
 
 const (
@@ -74,7 +75,7 @@ func (wh *WebHookServer) Start(ctx context.Context) {
 		appStatus = envValue
 	}
 
-	msg := fmt.Sprintf("Application '%s' v%s was successfully launched, %s:%d. Application status is '%s'.", versionandname.GetName(), versionandname.GetVersion(), wh.host, wh.port, appStatus)
+	msg := fmt.Sprintf("Application '%s' v%s was successfully launched, %s:%d. Application status is '%s'.", appname.GetName(), appversion.GetVersion(), wh.host, wh.port, appStatus)
 	log.Printf("%v%v%v%s%v\n", ansiDarkGreenBackground, boldFont, ansiWhite, msg, ansiReset)
 	wh.logger.Send("info", msg)
 
