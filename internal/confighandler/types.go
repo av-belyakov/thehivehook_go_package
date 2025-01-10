@@ -1,17 +1,21 @@
 package confighandler
 
+// ConfigApp настройки приложения
 type ConfigApp struct {
 	CommonInfo
 	CommonAppConfig
 	AppConfigNATS
 	AppConfigTheHive
 	AppConfigWebHookServer
+	AppConfigWriteLogDB
 }
 
+// CommonInfo общая информация
 type CommonInfo struct {
 	FileName string `validate:"required" yaml:"filename"`
 }
 
+// CommonAppConfig общие настройки
 type CommonAppConfig struct {
 	LogList []LogSet
 	Zabbix  ZabbixOptions
@@ -27,6 +31,7 @@ type LogSet struct {
 	MaxFileSize   int    `validate:"min=1000" yaml:"maxFileSize"`
 	MsgTypeName   string `validate:"oneof=error info warning" yaml:"msgTypeName"`
 	PathDirectory string `validate:"required" yaml:"pathDirectory"`
+	WritingDB     string `validate:"required" yaml:"writingDB"`
 }
 
 type ZabbixSet struct {
@@ -83,4 +88,13 @@ type SubscriptionsNATS struct {
 type SubscriberNATS struct {
 	Event      string   `validate:"required" yaml:"event"`
 	Responders []string `yaml:"responders"`
+}
+
+type AppConfigWriteLogDB struct {
+	Port          int    `validate:"gt=0,lte=65535" yaml:"port"`
+	Host          string `yaml:"host"`
+	User          string `yaml:"user"`
+	Passwd        string `yaml:"passwd"`
+	NameDB        string `yaml:"namedb"`
+	StorageNameDB string `yaml:"storageNamedb"`
 }

@@ -5,6 +5,7 @@ LOGGING:
       pathDirectory: "logs",
       writingStdout: true,
       maxFileSize: 1000000,
+      writingDB: true,
     }
   - {
       msgTypeName: "warning",
@@ -12,6 +13,7 @@ LOGGING:
       pathDirectory: "logs",
       writingStdout: true,
       maxFileSize: 1000000,
+      writingDB: true,
     }
   - {
       msgTypeName: "info",
@@ -19,6 +21,7 @@ LOGGING:
       pathDirectory: "logs",
       writingStdout: true,
       maxFileSize: 1000000,
+      writingDB: true,
     }
   - {
       msgTypeName: "log_for_test",
@@ -26,6 +29,7 @@ LOGGING:
       pathDirectory: "logs",
       writingStdout: false,
       maxFileSize: 1000000,
+      writingDB: false,
     }
 ZABBIX:
   networkHost: "192.168.9.45"

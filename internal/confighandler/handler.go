@@ -41,6 +41,14 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			"GO_HIVEHOOK_WEBHHOST":       "",
 			"GO_HIVEHOOK_WEBHPORT":       "",
 			"GO_HIVEHOOK_WEBHTTLTMPINFO": "",
+
+			//Настройки доступа к БД в которую будут записыватся логи
+			"GO_HIVEHOOK_DBWLOGHOST":        "",
+			"GO_HIVEHOOK_DBWLOGPORT":        "",
+			"GO_HIVEHOOK_DBWLOGNAME":        "",
+			"GO_HIVEHOOK_DBWLOGUSER":        "",
+			"GO_HIVEHOOK_DBWLOGPASSWD":      "",
+			"GO_HIVEHOOK_DBWLOGSTORAGENAME": "",
 		}
 	)
 
@@ -163,6 +171,23 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		}
 		if viper.IsSet("WEBHOOKSERVER.ttlTmpInfo") {
 			conf.AppConfigWebHookServer.TTLTmpInfo = viper.GetInt("WEBHOOKSERVER.ttlTmpInfo")
+		}
+
+		//Настройки доступа к БД в которую будут записыватся логи
+		if viper.IsSet("DATABASEWRITELOG.host") {
+			conf.AppConfigWriteLogDB.Host = viper.GetString("DATABASEWRITELOG.host")
+		}
+		if viper.IsSet("DATABASEWRITELOG.port") {
+			conf.AppConfigWriteLogDB.Port = viper.GetInt("DATABASEWRITELOG.port")
+		}
+		if viper.IsSet("DATABASEWRITELOG.user") {
+			conf.AppConfigWriteLogDB.User = viper.GetString("DATABASEWRITELOG.user")
+		}
+		if viper.IsSet("DATABASEWRITELOG.namedb") {
+			conf.AppConfigWriteLogDB.NameDB = viper.GetString("DATABASEWRITELOG.namedb")
+		}
+		if viper.IsSet("DATABASEWRITELOG.storageNamedb") {
+			conf.AppConfigWriteLogDB.StorageNameDB = viper.GetString("DATABASEWRITELOG.storageNamedb")
 		}
 
 		return nil
@@ -297,6 +322,28 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHTTLTMPINFO"]); err == nil {
 			conf.AppConfigWebHookServer.TTLTmpInfo = p
 		}
+	}
+
+	//Настройки доступа к БД в которую будут записыватся логи
+	if envList["GO_HIVEHOOK_DBWLOGHOST"] != "" {
+		conf.AppConfigWriteLogDB.Host = envList["GO_HIVEHOOK_DBWLOGHOST"]
+	}
+	if envList["GO_HIVEHOOK_DBWLOGPORT"] != "" {
+		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_DBWLOGPORT"]); err == nil {
+			conf.AppConfigWriteLogDB.Port = p
+		}
+	}
+	if envList["GO_HIVEHOOK_DBWLOGNAME"] != "" {
+		conf.AppConfigWriteLogDB.NameDB = envList["GO_HIVEHOOK_DBWLOGNAME"]
+	}
+	if envList["GO_HIVEHOOK_DBWLOGUSER"] != "" {
+		conf.AppConfigWriteLogDB.User = envList["GO_HIVEHOOK_DBWLOGUSER"]
+	}
+	if envList["GO_HIVEHOOK_DBWLOGPASSWD"] != "" {
+		conf.AppConfigWriteLogDB.Passwd = envList["GO_HIVEHOOK_DBWLOGPASSWD"]
+	}
+	if envList["GO_HIVEHOOK_DBWLOGSTORAGENAME"] != "" {
+		conf.AppConfigWriteLogDB.StorageNameDB = envList["GO_HIVEHOOK_DBWLOGSTORAGENAME"]
 	}
 
 	//выполняем проверку заполненой структуры

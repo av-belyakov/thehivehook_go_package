@@ -18,3 +18,9 @@ WEBHOOKSERVER:
   host: "127.0.0.1"
   port: 5000
   ttlTmpInfo: 12
+DATABASEWRITELOG:
+  host: "datahook.cloud.gcm"
+  port: 9200
+  namedb: "nameBD"
+  storageNamedb: "thehivehook_go.log"
+  user: "writer"

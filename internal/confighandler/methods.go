@@ -29,6 +29,11 @@ func (conf *ConfigApp) GetApplicationWebHookServer() *AppConfigWebHookServer {
 	return &conf.AppConfigWebHookServer
 }
 
+// GetApplicationWriteLogDB настройки доступа к БД для логирования данных
+func (conf *ConfigApp) GetApplicationWriteLogDB() *AppConfigWriteLogDB {
+	return &conf.AppConfigWriteLogDB
+}
+
 // Clean
 func (conf *ConfigApp) Clean() {
 	conf = &ConfigApp{}

@@ -78,7 +78,7 @@ type Messager interface {
 }
 
 type WriterLoggingData interface {
-	WriteLoggingData(str, typeLogFile string) bool
+	Write(typeLogFile, str string) bool
 }
 
 //************** кэширование функций *****************

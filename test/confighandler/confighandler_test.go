@@ -2,9 +2,11 @@ package confighandler_test
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
+	"github.com/joho/godotenv"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -21,7 +23,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		err error
 	)
 
-	unSetEnvAny := func() {
+	unsetEnvAny := func() {
 		os.Unsetenv("GO_HIVEHOOK_MAIN")
 
 		//настройки NATS
@@ -43,18 +45,29 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		os.Unsetenv("GO_HIVEHOOK_WEBHHOST")
 		os.Unsetenv("GO_HIVEHOOK_WEBHPORT")
 		os.Unsetenv("GO_HIVEHOOK_WEBHTTLTMPINFO")
+
+		//настройки доступа к БД в которую будут записыватся логи
+		os.Unsetenv("GO_HIVEHOOK_DBWLOGHOST")
+		os.Unsetenv("GO_HIVEHOOK_DBWLOGPORT")
+		os.Unsetenv("GO_HIVEHOOK_DBWLOGNAME")
+		os.Unsetenv("GO_HIVEHOOK_DBWLOGUSER")
+		os.Unsetenv("GO_HIVEHOOK_DBWLOGSTORAGENAME")
 	}
 
 	BeforeAll(func() {
-		os.Setenv("GO_HIVEHOOK_THAPIKEY", theHiveApiKey)
+		//загружаем ключи и пароли
+		if err := godotenv.Load(".env"); err != nil {
+			log.Fatalln(err)
+		}
 	})
 
 	AfterAll(func() {
 		os.Unsetenv("GO_HIVEHOOK_THAPIKEY")
+		os.Unsetenv("GO_HIVEHOOK_DBWLOGPASSWD")
 	})
 
 	BeforeEach(func() {
-		unSetEnvAny()
+		unsetEnvAny()
 	})
 
 	Context("Тест 1. Чтение конфигурационного файла (по умолчанию config_prod.yaml)", func() {
@@ -100,6 +113,16 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(chs.TTLTmpInfo).Should(Equal(10))
 			Expect(chs.Name).Should(Equal("gcm"))
 		})
+
+		It("Все пораметры конфигурационного файла 'config_prod.yaml' для DATABASEWRITELOG должны быть успешно получены", func() {
+			cwl := conf.GetApplicationWriteLogDB()
+			Expect(cwl.Host).Should(Equal("datahook.cloud.gcm"))
+			Expect(cwl.Port).Should(Equal(9200))
+			Expect(cwl.NameDB).Should(Equal(""))
+			Expect(cwl.StorageNameDB).Should(Equal("thehivehook_go.log"))
+			Expect(cwl.User).Should(Equal("writer"))
+			Expect(len(cwl.Passwd)).ShouldNot(Equal(0))
+		})
 	})
 
 	Context("Тест 2. Чтение конфигурационного файла config_dev.yaml", func() {
@@ -140,6 +163,16 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(chs.Port).Should(Equal(5000))
 			Expect(chs.TTLTmpInfo).Should(Equal(12))
 			Expect(chs.Name).Should(Equal("rcmsml"))
+		})
+
+		It("Все пораметры конфигурационного файла 'config_dev.yaml' для DATABASEWRITELOG должны быть успешно получены", func() {
+			cwl := conf.GetApplicationWriteLogDB()
+			Expect(cwl.Host).Should(Equal("datahook.cloud.gcm"))
+			Expect(cwl.Port).Should(Equal(9200))
+			Expect(cwl.NameDB).Should(Equal("nameDB"))
+			Expect(cwl.StorageNameDB).Should(Equal("thehivehook_go.log"))
+			Expect(cwl.User).Should(Equal("writer"))
+			Expect(len(cwl.Passwd)).ShouldNot(Equal(0))
 		})
 	})
 
@@ -260,6 +293,40 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 			//*** настройки логирования ***
 			Expect(len(confApp.GetListLogs())).Should(Equal(4))
+		})
+	})
+
+	Context("Тест 7. Проверяем установленные для DATABASEWRITELOG значения переменных окружения", func() {
+		const (
+			HIVEHOOK_DBWLOGHOST        = "45.10.32.1"
+			HIVEHOOK_DBWLOGPORT        = 11123
+			HIVEHOOK_DBWLOGNAME        = "log_db"
+			HIVEHOOK_DBWLOGUSER        = "nreuser"
+			HIVEHOOK_DBWLOGPASSWD      = "pass123wd"
+			HIVEHOOK_DBWLOGSTORAGENAME = "thehivehookgolog"
+		)
+
+		BeforeAll(func() {
+			os.Setenv("GO_HIVEHOOK_DBWLOGHOST", HIVEHOOK_DBWLOGHOST)
+			os.Setenv("GO_HIVEHOOK_DBWLOGPORT", strconv.Itoa(HIVEHOOK_DBWLOGPORT))
+			os.Setenv("GO_HIVEHOOK_DBWLOGNAME", HIVEHOOK_DBWLOGNAME)
+			os.Setenv("GO_HIVEHOOK_DBWLOGUSER", HIVEHOOK_DBWLOGUSER)
+			os.Setenv("GO_HIVEHOOK_DBWLOGPASSWD", HIVEHOOK_DBWLOGPASSWD)
+			os.Setenv("GO_HIVEHOOK_DBWLOGSTORAGENAME", HIVEHOOK_DBWLOGSTORAGENAME)
+
+			conf, err = confighandler.NewConfig(rootDir)
+			Expect(err).ShouldNot(HaveOccurred())
+		})
+
+		It("Все параметры конфигурации для WEBHOOKSERVER должны быть успешно установлены через соответствующие переменные окружения", func() {
+			wldb := conf.GetApplicationWriteLogDB()
+
+			Expect(wldb.Host).Should(Equal(HIVEHOOK_DBWLOGHOST))
+			Expect(wldb.Port).Should(Equal(HIVEHOOK_DBWLOGPORT))
+			Expect(wldb.NameDB).Should(Equal(HIVEHOOK_DBWLOGNAME))
+			Expect(wldb.User).Should(Equal(HIVEHOOK_DBWLOGUSER))
+			Expect(wldb.Passwd).Should(Equal(HIVEHOOK_DBWLOGPASSWD))
+			Expect(wldb.StorageNameDB).Should(Equal(HIVEHOOK_DBWLOGSTORAGENAME))
 		})
 	})
 

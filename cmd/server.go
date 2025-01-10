@@ -8,6 +8,7 @@ import (
 
 	"github.com/av-belyakov/simplelogger"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/elasticsearchapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
@@ -36,6 +37,24 @@ func server(ctx context.Context) {
 	simpleLogger, err := simplelogger.NewSimpleLogger(ctx, ROOT_DIR, getLoggerSettings(confApp.GetListLogs()))
 	if err != nil {
 		log.Fatalf("error module 'simplelogger': %s", err.Error())
+	}
+
+	//*********************************************************************************
+	//********** инициализация модуля взаимодействия с БД для передачи логов **********
+	confDB := confApp.GetApplicationWriteLogDB()
+	if esc, err := elasticsearchapi.NewElasticsearchConnect(elasticsearchapi.Settings{
+		Port:    confDB.Port,
+		Host:    confDB.Host,
+		User:    confDB.User,
+		Passwd:  confDB.Passwd,
+		IndexDB: confDB.NameDB,
+	}); err != nil {
+		_, f, l, _ := runtime.Caller(0)
+		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-7))
+
+		log.Println(err.Error())
+	} else {
+		simpleLogger.SetDataBaseInteraction(esc)
 	}
 
 	//******************************************************************
@@ -79,14 +98,14 @@ func server(ctx context.Context) {
 		thehiveapi.WithCacheTTL(confTheHiveAPI.CacheTTL))
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
 
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
 	}
 	chReqTheHiveAPI, err := apiTheHive.Start(ctx)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
 
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
 	}
@@ -104,14 +123,14 @@ func server(ctx context.Context) {
 	apiNats, err := natsapi.New(logging, natsOptsAPI...)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
 
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
 	chReqNatsAPI, chNatsAPIReq, err := apiNats.Start(ctx)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
 
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
@@ -128,7 +147,7 @@ func server(ctx context.Context) {
 		webhookserver.WithVersion(appversion.GetVersion()))
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.WriteLoggingData(fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3), "error")
+		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
 
 		log.Fatalf("error module 'webhookserver': %s\n", err.Error())
 	}
