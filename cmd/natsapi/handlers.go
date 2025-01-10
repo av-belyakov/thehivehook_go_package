@@ -105,12 +105,15 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 				continue
 			}
 
-			var subscription string
+			var subscription, description string
 			switch msg.GetElementType() {
 			case "case":
 				subscription = api.subscriptions.senderCase
+				description = fmt.Sprintf("%s with id: '%s' has been successfully transferred", msg.GetElementType(), msg.GetCaseId())
+
 			case "alert":
 				subscription = api.subscriptions.senderAlert
+				description = fmt.Sprintf("%s with id: '%s' has been successfully transferred", msg.GetElementType(), msg.GetRootId())
 
 			default:
 				_, f, l, _ := runtime.Caller(0)
@@ -123,6 +126,8 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 				_, f, l, _ := runtime.Caller(0)
 				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-1))
 			}
+
+			api.logger.Send("info", description)
 		}
 	}
 }

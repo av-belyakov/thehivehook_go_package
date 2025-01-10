@@ -28,10 +28,10 @@ type Logs struct {
 type LogSet struct {
 	WritingStdout bool   `validate:"required" yaml:"writingStdout"`
 	WritingFile   bool   `validate:"required" yaml:"writingFile"`
+	WritingDB     bool   `validate:"required" yaml:"writingDB"`
 	MaxFileSize   int    `validate:"min=1000" yaml:"maxFileSize"`
 	MsgTypeName   string `validate:"oneof=error info warning" yaml:"msgTypeName"`
 	PathDirectory string `validate:"required" yaml:"pathDirectory"`
-	WritingDB     string `validate:"required" yaml:"writingDB"`
 }
 
 type ZabbixSet struct {

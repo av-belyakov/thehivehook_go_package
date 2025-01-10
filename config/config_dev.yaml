@@ -21,6 +21,6 @@ WEBHOOKSERVER:
 DATABASEWRITELOG:
   host: "datahook.cloud.gcm"
   port: 9200
-  namedb: "nameBD"
+  namedb: "nameDB"
   storageNamedb: "thehivehook_go.log"
   user: "writer"

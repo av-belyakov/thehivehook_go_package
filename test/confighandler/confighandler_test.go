@@ -15,8 +15,7 @@ import (
 
 var _ = Describe("Testconfighandler", Ordered, func() {
 	var (
-		rootDir       string = "thehivehook_go_package"
-		theHiveApiKey string = "70e97faa558d188822c55ec9e00744fd"
+		rootDir string = "thehivehook_go_package"
 
 		conf *confighandler.ConfigApp
 
@@ -56,7 +55,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 	BeforeAll(func() {
 		//загружаем ключи и пароли
-		if err := godotenv.Load(".env"); err != nil {
+		if err := godotenv.Load("../../.env"); err != nil {
 			log.Fatalln(err)
 		}
 	})
@@ -103,7 +102,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(cth.Host).Should(Equal("thehive.cloud.gcm"))
 			Expect(cth.Port).Should(Equal(9000))
 			Expect(cth.CacheTTL).Should(Equal(43200))
-			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
+			Expect(len(cth.ApiKey)).ShouldNot(Equal(0))
 		})
 
 		It("Все пораметры конфигрурационного файла 'config_prod.yaml' для WEBHOOKSERVER должны быть успешно получены", func() {
@@ -154,7 +153,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(cth.Host).Should(Equal("thehive.cloud.gcm"))
 			Expect(cth.Port).Should(Equal(9001))
 			Expect(cth.CacheTTL).Should(Equal(3600))
-			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
+			Expect(len(cth.ApiKey)).ShouldNot(Equal(0))
 		})
 
 		It("Все пораметры конфигрурационного файла 'config_dev.yaml' для WEBHOOKSERVER должны быть успешно получены", func() {
@@ -234,7 +233,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 
 			Expect(cth.Host).Should(Equal(THEHIVE_HOST))
 			Expect(cth.Port).Should(Equal(THEHIVE_PORT))
-			Expect(cth.ApiKey).Should(Equal(theHiveApiKey))
+			Expect(len(cth.ApiKey)).ShouldNot(Equal(0))
 		})
 	})
 
@@ -290,6 +289,11 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(commonApp.Zabbix.EventTypes[2].EventType).Should(Equal("handshake"))
 			Expect(commonApp.Zabbix.EventTypes[2].ZabbixKey).Should(Equal("shaper_stix.handshake"))
 			Expect(commonApp.Zabbix.EventTypes[2].IsTransmit).Should(BeTrue())
+
+			fmt.Println("LOGS")
+			for k, v := range confApp.GetListLogs() {
+				fmt.Printf("%d.\n\t%+v\n", k, v)
+			}
 
 			//*** настройки логирования ***
 			Expect(len(confApp.GetListLogs())).Should(Equal(4))

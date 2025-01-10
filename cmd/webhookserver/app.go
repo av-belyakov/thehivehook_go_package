@@ -13,19 +13,12 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
 )
 
-const (
-	ansiReset               = "\033[0m"
-	ansiWhite               = "\033[97m"
-	ansiDarkGreenBackground = "\033[42m"
-	boldFont                = "\033[1m"
-)
-
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
 func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFromWebHookServer, error) {
 	chanOutput := make(chan ChanFromWebHookServer)
 
 	whs := &WebHookServer{
-		name:      "gcm",
+		name:      "nobody",
 		version:   "0.1.1",
 		host:      "127.0.0.1",
 		port:      7575,
@@ -75,8 +68,12 @@ func (wh *WebHookServer) Start(ctx context.Context) {
 		appStatus = envValue
 	}
 
-	msg := fmt.Sprintf("Application '%s' v%s was successfully launched, %s:%d. Application status is '%s'.", appname.GetName(), appversion.GetVersion(), wh.host, wh.port, appStatus)
+	msg := fmt.Sprintf("Application '%s' v%s was successfully launched. Application status is '%s'.", appname.GetName(), appversion.GetVersion(), appStatus)
 	log.Printf("%v%v%v%s%v\n", ansiDarkGreenBackground, boldFont, ansiWhite, msg, ansiReset)
+	log.Printf("%vWebhook server settings:%v", ansiBrightGreen, ansiReset)
+	log.Printf("%v  name: %v%s%v", ansiBrightGreen, ansiBrightDark, wh.name, ansiReset)
+	log.Printf("%v  ip: %v%s%v", ansiBrightGreen, ansiBrightBlue, wh.host, ansiReset)
+	log.Printf("%v  net port: %v%d%v", ansiBrightGreen, ansiBrightMagenta, wh.port, ansiReset)
 	wh.logger.Send("info", msg)
 
 	<-ctx.Done()
