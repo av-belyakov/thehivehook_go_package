@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -44,27 +45,22 @@ func NewElasticsearchConnect(settings Settings) (*ElasticsearchDB, error) {
 }
 
 func (edb *ElasticsearchDB) Write(msgType, msg string) error {
-	fmt.Println("func 'Write' ElasticsearchDB, START")
-
 	if edb.client == nil {
 		return errors.New("the client parameters for connecting to the Elasticsearch database are not set correctly")
 	}
 
 	tn := time.Now()
-
 	buf := bytes.NewReader([]byte(fmt.Sprintf(`{
-	"timestamp": "%s",
-	"type": "%s",
-	"message": "%s",
-	)`,
+		  "datetime": "%s",
+		  "type": "%s",
+		  "message": "%s"
+		}`,
 		tn.Format(time.RFC3339),
 		msgType,
 		msg,
 	)))
 
-	res, err := edb.client.Index(fmt.Sprintf("%s_%d", edb.settings.IndexDB, tn.Year()), buf)
-	fmt.Println("func 'ElasticsearchDB', res", res, " err:", err)
-
+	res, err := edb.client.Index(fmt.Sprintf("logs.%s_%s_%d", edb.settings.IndexDB, strings.ToLower(tn.Month().String()), tn.Year()), buf)
 	defer responseClose(res)
 	if err != nil {
 		_, f, l, _ := runtime.Caller(0)

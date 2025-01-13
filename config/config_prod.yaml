@@ -22,5 +22,5 @@ DATABASEWRITELOG:
   host: "datahook.cloud.gcm"
   port: 9200
   namedb: ""
-  storageNamedb: "thehivehook_go.log"
-  user: "writer"
+  storageNamedb: "thehivehook_go_package"
+  user: "log_writer"

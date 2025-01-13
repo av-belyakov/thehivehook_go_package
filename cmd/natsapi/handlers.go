@@ -16,9 +16,6 @@ import (
 // subscriptionHandler обработчик подписки
 func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 	api.natsConnection.Subscribe(api.subscriptions.listenerCommand, func(m *nats.Msg) {
-
-		fmt.Println("((( subscriptionHandler ))) reseived ", string(m.Data))
-
 		rc := RequestCommand{}
 		if err := json.Unmarshal(m.Data, &rc); err != nil {
 			_, f, l, _ := runtime.Caller(0)
@@ -62,11 +59,12 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 
 			res := []byte(
 				fmt.Sprintf(`{
-					id: \"%s\", 
-					error: \"%s\",
-					command: \"%s\", 
-					status_code: \"%d\", 
-					data: %v}`,
+					"id": \"%s\", 
+					"error": \"%s\",
+					"command": \"%s\", 
+					"status_code": \"%d\", 
+					"data": %v
+					}`,
 					msg.GetRequestId(),
 					msg.GetError().Error(),
 					rc.Command,

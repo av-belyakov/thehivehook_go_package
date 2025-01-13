@@ -3,7 +3,7 @@ module github.com/av-belyakov/thehivehook_go_package
 go 1.23.3
 
 require (
-	github.com/av-belyakov/simplelogger v0.0.0-20250110080733-fea3b5c8fb98
+	github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e
 	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20241225064839-9c19184470aa
 	github.com/elastic/go-elasticsearch/v8 v8.17.0
 	github.com/go-playground/validator/v10 v10.23.0
@@ -50,7 +50,6 @@ require (
 	go.opentelemetry.io/otel v1.33.0 // indirect
 	go.opentelemetry.io/otel/metric v1.33.0 // indirect
 	go.opentelemetry.io/otel/trace v1.33.0 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/net v0.34.0 // indirect

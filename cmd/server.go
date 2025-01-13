@@ -47,7 +47,7 @@ func server(ctx context.Context) {
 		Host:    confDB.Host,
 		User:    confDB.User,
 		Passwd:  confDB.Passwd,
-		IndexDB: confDB.NameDB,
+		IndexDB: confDB.StorageNameDB,
 	}); err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-7))
