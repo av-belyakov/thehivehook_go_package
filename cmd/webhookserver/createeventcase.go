@@ -2,9 +2,9 @@ package webhookserver
 
 import (
 	"encoding/json"
-	"sync"
 
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 )
@@ -13,33 +13,41 @@ import (
 // и ttp информацию по которым дополнительно запрашивают из TheHive
 func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (ReadyMadeEventCase, error) {
 	var (
-		wg   sync.WaitGroup
+		g    errgroup.Group
 		rmec ReadyMadeEventCase = ReadyMadeEventCase{}
 
 		uuidObservable string = uuid.NewString()
 		uuidTTP        string = uuid.NewString()
 
-		mainErr error
-
 		chanResObservable chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
 		chanResTTL        chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
 	)
 
-	wg.Add(1)
-	go func(wg *sync.WaitGroup, chRes <-chan commoninterfaces.ChannelResponser) {
-		defer wg.Done()
-
-		for res := range chRes {
+	g.Go(func() error {
+		for res := range chanResObservable {
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
-				mainErr = err
-
-				return
+				return err
 			}
 
 			rmec.Observables = msg
 		}
-	}(&wg, chanResObservable)
+
+		return nil
+	})
+
+	g.Go(func() error {
+		for res := range chanResTTL {
+			msg := []interface{}{}
+			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
+				return err
+			}
+
+			rmec.TTPs = msg
+		}
+
+		return nil
+	})
 
 	//запрос на поиск дополнительной информации об Observables
 	reqObservable := NewChannelRequest()
@@ -52,22 +60,6 @@ func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (Read
 		Data:        reqObservable,
 	}
 
-	wg.Add(1)
-	go func(wg *sync.WaitGroup, chRes <-chan commoninterfaces.ChannelResponser) {
-		defer wg.Done()
-
-		for res := range chRes {
-			msg := []interface{}{}
-			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
-				mainErr = err
-
-				return
-			}
-
-			rmec.TTPs = msg
-		}
-	}(&wg, chanResTTL)
-
 	//запрос на поиск дополнительной информации об TTL
 	reqTTP := NewChannelRequest()
 	reqTTP.SetRequestId(uuidTTP)
@@ -79,7 +71,7 @@ func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (Read
 		Data:        reqTTP,
 	}
 
-	wg.Wait()
+	err := g.Wait()
 
-	return rmec, mainErr
+	return rmec, err
 }
