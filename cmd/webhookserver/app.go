@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
@@ -62,19 +63,20 @@ func (wh *WebHookServer) Start(ctx context.Context) {
 		}
 	}()
 
-	appStatus := "production"
+	appStatus := fmt.Sprintf("%vproduction%v", ansiBrightBlue, ansiReset)
 	envValue, ok := os.LookupEnv("GO_HIVEHOOK_MAIN")
 	if ok && envValue == "development" {
-		appStatus = envValue
+		appStatus = fmt.Sprintf("%v%s%v", ansiBrightRed, envValue, ansiReset)
 	}
 
-	msg := fmt.Sprintf("Application '%s' v%s was successfully launched. Application status is '%s'.", appname.GetName(), appversion.GetVersion(), appStatus)
+	msg := fmt.Sprintf("Application '%s' v%s was successfully launched", appname.GetName(), appversion.GetVersion())
 	log.Printf("%v%v%v%s%v\n", ansiDarkGreenBackground, boldFont, ansiWhite, msg, ansiReset)
+	log.Printf("%vApplication status is '%s'.%v", ansiBrightGreen, appStatus, ansiReset)
 	log.Printf("%vWebhook server settings:%v", ansiBrightGreen, ansiReset)
 	log.Printf("%v  name: %v%s%v", ansiBrightGreen, ansiBrightDark, wh.name, ansiReset)
 	log.Printf("%v  ip: %v%s%v", ansiBrightGreen, ansiBrightBlue, wh.host, ansiReset)
 	log.Printf("%v  net port: %v%d%v", ansiBrightGreen, ansiBrightMagenta, wh.port, ansiReset)
-	wh.logger.Send("info", msg)
+	wh.logger.Send("info", strings.ToLower(msg))
 
 	<-ctx.Done()
 	close(wh.chanInput)

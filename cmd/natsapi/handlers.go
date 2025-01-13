@@ -41,6 +41,8 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 		ch = nil
 	}(ctxTimeoutCancel, chRes)
 
+	api.logger.Send("info", fmt.Sprintf("the command '%s' has been received, data '%v'", rc.Command, m.Data))
+
 	api.sendingChannel <- &RequestFromNats{
 		RequestId:  id,
 		Command:    "send_command",

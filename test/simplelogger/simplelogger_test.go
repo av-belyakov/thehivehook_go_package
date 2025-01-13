@@ -12,6 +12,7 @@ import (
 	"github.com/av-belyakov/simplelogger"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/elasticsearchapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 var (
@@ -63,7 +64,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestSimpleLogger(t *testing.T) {
-	ok := simpleLogger.Write("error", "test error message for check write to database")
+	msg := supportingfunctions.ReplaceCommaCharacter("Post \"http://thehive.cloud.gcm:9000/api/v1/query?name=case-procedures\": context deadline exceeded, network connection error")
+
+	ok := simpleLogger.Write("error", msg)
 	assert.True(t, ok)
 
 	ok = simpleLogger.Write("info", "test info message")

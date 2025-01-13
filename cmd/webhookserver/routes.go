@@ -56,6 +56,8 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		go func() {
+			wh.logger.Send("info", fmt.Sprintf("received case id '%d', a request is being sent for additional information about observable and ttl", eventElement.Object.CaseId))
+
 			readyMadeEventCase, err := CreateEvenCase(eventElement.RootId, wh.chanInput)
 			if err != nil {
 				_, f, l, _ := runtime.Caller(0)
@@ -74,6 +76,8 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 			readyMadeEventCase.Source = wh.name
 			readyMadeEventCase.Case = caseEvent
+
+			wh.logger.Send("info", fmt.Sprintf("additional information on case id '%d' has been successfully received", eventElement.Object.CaseId))
 
 			ec, err := json.Marshal(readyMadeEventCase)
 			if err != nil {
@@ -99,6 +103,8 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 				ForSomebody: "to nats",
 				Data:        sendData,
 			}
+
+			wh.logger.Send("info", fmt.Sprintf("information on case id '%d' sending to NATS", eventElement.Object.CaseId))
 		}()
 
 	case "case_artifact":

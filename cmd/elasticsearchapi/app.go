@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
 )
@@ -48,6 +49,8 @@ func (edb *ElasticsearchDB) Write(msgType, msg string) error {
 	if edb.client == nil {
 		return errors.New("the client parameters for connecting to the Elasticsearch database are not set correctly")
 	}
+
+	msg = supportingfunctions.ReplaceCommaCharacter(msg)
 
 	tn := time.Now()
 	buf := bytes.NewReader([]byte(fmt.Sprintf(`{
