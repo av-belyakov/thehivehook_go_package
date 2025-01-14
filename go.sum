@@ -1,5 +1,7 @@
 github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e h1:Nuyap04s2KGKUrd313QSxFJKXvaj1e6x/NxA5gIMayE=
 github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e/go.mod h1:yW2ev3nXPP3WY8svBWJpg4PQRl67MTGIaaiXJ0ULRZ8=
+github.com/av-belyakov/thehivehook_go_package v0.0.0-20250114144138-2182dee8dc9a h1:WKSDKUXjhmYFTgJdp0x5yId1sRfreK+M4XrFeiart1A=
+github.com/av-belyakov/thehivehook_go_package v0.0.0-20250114144138-2182dee8dc9a/go.mod h1:9ZlSmU6Z3AyLETfz6qCqzLrIP/6UVKgjhSQK9I9l8Mw=
 github.com/av-belyakov/zabbixapicommunicator v0.0.0-20241225064839-9c19184470aa h1:ivXQuTb7UxYUy568EOIOvRDExKLU3tDnw634d+WTGto=
 github.com/av-belyakov/zabbixapicommunicator v0.0.0-20241225064839-9c19184470aa/go.mod h1:/9uIlkIPp366cZZt/m3skUb3zREYjWB034aw8+mshQA=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -26,8 +28,8 @@ github.com/go-playground/locales v0.14.1 h1:EWaQ/wswjilfKLTECiXz7Rh+3BjFhfDFKv/o
 github.com/go-playground/locales v0.14.1/go.mod h1:hxrqLVvrK65+Rwrd5Fc6F2O76J/NuW9t0sjnWqG1slY=
 github.com/go-playground/universal-translator v0.18.1 h1:Bcnm0ZwsGyWbCzImXv+pAJnYK9S473LQFuzCbDbfSFY=
 github.com/go-playground/universal-translator v0.18.1/go.mod h1:xekY+UJKNuX9WP91TpwSH2VMlDf28Uj24BCp08ZFTUY=
-github.com/go-playground/validator/v10 v10.23.0 h1:/PwmTwZhS0dPkav3cdK9kV1FsAmrL8sThn8IHr/sO+o=
-github.com/go-playground/validator/v10 v10.23.0/go.mod h1:dbuPbCMFw/DrkbEynArYaCwl3amGuJotoKCe95atGMM=
+github.com/go-playground/validator/v10 v10.24.0 h1:KHQckvo8G6hlWnrPX4NJJ+aBfWNAE/HH+qdL2cBpCmg=
+github.com/go-playground/validator/v10 v10.24.0/go.mod h1:GGzBIJMuE98Ic/kJsBXbz1x/7cByt++cQ+YOuDM5wus=
 github.com/go-task/slim-sprig/v3 v3.0.0 h1:sUs3vkvUymDpBKi3qH1YSqBQk9+9D/8M2mN1vB6EwHI=
 github.com/go-task/slim-sprig/v3 v3.0.0/go.mod h1:W848ghGpv3Qj3dhTPRyJypKRiqCdHZiAzKg9hl15HA8=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
