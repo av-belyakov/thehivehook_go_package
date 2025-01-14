@@ -127,7 +127,7 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-1))
 			}
 
-			api.logger.Send("info", description)
+			api.logger.Send("log_to_db", description)
 		}
 	}
 }
