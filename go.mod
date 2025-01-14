@@ -1,12 +1,13 @@
-module github.com/av-belyakov/thehivehook_go_package
+module thehivehook_go_package
 
-go 1.23.3
+go 1.23.4
 
 require (
 	github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e
+	github.com/av-belyakov/thehivehook_go_package v0.0.0-20250114144138-2182dee8dc9a
 	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20241225064839-9c19184470aa
 	github.com/elastic/go-elasticsearch/v8 v8.17.0
-	github.com/go-playground/validator/v10 v10.23.0
+	github.com/go-playground/validator/v10 v10.24.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.24
