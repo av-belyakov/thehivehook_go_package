@@ -11,9 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 func NewElasticsearchConnect(settings Settings) (*ElasticsearchDB, error) {
@@ -56,10 +57,12 @@ func (edb *ElasticsearchDB) Write(msgType, msg string) error {
 	buf := bytes.NewReader([]byte(fmt.Sprintf(`{
 		  "datetime": "%s",
 		  "type": "%s",
+		  "nameRegionalObject": "%s",
 		  "message": "%s"
 		}`,
 		tn.Format(time.RFC3339),
 		msgType,
+		edb.settings.NameRegionalObject,
 		msg,
 	)))
 

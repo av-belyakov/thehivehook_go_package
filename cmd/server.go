@@ -32,6 +32,8 @@ func server(ctx context.Context) {
 		log.Fatalf("error module 'confighandler': %s", err.Error())
 	}
 
+	confWebHook := confApp.GetApplicationWebHookServer()
+
 	//******************************************************
 	//********** инициализация модуля логирования **********
 	simpleLogger, err := simplelogger.NewSimpleLogger(ctx, ROOT_DIR, getLoggerSettings(confApp.GetListLogs()))
@@ -43,11 +45,12 @@ func server(ctx context.Context) {
 	//********** инициализация модуля взаимодействия с БД для передачи логов **********
 	confDB := confApp.GetApplicationWriteLogDB()
 	if esc, err := elasticsearchapi.NewElasticsearchConnect(elasticsearchapi.Settings{
-		Port:    confDB.Port,
-		Host:    confDB.Host,
-		User:    confDB.User,
-		Passwd:  confDB.Passwd,
-		IndexDB: confDB.StorageNameDB,
+		Port:               confDB.Port,
+		Host:               confDB.Host,
+		User:               confDB.User,
+		Passwd:             confDB.Passwd,
+		IndexDB:            confDB.StorageNameDB,
+		NameRegionalObject: confWebHook.Name,
 	}); err != nil {
 		_, f, l, _ := runtime.Caller(0)
 		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-7))
@@ -137,7 +140,6 @@ func server(ctx context.Context) {
 
 	//*********************************************************
 	//********** инициализация WEBHOOKSERVER сервера **********
-	confWebHook := confApp.GetApplicationWebHookServer()
 	webHook, chForSomebody, err := webhookserver.New(
 		logging,
 		webhookserver.WithTTL(confApp.TTLTmpInfo),
@@ -155,6 +157,9 @@ func server(ctx context.Context) {
 	//мост между каналами различных модулей
 	go router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
 
-	webHook.Start(ctx)
-	webHook.Shutdown(ctx)
+	if err = webHook.Start(ctx); err != nil {
+		_, f, l, _ := runtime.Caller(0)
+		_ = simpleLogger.Write("error", fmt.Sprintf("'%s' %s:%d", err.Error(), f, l-1))
+		log.Fatalln(err)
+	}
 }

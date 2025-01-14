@@ -38,9 +38,10 @@ func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHook
 }
 
 // Start выполняет запуск модуля
-func (wh *WebHookServer) Start(ctx context.Context) {
+func (wh *WebHookServer) Start(ctx context.Context) error {
 	defer func() {
-		wh.Shutdown(context.Background())
+		close(wh.chanInput)
+		wh.server.Shutdown(ctx)
 	}()
 	routers := map[string]func(http.ResponseWriter, *http.Request){
 		"/":        wh.RouteIndex,
@@ -56,6 +57,7 @@ func (wh *WebHookServer) Start(ctx context.Context) {
 		Addr:    fmt.Sprintf("%s:%d", wh.host, wh.port),
 		Handler: mux,
 	}
+	wh.server = server
 
 	go func() {
 		if errServer := server.ListenAndServe(); errServer != nil {
@@ -63,28 +65,24 @@ func (wh *WebHookServer) Start(ctx context.Context) {
 		}
 	}()
 
-	appStatus := fmt.Sprintf("%vproduction%v", ansiBrightBlue, ansiReset)
+	appStatus := fmt.Sprintf("%vproduction%v", Ansi_Bright_Blue, Ansi_Reset)
 	envValue, ok := os.LookupEnv("GO_HIVEHOOK_MAIN")
 	if ok && envValue == "development" {
-		appStatus = fmt.Sprintf("%v%s%v", ansiBrightRed, envValue, ansiReset)
+		appStatus = fmt.Sprintf("%v%s%v", Ansi_Bright_Red, envValue, Ansi_Reset)
 	}
 
 	msg := fmt.Sprintf("Application '%s' v%s was successfully launched", appname.GetName(), appversion.GetVersion())
-	log.Printf("%v%v%v%s%v\n", ansiDarkGreenBackground, boldFont, ansiWhite, msg, ansiReset)
-	log.Printf("%vApplication status is '%s'.%v", ansiBrightGreen, appStatus, ansiReset)
-	log.Printf("%vWebhook server settings:%v", ansiBrightGreen, ansiReset)
-	log.Printf("%v  name: %v%s%v", ansiBrightGreen, ansiBrightDark, wh.name, ansiReset)
-	log.Printf("%v  ip: %v%s%v", ansiBrightGreen, ansiBrightBlue, wh.host, ansiReset)
-	log.Printf("%v  net port: %v%d%v", ansiBrightGreen, ansiBrightMagenta, wh.port, ansiReset)
+	log.Printf("%v%v%s%v\n", Ansi_Dark_Green_Background, Ansi_White, msg, Ansi_Reset)
+	fmt.Printf("%v%vApplication status is '%s'.%v\n", Underlining, Ansi_Bright_Green, appStatus, Ansi_Reset)
+	fmt.Printf("%vWebhook server settings:%v\n", Ansi_Bright_Green, Ansi_Reset)
+	fmt.Printf("%v  name: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Dark, wh.name, Ansi_Reset)
+	fmt.Printf("%v  ip: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Blue, wh.host, Ansi_Reset)
+	fmt.Printf("%v  net port: %v%d%v\n", Ansi_Bright_Green, Ansi_Bright_Magenta, wh.port, Ansi_Reset)
 	wh.logger.Send("info", strings.ToLower(msg))
 
 	<-ctx.Done()
-	close(wh.chanInput)
-}
 
-// Shutdown завершает работу модуля
-func (wh *WebHookServer) Shutdown(ctx context.Context) {
-	wh.server.Shutdown(ctx)
+	return ctx.Err()
 }
 
 //******************** функциональные настройки webhookserver ***********************
