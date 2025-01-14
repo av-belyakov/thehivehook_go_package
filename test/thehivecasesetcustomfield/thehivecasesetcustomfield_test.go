@@ -57,7 +57,7 @@ var _ = Describe("Testthehivecasesetcustomfield", Ordered, func() {
 		})
 	})
 
-	Context("Тест 1. Добавление CustomFiled к заданному кейсы TheHive", func() {
+	Context("Тест 1. Добавление CustomFiled к заданному кейсу TheHive", func() {
 		It("При выполнении запроса ошибок быть не должно", func() {
 			logging := logginghandler.New()
 

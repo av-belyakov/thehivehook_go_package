@@ -3,7 +3,7 @@ module github.com/av-belyakov/thehivehook_go_package
 go 1.23.3
 
 require (
-	github.com/av-belyakov/simplelogger v0.0.0-20250110080733-fea3b5c8fb98
+	github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e
 	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20241225064839-9c19184470aa
 	github.com/elastic/go-elasticsearch/v8 v8.17.0
 	github.com/go-playground/validator/v10 v10.23.0
@@ -16,6 +16,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8
+	golang.org/x/sync v0.10.0
 )
 
 require (

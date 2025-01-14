@@ -16,8 +16,7 @@ import (
 var _ = Describe("Testconfighandler", Ordered, func() {
 	var (
 		rootDir string = "thehivehook_go_package"
-
-		conf *confighandler.ConfigApp
+		conf    *confighandler.ConfigApp
 
 		err error
 	)

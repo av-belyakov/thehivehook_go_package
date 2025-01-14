@@ -15,4 +15,10 @@ func TestTimeDuraction(t *testing.T) {
 	fmt.Println("time to live:", timeToLive)
 	assert.Nil(t, err)
 	assert.Equal(t, timeToLive, (5 * time.Second))
+
+	currentTime := time.Now()
+
+	fmt.Println("Time:", int(currentTime.Month()))
+
+	assert.Equal(t, currentTime.Year(), 2025)
 }

@@ -36,6 +36,10 @@ func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
 func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequester, <-chan cint.ChannelRequester, error) {
+	if ctx.Err() != nil {
+		return api.receivingChannel, api.sendingChannel, ctx.Err()
+	}
+
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", api.host, api.port),
 		nats.MaxReconnects(-1),
@@ -47,12 +51,12 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 
 	//обработка разрыва соединения с NATS
 	nc.SetDisconnectErrHandler(func(c *nats.Conn, err error) {
-		api.logger.Send("error", fmt.Sprintf("the connection with NATS has been disconnected (%s) %s:%d", err.Error(), f, l-4))
+		api.logger.Send("error", fmt.Sprintf("the connection with NATS has been disconnected (%s)", err.Error()))
 	})
 
 	//обработка переподключения к NATS
 	nc.SetReconnectHandler(func(c *nats.Conn) {
-		api.logger.Send("info", fmt.Sprintf("the connection to NATS has been re-established (%s) %s:%d", err.Error(), f, l-4))
+		api.logger.Send("info", fmt.Sprintf("the connection to NATS has been re-established (%s)", err.Error()))
 	})
 
 	api.natsConnection = nc

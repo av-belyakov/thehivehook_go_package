@@ -1,12 +1,14 @@
 package webhookserver
 
 const (
-	ansiReset               = "\033[0m"
-	ansiWhite               = "\033[97m"
-	ansiBrightDark          = "\033[30m"
-	ansiBrightBlue          = "\033[34m"
-	ansiBrightGreen         = "\033[92m"
-	ansiBrightMagenta       = "\033[95m"
-	ansiDarkGreenBackground = "\033[42m"
-	boldFont                = "\033[1m"
+	Ansi_Reset                 = "\033[0m"
+	Ansi_White                 = "\033[97m"
+	Ansi_Bright_Red            = "\033[91m"
+	Ansi_Bright_Dark           = "\033[30m"
+	Ansi_Bright_Blue           = "\033[34m"
+	Ansi_Bright_Green          = "\033[92m"
+	Ansi_Bright_Magenta        = "\033[95m"
+	Ansi_Dark_Green_Background = "\033[42m"
+	Bold_Font                  = "\033[1m"
+	Underlining                = "\033[4m"
 )

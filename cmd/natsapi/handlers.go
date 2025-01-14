@@ -16,9 +16,6 @@ import (
 // subscriptionHandler обработчик подписки
 func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 	api.natsConnection.Subscribe(api.subscriptions.listenerCommand, func(m *nats.Msg) {
-
-		fmt.Println("((( subscriptionHandler ))) reseived ", string(m.Data))
-
 		rc := RequestCommand{}
 		if err := json.Unmarshal(m.Data, &rc); err != nil {
 			_, f, l, _ := runtime.Caller(0)
@@ -44,6 +41,8 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 		ch = nil
 	}(ctxTimeoutCancel, chRes)
 
+	api.logger.Send("info", fmt.Sprintf("the command '%s' has been received, data '%v'", rc.Command, m.Data))
+
 	api.sendingChannel <- &RequestFromNats{
 		RequestId:  id,
 		Command:    "send_command",
@@ -62,11 +61,12 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 
 			res := []byte(
 				fmt.Sprintf(`{
-					id: \"%s\", 
-					error: \"%s\",
-					command: \"%s\", 
-					status_code: \"%d\", 
-					data: %v}`,
+					"id": \"%s\", 
+					"error": \"%s\",
+					"command": \"%s\", 
+					"status_code": \"%d\", 
+					"data": %v
+					}`,
 					msg.GetRequestId(),
 					msg.GetError().Error(),
 					rc.Command,
@@ -127,7 +127,7 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-1))
 			}
 
-			api.logger.Send("info", description)
+			api.logger.Send("log_to_db", description)
 		}
 	}
 }

@@ -2,12 +2,11 @@ package supportingfunctions
 
 import (
 	"os"
-	"path/filepath"
 	"strings"
 )
 
 func GetRootPath(rootDir string) (string, error) {
-	currentDir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	currentDir, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
