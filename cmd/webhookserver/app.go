@@ -72,7 +72,7 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 	}
 
 	msg := fmt.Sprintf("Application '%s' v%s was successfully launched", appname.GetName(), appversion.GetVersion())
-	log.Printf("%v%v%s%v\n", Ansi_Dark_Green_Background, Ansi_White, msg, Ansi_Reset)
+	fmt.Printf("\n%v%v%s.%v\n", Bold_Font, Ansi_Bright_Green, msg, Ansi_Reset)
 	fmt.Printf("%v%vApplication status is '%s'.%v\n", Underlining, Ansi_Bright_Green, appStatus, Ansi_Reset)
 	fmt.Printf("%vWebhook server settings:%v\n", Ansi_Bright_Green, Ansi_Reset)
 	fmt.Printf("%v  name: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Dark, wh.name, Ansi_Reset)
