@@ -148,10 +148,8 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 		})
 
 		It("Работоспособность сервера", func() {
-			webHookServer.Start(ctx)
-			webHookServer.Shutdown(ctx)
-
-			Expect(true).ShouldNot(BeTrue())
+			err := webHookServer.Start(ctx)
+			Expect(err).ShouldNot(HaveOccurred())
 		})
 	})
 })

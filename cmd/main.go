@@ -8,8 +8,6 @@ import (
 	"syscall"
 )
 
-const ROOT_DIR = "thehivehook_go_package"
-
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGHUP,
