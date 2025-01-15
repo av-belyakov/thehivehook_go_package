@@ -21,7 +21,7 @@ import (
 
 // server здесь реализована вся логика запуска thehivehook_go_package
 func server(ctx context.Context) {
-	rootPath, err := supportingfunctions.GetRootPath(ROOT_DIR)
+	rootPath, err := supportingfunctions.GetRootPath(Root_Dir)
 	if err != nil {
 		log.Fatalf("error, it is impossible to form root path (%s)", err.Error())
 	}
@@ -36,7 +36,7 @@ func server(ctx context.Context) {
 
 	//******************************************************
 	//********** инициализация модуля логирования **********
-	simpleLogger, err := simplelogger.NewSimpleLogger(ctx, ROOT_DIR, getLoggerSettings(confApp.GetListLogs()))
+	simpleLogger, err := simplelogger.NewSimpleLogger(ctx, Root_Dir, getLoggerSettings(confApp.GetListLogs()))
 	if err != nil {
 		log.Fatalf("error module 'simplelogger': %s", err.Error())
 	}

@@ -6,21 +6,21 @@ import (
 
 // RequestFromNats структура запроса из модуля
 type RequestFromNats struct {
+	Data        interface{}                            //набор данных
 	RequestId   string                                 //id запроса
 	ElementType string                                 //тип элемента
 	RootId      string                                 //идентификатор по которому в TheHive будет выполнятся поиск
 	CaseId      string                                 //идентификатор кейса в TheHive
 	Command     string                                 //команда
 	Order       string                                 //распоряжение
-	Data        interface{}                            //набор данных
 	ChanOutput  chan commoninterfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
 }
 
 // ResponsToNats структура ответа в модуля
 type ResponsToNats struct {
-	StatusCode int    //статус кода ответа
 	RequestId  string //UUID идентификатор ответа (соответствует идентификатору запроса)
 	Data       []byte //набор данных
+	StatusCode int    //статус кода ответа
 }
 
 // RequestCommand структура с командами для обработки модулем
