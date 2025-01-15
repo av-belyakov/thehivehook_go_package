@@ -77,7 +77,7 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 	fmt.Printf("%vWebhook server settings:%v\n", Ansi_Bright_Green, Ansi_Reset)
 	fmt.Printf("%v  name: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Dark, wh.name, Ansi_Reset)
 	fmt.Printf("%v  ip: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Blue, wh.host, Ansi_Reset)
-	fmt.Printf("%v  net port: %v%d%v\n", Ansi_Bright_Green, Ansi_Bright_Magenta, wh.port, Ansi_Reset)
+	fmt.Printf("%v  net port: %v%d%v\n\n", Ansi_Bright_Green, Ansi_Bright_Magenta, wh.port, Ansi_Reset)
 	wh.logger.Send("info", strings.ToLower(msg))
 
 	<-ctx.Done()
