@@ -82,7 +82,6 @@ func server(ctx context.Context) {
 		})
 	}
 	wzis.EventTypes = eventTypes
-
 	wrappers.WrappersZabbixInteraction(ctx, wzis, simpleLogger, channelZabbix)
 
 	//******************************************************************
@@ -138,8 +137,8 @@ func server(ctx context.Context) {
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
 
-	//*********************************************************
-	//********** инициализация WEBHOOKSERVER сервера **********
+	//***********************************************************
+	//********** инициализация WEBHOOKSERVER сервера ************
 	webHook, chForSomebody, err := webhookserver.New(
 		logging,
 		webhookserver.WithTTL(confApp.TTLTmpInfo),
@@ -156,6 +155,48 @@ func server(ctx context.Context) {
 
 	//мост между каналами различных модулей
 	go router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
+
+	/*
+		1. устранить гонку данных
+		2. может сделать какой нибудь модуль для контролировании расхода памяти модулей
+	*/
+
+	printMemStats()
+
+	/*
+			==================
+		WARNING: DATA RACE
+		Write at 0x00c0002e4d20 by goroutine 829:
+		  runtime.mapdelete_faststr()
+		      /usr/local/go/src/runtime/map_faststr.go:321 +0x0
+		  github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions.(*CacheRunningFunctions).DeleteElement()
+		      /home/artemij/go/src/thehivehook_go_package/internal/cacherunningfunctions/methods.go:38 +0xc9
+		  github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions.(*CacheRunningFunctions).automaticExecutionMethods.gowrap3()
+		      /home/artemij/go/src/thehivehook_go_package/internal/cacherunningfunctions/app.go:62 +0x4f
+
+		Previous read at 0x00c0002e4d20 by goroutine 833:
+		  runtime.mapaccess2_faststr()
+		      /usr/local/go/src/runtime/map_faststr.go:117 +0x0
+		  github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions.(*CacheRunningFunctions).getNumberAttempts()
+		      /home/artemij/go/src/thehivehook_go_package/internal/cacherunningfunctions/methods.go:43 +0x184
+		  github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions.(*CacheRunningFunctions).automaticExecutionMethods.func2()
+		      /home/artemij/go/src/thehivehook_go_package/internal/cacherunningfunctions/app.go:83 +0x1f5
+		  github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions.(*CacheRunningFunctions).automaticExecutionMethods.gowrap4()
+		      /home/artemij/go/src/thehivehook_go_package/internal/cacherunningfunctions/app.go:89 +0x6e
+
+		Goroutine 829 (running) created at:
+		  github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions.(*CacheRunningFunctions).automaticExecutionMethods()
+		      /home/artemij/go/src/thehivehook_go_package/internal/cacherunningfunctions/app.go:62 +0x5e8
+		  github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions.CreateCache.gowrap1()
+		      /home/artemij/go/src/thehivehook_go_package/internal/cacherunningfunctions/app.go:32 +0x4f
+
+		Goroutine 833 (running) created at:
+		  github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions.(*CacheRunningFunctions).automaticExecutionMethods()
+		      /home/artemij/go/src/thehivehook_go_package/internal/cacherunningfunctions/app.go:74 +0x52a
+		  github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions.CreateCache.gowrap1()
+		      /home/artemij/go/src/thehivehook_go_package/internal/cacherunningfunctions/app.go:32 +0x4f
+		==================
+	*/
 
 	if err = webHook.Start(ctx); err != nil {
 		_, f, l, _ := runtime.Caller(0)
