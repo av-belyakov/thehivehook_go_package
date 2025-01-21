@@ -3,14 +3,15 @@ package natsapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"runtime"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 
 	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 // subscriptionHandler обработчик подписки
@@ -18,8 +19,7 @@ func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 	api.natsConnection.Subscribe(api.subscriptions.listenerCommand, func(m *nats.Msg) {
 		rc := RequestCommand{}
 		if err := json.Unmarshal(m.Data, &rc); err != nil {
-			_, f, l, _ := runtime.Caller(0)
-			api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
+			api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 			return
 		}
@@ -73,8 +73,7 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 					msg.GetStatusCode(),
 					msg.GetData()))
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
-				_, f, l, _ := runtime.Caller(0)
-				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
+				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
 
 			return
@@ -99,8 +98,7 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 
 			data, ok := msg.GetData().([]byte)
 			if !ok {
-				_, f, l, _ := runtime.Caller(0)
-				api.logger.Send("error", fmt.Sprintf("it is not possible to convert a value to a %s:%d", f, l-2))
+				api.logger.Send("error", supportingfunctions.CustomError(errors.New("it is not possible to convert a value")).Error())
 
 				continue
 			}
@@ -116,15 +114,13 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 				description = fmt.Sprintf("%s with id: '%s' has been successfully transferred", msg.GetElementType(), msg.GetRootId())
 
 			default:
-				_, f, l, _ := runtime.Caller(0)
-				api.logger.Send("error", fmt.Sprintf("undefined type '%s' for sending a message to NATS, cannot be processed %s:%d", msg.GetElementType(), f, l-6))
+				api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("undefined type '%s' for sending a message to NATS, cannot be processed", msg.GetElementType())).Error())
 
 				continue
 			}
 
 			if err := api.natsConnection.Publish(subscription, data); err != nil {
-				_, f, l, _ := runtime.Caller(0)
-				api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-1))
+				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
 
 			api.logger.Send("log_to_db", description)

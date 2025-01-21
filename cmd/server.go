@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"runtime"
 
 	"github.com/av-belyakov/simplelogger"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
@@ -52,10 +50,7 @@ func server(ctx context.Context) {
 		IndexDB:            confDB.StorageNameDB,
 		NameRegionalObject: confWebHook.Name,
 	}); err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-7))
-
-		log.Println(err.Error())
+		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 	} else {
 		simpleLogger.SetDataBaseInteraction(esc)
 	}
@@ -99,15 +94,13 @@ func server(ctx context.Context) {
 		thehiveapi.WithPort(confTheHiveAPI.Port),
 		thehiveapi.WithCacheTTL(confTheHiveAPI.CacheTTL))
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
+		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
 	}
 	chReqTheHiveAPI, err := apiTheHive.Start(ctx)
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
+		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
 	}
@@ -124,15 +117,13 @@ func server(ctx context.Context) {
 		natsapi.WithSubListenerCommand(confNatsSAPI.Subscriptions.ListenerCommand)}
 	apiNats, err := natsapi.New(logging, natsOptsAPI...)
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
+		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
 	chReqNatsAPI, chNatsAPIReq, err := apiNats.Start(ctx)
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
+		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
@@ -147,8 +138,7 @@ func server(ctx context.Context) {
 		webhookserver.WithName(confWebHook.Name),
 		webhookserver.WithVersion(appversion.GetVersion()))
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.Write("error", fmt.Sprintf(" '%s' %s:%d", err.Error(), f, l-3))
+		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 
 		log.Fatalf("error module 'webhookserver': %s\n", err.Error())
 	}
@@ -199,8 +189,6 @@ func server(ctx context.Context) {
 	*/
 
 	if err = webHook.Start(ctx); err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		_ = simpleLogger.Write("error", fmt.Sprintf("'%s' %s:%d", err.Error(), f, l-1))
-		log.Fatalln(err)
+		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 	}
 }

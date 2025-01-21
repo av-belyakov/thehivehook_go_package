@@ -2,7 +2,6 @@ package webhookserver
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
@@ -27,7 +26,7 @@ func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (Read
 	g.Go(func() error {
 		for res := range chanResObservable {
 
-			fmt.Println("func 'CreateEventCase', goroutine 'observable' received data")
+			//fmt.Println("func 'CreateEventCase', goroutine 'observable' received data")
 
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
@@ -42,7 +41,7 @@ func CreateEvenCase(rootId string, chanInput chan<- ChanFromWebHookServer) (Read
 	g.Go(func() error {
 		for res := range chanResTTL {
 
-			fmt.Println("func 'CreateEventCase', goroutine 'ttl' received data")
+			//fmt.Println("func 'CreateEventCase', goroutine 'ttl' received data")
 
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {

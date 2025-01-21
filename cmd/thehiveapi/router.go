@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"runtime"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 func (api *apiTheHiveModule) router(ctx context.Context) {
@@ -20,7 +21,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
 					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
-						api.logger.Send("error", err.Error())
+						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 						return false
 					}
@@ -40,7 +41,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
 					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
 					if err != nil {
-						api.logger.Send("error", err.Error())
+						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 						return false
 					}
@@ -62,8 +63,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 				rc, err := getRequestCommandData(msg.GetData())
 				if err != nil {
-					_, f, l, _ := runtime.Caller(0)
-					api.logger.Send("error", fmt.Sprintf("%s %s:%d", err.Error(), f, l-2))
+					api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 				}
 
 				chRes := msg.GetChanOutput()
@@ -77,11 +77,11 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				switch msg.GetOrder() {
 				case "add_case_tag":
 					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(countAttempts int) bool {
-						fmt.Println("========= ADD CASE TAGS")
-
 						_, statusCode, err := api.AddCaseTags(ctx, rc)
+
 						if err != nil {
-							api.logger.Send("error", err.Error())
+							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
 							if countAttempts >= 10 {
 								res.SetStatusCode(statusCode)
 								res.SetError(err)
@@ -103,11 +103,11 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 				case "add_case_task":
 					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(countAttempts int) bool {
-						fmt.Println("========= ADD CASE TASSSSSSKKKKKK")
-
 						_, statusCode, err := api.AddCaseTask(ctx, rc)
+
 						if err != nil {
-							api.logger.Send("error", err.Error())
+							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
 							if countAttempts >= 10 {
 								res.SetStatusCode(statusCode)
 								res.SetError(err)
@@ -129,11 +129,11 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 				case "set_case_custom_field":
 					api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(countAttempts int) bool {
-						fmt.Println("========= ADD CASE CUSTOM FIELD")
-
 						_, statusCode, err := api.AddCaseCustomFields(ctx, rc)
+
 						if err != nil {
-							api.logger.Send("error", err.Error())
+							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
 							if countAttempts >= 10 {
 								res.SetStatusCode(statusCode)
 								res.SetError(err)

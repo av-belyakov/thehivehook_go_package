@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"runtime"
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
@@ -24,8 +23,7 @@ func (api *apiTheHiveModule) GetObservables(ctx context.Context, rootId string) 
 		},
 	})
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, 0, supportingfunctions.CustomError(err)
 	}
 
 	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 30*time.Second)
@@ -33,8 +31,7 @@ func (api *apiTheHiveModule) GetObservables(ctx context.Context, rootId string) 
 
 	res, statusCode, err := api.query(ctxTimeout, "/api/v1/query?name=case-observables", req, "POST")
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, statusCode, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 
 	return res, statusCode, err
@@ -58,8 +55,7 @@ func (api *apiTheHiveModule) GetTTP(ctx context.Context, rootId string) ([]byte,
 		},
 	})
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, 0, supportingfunctions.CustomError(err)
 	}
 
 	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 30*time.Second)
@@ -67,8 +63,7 @@ func (api *apiTheHiveModule) GetTTP(ctx context.Context, rootId string) ([]byte,
 
 	res, statusCode, err := api.query(ctxTimeout, "/api/v1/query?name=case-procedures", req, "POST")
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, statusCode, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 
 	return res, statusCode, err
@@ -83,8 +78,7 @@ func (api *apiTheHiveModule) GetCaseEvent(ctx context.Context, rootId string) ([
 		},
 	})
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, 0, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, 0, supportingfunctions.CustomError(err)
 	}
 
 	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 30*time.Second)
@@ -92,8 +86,7 @@ func (api *apiTheHiveModule) GetCaseEvent(ctx context.Context, rootId string) ([
 
 	res, statusCode, err := api.query(ctxTimeout, "/api/v1/query?name=case", req, "POST")
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, statusCode, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 
 	return res, statusCode, err
@@ -109,23 +102,21 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 
 	//получаем информацию по кейсу
 	bodyByte, statusCode, err := api.GetCaseEvent(ctx, rc.RootId)
-	_, f, l, _ := runtime.Caller(0)
 	if err != nil {
-		return nil, statusCode, fmt.Errorf("%w %s:%d", err, f, l-1)
+		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 	if statusCode != http.StatusOK {
-		return nil, statusCode, fmt.Errorf("'when executing the Get Case Event request, the response status is received %d' %s:%d", statusCode, f, l-1)
+		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("'when executing the Get Case Event request, the response status is received %d'", statusCode))
 	}
 
 	bcee := []datamodels.BaseCaseEventElement{}
 	err = json.Unmarshal(bodyByte, &bcee)
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, statusCode, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 
 	if len(bcee) == 0 {
-		return nil, statusCode, fmt.Errorf("'no events were found in TheHive by rootId %s' %s:%d", rc.RootId, f, l-1)
+		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("'no events were found in TheHive by rootId %s'", rc.RootId))
 	}
 
 	//получаем список тегов которых нет bcee[0].Tags, но есть в tags
@@ -145,8 +136,7 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 
 	req, err := json.Marshal(newTagsQuery)
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, statusCode, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 
 	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 15*time.Second)
@@ -154,8 +144,7 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 
 	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/case/%s", rc.RootId), req, "PATCH")
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, statusCode, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 
 	return res, statusCode, nil
@@ -171,8 +160,7 @@ func (api *apiTheHiveModule) AddCaseCustomFields(ctx context.Context, rc Request
 
 	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/case/%s", rc.RootId), req, "PATCH")
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, statusCode, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 
 	return res, statusCode, nil
@@ -193,8 +181,7 @@ func (api *apiTheHiveModule) AddCaseTask(ctx context.Context, rc RequestCommand)
 
 	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/case/%s/task", rc.RootId), req, "POST")
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return nil, statusCode, fmt.Errorf("%w %s:%d", err, f, l-2)
+		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 
 	return res, statusCode, nil

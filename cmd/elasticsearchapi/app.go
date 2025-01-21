@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"runtime"
 	"strings"
 	"time"
 
@@ -69,8 +68,7 @@ func (edb *ElasticsearchDB) Write(msgType, msg string) error {
 	res, err := edb.client.Index(fmt.Sprintf("logs.%s_%s_%d", edb.settings.IndexDB, strings.ToLower(tn.Month().String()), tn.Year()), buf)
 	defer responseClose(res)
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return fmt.Errorf("'%v' %s:%d", err, f, l-1)
+		return supportingfunctions.CustomError(err)
 	}
 
 	if res.StatusCode == http.StatusCreated || res.StatusCode == http.StatusOK {
@@ -79,12 +77,11 @@ func (edb *ElasticsearchDB) Write(msgType, msg string) error {
 
 	r := map[string]interface{}{}
 	if err = json.NewDecoder(res.Body).Decode(&r); err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		return fmt.Errorf("'%v' %s:%d", err, f, l-1)
+		return supportingfunctions.CustomError(err)
 	}
 
 	if e, ok := r["error"]; ok {
-		return fmt.Errorf("%s received from module Elsaticsearch: %s", res.Status(), e)
+		return supportingfunctions.CustomError(fmt.Errorf("%s received from module Elsaticsearch: %s", res.Status(), e))
 	}
 
 	return nil

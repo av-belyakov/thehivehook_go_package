@@ -10,6 +10,7 @@ import (
 	"github.com/nats-io/nats.go"
 
 	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 // New настраивает новый модуль взаимодействия с API NATS
@@ -51,12 +52,12 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 
 	//обработка разрыва соединения с NATS
 	nc.SetDisconnectErrHandler(func(c *nats.Conn, err error) {
-		api.logger.Send("error", fmt.Sprintf("the connection with NATS has been disconnected (%v)", err))
+		api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("the connection with NATS has been disconnected (%w)", err)).Error())
 	})
 
 	//обработка переподключения к NATS
 	nc.SetReconnectHandler(func(c *nats.Conn) {
-		api.logger.Send("info", fmt.Sprintf("the connection to NATS has been re-established (%v)", err))
+		api.logger.Send("info", "the connection to NATS has been re-established")
 	})
 
 	api.natsConnection = nc

@@ -4,7 +4,7 @@ LOGGING:
       writingFile: true,
       pathDirectory: "logs",
       writingStdout: true,
-      maxFileSize: 1000000,
+      maxFileSize: 10000000,
       writingDB: true,
     }
   - {
@@ -12,7 +12,7 @@ LOGGING:
       writingFile: true,
       pathDirectory: "logs",
       writingStdout: true,
-      maxFileSize: 1000000,
+      maxFileSize: 10000000,
       writingDB: true,
     }
   - {
@@ -20,7 +20,7 @@ LOGGING:
       writingFile: true,
       pathDirectory: "logs",
       writingStdout: true,
-      maxFileSize: 1000000,
+      maxFileSize: 10000000,
       writingDB: false,
     }
   - {
@@ -28,7 +28,7 @@ LOGGING:
       writingFile: false,
       pathDirectory: "logs",
       writingStdout: true,
-      maxFileSize: 1000000,
+      maxFileSize: 30000000,
       writingDB: true,
     }
   - {
