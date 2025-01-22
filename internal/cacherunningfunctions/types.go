@@ -8,12 +8,10 @@ import (
 	"time"
 )
 
-type storageParameters struct {
-	isFunctionExecution     bool
-	isCompletedSuccessfully bool
-	numberAttempts          int
-	timeExpiry              time.Time
-	cacheFunc               func(int) bool
+// CacheRunningFunctions хранилище функций
+type CacheRunningFunctions struct {
+	ttl          time.Duration
+	cacheStorage cacheStorageParameters
 }
 
 type cacheStorageParameters struct {
@@ -21,8 +19,10 @@ type cacheStorageParameters struct {
 	storages map[string]storageParameters
 }
 
-// CacheRunningFunctions хранилище функций
-type CacheRunningFunctions struct {
-	ttl          time.Duration
-	cacheStorage cacheStorageParameters
+type storageParameters struct {
+	cacheFunc               func(int) bool
+	timeExpiry              time.Time
+	numberAttempts          int
+	isFunctionExecution     bool
+	isCompletedSuccessfully bool
 }

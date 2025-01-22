@@ -12,18 +12,17 @@ import (
 )
 
 func TestCacheRunningFunction(t *testing.T) {
-
 	cache, err := cacherunningfunctions.CreateCache(context.Background(), 10000)
 	assert.NoError(t, err)
 
 	var (
-		testStr       string
-		resultFuncTwo bool
+		chTest       chan string = make(chan string)
+		chResultFunc chan bool   = make(chan bool)
 	)
 
 	idOne := uuid.New().String()
 	cache.SetMethod(idOne, func(count int) bool {
-		testStr = "test_string"
+		chTest <- "test_string"
 
 		fmt.Println("add method is started, attempt number:", count)
 
@@ -36,17 +35,19 @@ func TestCacheRunningFunction(t *testing.T) {
 
 		if count == 3 {
 			fmt.Println("function running is:", count, " attempt")
-			resultFuncTwo = true
+			chResultFunc <- true
 
 			return true
 		}
+
+		//chResultFunc <- false
 
 		return false
 	})
 
 	time.Sleep(time.Second * 7)
-	assert.Equal(t, testStr, "test_string")
+	assert.Equal(t, <-chTest, "test_string")
 
 	time.Sleep(time.Second * 17)
-	assert.True(t, resultFuncTwo)
+	assert.True(t, <-chResultFunc)
 }
