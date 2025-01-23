@@ -13,6 +13,6 @@ RUN mkdir /opt/thehivehook_go_package/configs && \
     mkdir /opt/thehivehook_go_package/logs
 COPY --from=temporary_image /go/src/thehivehook_go_package /opt/thehivehook_go_package/ 
 COPY --from=temporary_image /go/src/README.md /opt/thehivehook_go_package/
-COPY configs/* /opt/thehivehook_go_package/configs/
+COPY config/* /opt/thehivehook_go_package/config/
 #EXPOSE 13000
 ENTRYPOINT [ "./thehivehook_go_package" ]
