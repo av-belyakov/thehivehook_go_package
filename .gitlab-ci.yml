@@ -35,5 +35,5 @@ deploy-prod:
   only:
     - master
   script:
-    - "curl -X POST --fail -F token=CI_GCM_THEHIVEHOOK_GO_CONTAINER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/726/trigger/pipeline"
+    - "curl -X POST --fail -F token=$CI_GCM_THEHIVEHOOK_GO_CONTAINER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/726/trigger/pipeline"
   environment: production
