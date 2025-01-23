@@ -49,7 +49,7 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 
 			//удаление слишком старых записей
 			if storage.timeExpiry.Before(time.Now()) {
-				go crm.DeleteElement(id)
+				crm.DeleteElement(id)
 
 				fmt.Println("func 'automaticExecutionMethods' new tick: before delete id:", id)
 
@@ -59,7 +59,7 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 			//удаление записей если функция в настоящее время не выполняется и вернула
 			// положительный результат
 			if !storage.isFunctionExecution && storage.isCompletedSuccessfully {
-				go crm.DeleteElement(id)
+				crm.DeleteElement(id)
 
 				fmt.Println("func 'automaticExecutionMethods' new tick: delete id:", id)
 

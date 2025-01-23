@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
-	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
@@ -40,8 +37,8 @@ func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHook
 // Start выполняет запуск модуля
 func (wh *WebHookServer) Start(ctx context.Context) error {
 	defer func() {
-		close(wh.chanInput)
 		wh.server.Shutdown(ctx)
+		close(wh.chanInput)
 	}()
 	routers := map[string]func(http.ResponseWriter, *http.Request){
 		"/":        wh.RouteIndex,
@@ -65,20 +62,8 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 		}
 	}()
 
-	appStatus := fmt.Sprintf("%vproduction%v", Ansi_Bright_Blue, Ansi_Reset)
-	envValue, ok := os.LookupEnv("GO_HIVEHOOK_MAIN")
-	if ok && envValue == "development" {
-		appStatus = fmt.Sprintf("%v%s%v", Ansi_Bright_Red, envValue, Ansi_Reset)
-	}
-
-	msg := fmt.Sprintf("Application '%s' v%s was successfully launched", appname.GetName(), appversion.GetVersion())
-	fmt.Printf("\n%v%v%s.%v\n", Bold_Font, Ansi_Bright_Green, msg, Ansi_Reset)
-	fmt.Printf("%v%vApplication status is '%s'.%v\n", Underlining, Ansi_Bright_Green, appStatus, Ansi_Reset)
-	fmt.Printf("%vWebhook server settings:%v\n", Ansi_Bright_Green, Ansi_Reset)
-	fmt.Printf("%v  name: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Dark, wh.name, Ansi_Reset)
-	fmt.Printf("%v  ip: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Blue, wh.host, Ansi_Reset)
-	fmt.Printf("%v  net port: %v%d%v\n\n", Ansi_Bright_Green, Ansi_Bright_Magenta, wh.port, Ansi_Reset)
-	wh.logger.Send("info", strings.ToLower(msg))
+	// вывод информационного сообщения при старте приложения
+	wh.logger.Send("info", strings.ToLower(getInformationMessage(wh.name, wh.host, wh.port)))
 
 	<-ctx.Done()
 

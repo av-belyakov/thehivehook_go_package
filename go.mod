@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e
-	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20241225064839-9c19184470aa
+	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20250122111136-eeef7fcc6fc4
 	github.com/elastic/go-elasticsearch/v8 v8.17.0
 	github.com/go-playground/validator/v10 v10.24.0
 	github.com/google/uuid v1.6.0

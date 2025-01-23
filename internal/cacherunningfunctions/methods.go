@@ -40,6 +40,9 @@ func (crm *CacheRunningFunctions) DeleteElement(id string) {
 
 // getNumberAttempts количество попыток вызова функции
 func (crm *CacheRunningFunctions) getNumberAttempts(id string) int {
+	crm.cacheStorage.mutex.RLock()
+	defer crm.cacheStorage.mutex.RUnlock()
+
 	storage, ok := crm.cacheStorage.storages[id]
 	if !ok {
 		return 0
