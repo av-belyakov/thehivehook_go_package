@@ -1,4 +1,4 @@
-FROM golang:1.23.2-alpine AS temporary_image
+FROM golang:1.23.4-alpine AS temporary_image
 WORKDIR /go/src/
 ENV PATH /usr/local/go/bin:$PATH
 RUN apk update && \
