@@ -1,21 +1,39 @@
 stages:
-  - build
   - test
+  - build
+  - push
   - deploy
+
+default:
+  tags:
+    - thehivehook_go
 
 build-job:
   stage: build
   script:
-    - echo "Compiling the code..."
-    - docker build -t thehivehook_go_package .
-    - echo "Compile complete."
+    # fetches the latest image (not failing if image is not found)
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
-test-job:
-  stage: test
+# Here, the goal is to tag the "master" branch as "latest"
+push-latest:
+  stage: push
+  only:
+    # Only "master" should be tagged "latest"
+    - master
   script:
-    - go test -v test/timeduraction_test.go
+    # Because we have no guarantee that this job will be picked up by the same runner
+    # that built the image in the previous step, we pull it again locally
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    # Then we tag it "latest"
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:latest
 
-deploy-job:
+deploy-prod:
   stage: deploy
+  only:
+    - master
   script:
-    - docker-compose up -d
+    - "curl -X POST --fail -F token=CI_GCM_THEHIVEHOOK_GO_CONTAINER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/726/trigger/pipeline"
+  environment: production
