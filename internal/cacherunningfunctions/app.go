@@ -71,22 +71,22 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 			}
 
 			//выполнение кешированной функции
-			go func(cache *CacheRunningFunctions, id string, f func(int) bool) {
+			go func(cache *CacheRunningFunctions, id string, numberAttempts int, f func(int) bool) {
 				fmt.Println("func 'automaticExecutionMethods' new tick: cacheFunc, id:", id)
 
 				//устанавливает что функция выполняется
-				cache.setIsFunctionExecution(id)
+				cache.SetIsFunctionExecution(id)
 				//увеличивает количество попыток выполения функции на 1
-				cache.increaseNumberAttempts(id)
+				cache.IncreaseNumberAttempts(id)
 
 				//при вызове, функция принимает количество попыток обработки
-				if f(cache.getNumberAttempts(id)) {
-					cache.setIsCompletedSuccessfully(id)
+				if f(numberAttempts) {
+					cache.SetIsCompletedSuccessfully(id)
 				}
 
 				//отмечает что функция завершила выполнение
-				cache.setIsFunctionNotExecution(id)
-			}(crm, id, storage.cacheFunc)
+				cache.SetIsFunctionNotExecution(id)
+			}(crm, id, storage.numberAttempts, storage.cacheFunc)
 		}
 		crm.cacheStorage.mutex.RUnlock()
 	}

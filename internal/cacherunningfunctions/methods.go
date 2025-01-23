@@ -38,21 +38,21 @@ func (crm *CacheRunningFunctions) DeleteElement(id string) {
 	delete(crm.cacheStorage.storages, id)
 }
 
-// getNumberAttempts количество попыток вызова функции
-func (crm *CacheRunningFunctions) getNumberAttempts(id string) int {
+// GetNumberAttempts количество попыток вызова функции
+func (crm *CacheRunningFunctions) GetNumberAttempts(id string) int {
 	crm.cacheStorage.mutex.RLock()
 	defer crm.cacheStorage.mutex.RUnlock()
 
-	storage, ok := crm.cacheStorage.storages[id]
+	na, ok := crm.getNumberAttempts(id)
 	if !ok {
 		return 0
 	}
 
-	return storage.numberAttempts
+	return na
 }
 
-// increaseNumberAttempts количество попыток вызова функции
-func (crm *CacheRunningFunctions) increaseNumberAttempts(id string) {
+// IncreaseNumberAttempts количество попыток вызова функции
+func (crm *CacheRunningFunctions) IncreaseNumberAttempts(id string) {
 	crm.cacheStorage.mutex.Lock()
 	defer crm.cacheStorage.mutex.Unlock()
 
@@ -65,8 +65,8 @@ func (crm *CacheRunningFunctions) increaseNumberAttempts(id string) {
 	crm.cacheStorage.storages[id] = storage
 }
 
-// setIsCompletedSuccessfully выполняемая функция завершилась успехом
-func (crm *CacheRunningFunctions) setIsCompletedSuccessfully(id string) {
+// SetIsCompletedSuccessfully выполняемая функция завершилась успехом
+func (crm *CacheRunningFunctions) SetIsCompletedSuccessfully(id string) {
 	crm.cacheStorage.mutex.Lock()
 	defer crm.cacheStorage.mutex.Unlock()
 
@@ -79,8 +79,8 @@ func (crm *CacheRunningFunctions) setIsCompletedSuccessfully(id string) {
 	crm.cacheStorage.storages[id] = storage
 }
 
-// setIsFunctionExecution функция находится в процессе выполнения
-func (crm *CacheRunningFunctions) setIsFunctionExecution(id string) {
+// SetIsFunctionExecution функция находится в процессе выполнения
+func (crm *CacheRunningFunctions) SetIsFunctionExecution(id string) {
 	crm.cacheStorage.mutex.Lock()
 	defer crm.cacheStorage.mutex.Unlock()
 
@@ -93,8 +93,8 @@ func (crm *CacheRunningFunctions) setIsFunctionExecution(id string) {
 	crm.cacheStorage.storages[id] = storage
 }
 
-// setIsFunctionNotExecution функция не выполняется
-func (crm *CacheRunningFunctions) setIsFunctionNotExecution(id string) {
+// SetIsFunctionNotExecution функция не выполняется
+func (crm *CacheRunningFunctions) SetIsFunctionNotExecution(id string) {
 	crm.cacheStorage.mutex.Lock()
 	defer crm.cacheStorage.mutex.Unlock()
 
@@ -105,6 +105,16 @@ func (crm *CacheRunningFunctions) setIsFunctionNotExecution(id string) {
 
 	storage.isFunctionExecution = false
 	crm.cacheStorage.storages[id] = storage
+}
+
+// getNumberAttempts количество попыток вызова функции
+func (crm *CacheRunningFunctions) getNumberAttempts(id string) (int, bool) {
+	storage, ok := crm.cacheStorage.storages[id]
+	if !ok {
+		return 0, ok
+	}
+
+	return storage.numberAttempts, ok
 }
 
 /*
