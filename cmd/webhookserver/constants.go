@@ -5,6 +5,7 @@ const (
 	Ansi_White                 = "\033[97m"
 	Ansi_Bright_Red            = "\033[91m"
 	Ansi_Bright_Dark           = "\033[30m"
+	Ansi_Bright_Orange         = "\033[33m"
 	Ansi_Bright_Blue           = "\033[34m"
 	Ansi_Bright_Green          = "\033[92m"
 	Ansi_Bright_Magenta        = "\033[95m"
