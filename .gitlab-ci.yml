@@ -1,5 +1,4 @@
 stages:
-  - test
   - build
   - push
   - deploy
@@ -7,6 +6,11 @@ stages:
 default:
   tags:
     - thehivehook_go
+
+docker-login:
+  stage: .pre
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
 build-job:
   stage: build
