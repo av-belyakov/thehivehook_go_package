@@ -1,0 +1,7 @@
+.git
+.gitignore
+.gitlab-ci.yml
+.vscode
+theHiveApiKey.txt
+logs
+docker-compose.yml
