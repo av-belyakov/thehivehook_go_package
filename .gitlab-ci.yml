@@ -17,13 +17,14 @@ default:
 
 build-job:
   stage: build
-  <<: *docker-login
+#  <<: *docker-login
   script:
     # fetches the latest image (not failing if image is not found)
     #- docker pull $CI_REGISTRY_IMAGE:latest || true
     #- docker build --no-cache --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
     - docker image prune -a --force --filter="label=temporary"
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
 push-latest:
