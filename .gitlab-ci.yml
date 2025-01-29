@@ -7,13 +7,17 @@ default:
   tags:
     - thehivehook_go
 
-docker-login:
-  stage: .pre
-  script:
+#docker-login:
+#  stage: .pre
+#  script:
+#    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+.docker-login-script: &docker-login
+  script: 
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
 build-job:
   stage: build
+  <<: *docker-login
   script:
     # fetches the latest image (not failing if image is not found)
     #- docker pull $CI_REGISTRY_IMAGE:latest || true
@@ -26,6 +30,7 @@ push-latest:
   stage: push
   only:
     - master
+  <<: *docker-login
   script:
     # Because we have no guarantee that this job will be picked up by the same runner
     # that built the image in the previous step, we pull it again locally
