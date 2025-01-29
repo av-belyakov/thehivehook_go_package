@@ -19,13 +19,12 @@ build-job:
     #- docker pull $CI_REGISTRY_IMAGE:latest || true
     #- docker build --no-cache --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
+    - docker image prune -a --force --filter="label=temporary"
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
-# Here, the goal is to tag the "master" branch as "latest"
 push-latest:
   stage: push
   only:
-    # Only "master" should be tagged "latest"
     - master
   script:
     # Because we have no guarantee that this job will be picked up by the same runner
