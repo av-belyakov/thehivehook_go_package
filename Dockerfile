@@ -1,5 +1,7 @@
 # Dockerfile собирать с аргументом --build-arg
 # sudo docker build -t gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test_image --build-arg VERSION=v0.3.2 .
+# для удаления временного образа
+# docker image prune -a --force --filter="label=temporary"
 
 FROM golang:1.23.4-alpine AS packages_image
 ENV PATH /usr/local/go/bin:$PATH
@@ -9,9 +11,10 @@ RUN echo 'packages_image' && \
     go mod download
 
 FROM golang:1.23.4-alpine AS build_image
+LABEL temporary=''
 WORKDIR /go/
 COPY --from=packages_image /go ./
-RUN echo 'build_image' && \
+RUN echo -e "build_image" && \
     rm -r ./src && \
     apk update && \
     apk add --no-cache git && \
@@ -19,7 +22,7 @@ RUN echo 'build_image' && \
     go build -C ./src/cmd/ -o ../app
 
 FROM alpine
-LABEL author="Artemij Belyakov"
+LABEL author='Artemij Belyakov'
 ARG VERSION
 ARG USERNAME=dockeruser
 ARG US_DIR=/opt/application_${VERSION}
