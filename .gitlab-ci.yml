@@ -7,20 +7,14 @@ default:
   tags:
     - thehivehook_go
 
-#docker-login:
-#  stage: .pre
-#  script:
-#    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 .docker-login-script: &docker-login
   - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
 build-job:
   stage: build
   script:
-    # fetches the latest image (not failing if image is not found)
-    #- docker pull $CI_REGISTRY_IMAGE:latest || true
-    #- docker build --no-cache --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
+    # удаляем промежуточный образ с меткой temporary
     - docker image prune -a --force --filter="label=temporary"
     - *docker-login
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
@@ -30,11 +24,11 @@ push-latest:
   only:
     - master
   script:
-    # Because we have no guarantee that this job will be picked up by the same runner
-    # that built the image in the previous step, we pull it again locally
+    # поскольку у нас нет гарантии, что это задание будет выполнено тем же пользователем, который
+    # создавал изображение на предыдущем шаге, мы повторно загружаем его локально.
     - *docker-login
     - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
-    # Then we tag it "latest"
+    # ставим тег "latest"
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
     - docker push $CI_REGISTRY_IMAGE:latest
 

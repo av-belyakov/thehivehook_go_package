@@ -135,10 +135,15 @@ TheHiveHook_Go_Package является посредником между TheHiv
 }
 ```
 
-## Настройка TheHive
+## Настройка 'endpoints' для TheHive
+
+Добавить в конфигурационный файл TheHive (thehive/conf/application.conf) в параметр
+notification.webhook.endpoints значение с новым 'endpoint', по аналогии.
+
+Далее, выполнить:
 
 ```
-curl -XPUT -u <имя*пользователя>:'пароль_org-admin' -H 'Content-type: application/json' <url*или*ip*и*сетевой*порт>/api/config/organisation/notification -d
+curl -XPUT -H "Authorization: Bearer <ApiKey>" -H 'Content-type: application/json' <url*или*ip*и*сетевой*порт>/api/config/organisation/notification -d
   '{
     "value": [
       {

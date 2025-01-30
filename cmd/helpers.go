@@ -25,6 +25,7 @@ func getLoggerSettings(cls []confighandler.LogSet) []simplelogger.Options {
 	return loggerConf
 }
 
+// printMemStats вывод информации по потребляемой памяти
 func printMemStats() {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)

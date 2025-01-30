@@ -146,8 +146,6 @@ func server(ctx context.Context) {
 	//мост между каналами различных модулей
 	go router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
 
-	//printMemStats()
-
 	if err = webHook.Start(ctx); err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 	}
