@@ -63,7 +63,8 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 	}()
 
 	// вывод информационного сообщения при старте приложения
-	wh.logger.Send("info", strings.ToLower(getInformationMessage(wh.name, wh.host, wh.port)))
+	infoMsg := getInformationMessage(wh.name, wh.host, wh.port)
+	wh.logger.Send("info", strings.ToLower(infoMsg))
 
 	<-ctx.Done()
 

@@ -19,9 +19,9 @@ func getInformationMessage(name, host string, port int) string {
 	fmt.Printf("\n%v%v%s.%v\n", Bold_Font, Ansi_Bright_Green, msg, Ansi_Reset)
 	fmt.Printf("%v%vApplication status is '%s'.%v\n", Underlining, Ansi_Bright_Green, appStatus, Ansi_Reset)
 	fmt.Printf("%vWebhook server settings:%v\n", Ansi_Bright_Green, Ansi_Reset)
-	fmt.Printf("%v  name: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Orange, name, Ansi_Reset)
-	fmt.Printf("%v  ip: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Blue, host, Ansi_Reset)
-	fmt.Printf("%v  net port: %v%d%v\n\n", Ansi_Bright_Green, Ansi_Bright_Magenta, port, Ansi_Reset)
+	fmt.Printf("%v  NAME: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Orange, name, Ansi_Reset)
+	fmt.Printf("%v  IP: %v%s%v\n", Ansi_Bright_Green, Ansi_Bright_Blue, host, Ansi_Reset)
+	fmt.Printf("%v  NET PORT: %v%d%v\n\n", Ansi_Bright_Green, Ansi_Bright_Magenta, port, Ansi_Reset)
 
 	return msg
 }
