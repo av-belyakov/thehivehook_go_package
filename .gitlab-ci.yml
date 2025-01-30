@@ -12,7 +12,7 @@ default:
   - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
 .rule-readme-file: &rule-readme
-  - if: $CI_COMMIT_REF_NAME == "master"
+  - if: true
     changes:
       - README.md
     when: never
@@ -24,7 +24,7 @@ default:
 sync-file-job:
   stage: sync
   script:
-    - "curl -v --request PUT --header PRIVATE-TOKEN:$GCM_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message=Update README.md -F content=\"< $CI_PROJECT_DIR/README.md\" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/README.md"
+    - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message=Update README.md -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/README.md'
 
 build-job:
   stage: build
@@ -40,8 +40,6 @@ build-job:
 
 push-latest:
   stage: push
-#  only:
-#    - master
   rules:
     - *rule-readme
     - *rule-branch-master
@@ -56,12 +54,9 @@ push-latest:
 
 deploy-prod:
   stage: deploy
-#  only:
-#    - master
   rules:
     - *rule-readme
     - *rule-branch-master
   script:
     - "curl -X POST --fail -F token=$GET_REGISTRIE_TOKEN -F ref=master http://gitlab.cloud.gcm/api/v4/projects/726/trigger/pipeline"
   environment: production
-
