@@ -35,4 +35,5 @@ COPY --from=build_image /go/src/app ./
 COPY --from=build_image /go/src/README.md ./ 
 COPY config/* ./config/
 
-ENTRYPOINT [ "su", "-l", "-c", "./app", "${USERNAME}" ]
+ENTRYPOINT [ "./app" ]
+#ENTRYPOINT [ "su", "-l", "-c", "./app", "${USERNAME}" ]
