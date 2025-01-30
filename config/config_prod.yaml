@@ -1,5 +1,5 @@
 COMMONINFO:
-  file_name: "config_prod"
+  file_name: "config production"
 NATS:
   prefix: "test"
   host: "nats.cloud.gcm"
@@ -14,7 +14,7 @@ THEHIVE:
   port: 9000
   cache_ttl: 43200
 WEBHOOKSERVER:
-  name: "gcm"
+  name: "gcm_test"
   host: "192.168.13.3"
   port: 5000
   ttl_tmp_info: 10

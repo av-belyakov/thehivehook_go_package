@@ -25,7 +25,7 @@ FROM alpine
 LABEL author='Artemij Belyakov'
 ARG VERSION
 ARG USERNAME=dockeruser
-ARG US_DIR=/opt/application_${VERSION}
+ARG US_DIR=/opt/thehivehook_go_package
 RUN adduser -D ${USERNAME} --home ${US_DIR}
 USER ${USERNAME}
 WORKDIR ${US_DIR}
