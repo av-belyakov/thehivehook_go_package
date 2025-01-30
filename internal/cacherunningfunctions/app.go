@@ -45,13 +45,9 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 	for range tick.C {
 		crm.cacheStorage.mutex.RLock()
 		for id, storage := range crm.cacheStorage.storages {
-			fmt.Println("func 'automaticExecutionMethods' new tick:")
-
 			//удаление слишком старых записей
 			if storage.timeExpiry.Before(time.Now()) {
 				crm.DeleteElement(id)
-
-				fmt.Println("func 'automaticExecutionMethods' new tick: before delete id:", id)
 
 				continue
 			}
@@ -60,8 +56,6 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 			// положительный результат
 			if !storage.isFunctionExecution && storage.isCompletedSuccessfully {
 				crm.DeleteElement(id)
-
-				fmt.Println("func 'automaticExecutionMethods' new tick: delete id:", id)
 
 				continue
 			}
@@ -72,8 +66,6 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 
 			//выполнение кешированной функции
 			go func(cache *CacheRunningFunctions, id string, numberAttempts int, f func(int) bool) {
-				fmt.Println("func 'automaticExecutionMethods' new tick: cacheFunc, id:", id)
-
 				//устанавливает что функция выполняется
 				cache.SetIsFunctionExecution(id)
 				//увеличивает количество попыток выполения функции на 1

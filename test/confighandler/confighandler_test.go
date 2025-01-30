@@ -117,8 +117,8 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(cwl.Host).Should(Equal("datahook.cloud.gcm"))
 			Expect(cwl.Port).Should(Equal(9200))
 			Expect(cwl.NameDB).Should(Equal(""))
-			Expect(cwl.StorageNameDB).Should(Equal("thehivehook_go.log"))
-			Expect(cwl.User).Should(Equal("writer"))
+			Expect(cwl.StorageNameDB).Should(Equal("thehivehook_go_package"))
+			Expect(cwl.User).Should(Equal("log_writer"))
 			Expect(len(cwl.Passwd)).ShouldNot(Equal(0))
 		})
 	})
@@ -168,8 +168,8 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(cwl.Host).Should(Equal("datahook.cloud.gcm"))
 			Expect(cwl.Port).Should(Equal(9200))
 			Expect(cwl.NameDB).Should(Equal("nameDB"))
-			Expect(cwl.StorageNameDB).Should(Equal("thehivehook_go.log"))
-			Expect(cwl.User).Should(Equal("writer"))
+			Expect(cwl.StorageNameDB).Should(Equal("thehivehook_go_package"))
+			Expect(cwl.User).Should(Equal("log_writer"))
 			Expect(len(cwl.Passwd)).ShouldNot(Equal(0))
 		})
 	})
@@ -295,7 +295,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			}
 
 			//*** настройки логирования ***
-			Expect(len(confApp.GetListLogs())).Should(Equal(4))
+			Expect(len(confApp.GetListLogs())).Should(Equal(5))
 		})
 	})
 

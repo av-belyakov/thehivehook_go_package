@@ -4,7 +4,7 @@ NATS:
   prefix: "test"
   host: "nats.cloud.gcm"
   port: 4222
-  cacheTtl: 3600
+  cache_ttl: 3600
   subscriptions:
     sender_case: "object.casetype"
     sender_alert: "object.alerttype"
@@ -12,15 +12,15 @@ NATS:
 THEHIVE:
   host: "thehive.cloud.gcm"
   port: 9001
-  cacheTtl: 3600
+  cache_ttl: 3600
 WEBHOOKSERVER:
   name: "rcmsml"
   host: "127.0.0.1"
   port: 5000
-  ttlTmpInfo: 12
+  ttl_tmp_info: 12
 DATABASEWRITELOG:
   host: "datahook.cloud.gcm"
   port: 9200
   namedb: "nameDB"
-  storageNamedb: "thehivehook_go_package"
+  storage_name_db: "thehivehook_go_package"
   user: "log_writer"

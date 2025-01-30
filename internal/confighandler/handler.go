@@ -122,8 +122,8 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if viper.IsSet("NATS.port") {
 			conf.AppConfigNATS.Port = viper.GetInt("NATS.port")
 		}
-		if viper.IsSet("NATS.cacheTtl") {
-			conf.AppConfigNATS.CacheTTL = viper.GetInt("NATS.cacheTtl")
+		if viper.IsSet("NATS.cache_ttl") {
+			conf.AppConfigNATS.CacheTTL = viper.GetInt("NATS.cache_ttl")
 		}
 
 		if viper.IsSet("NATS.subscriptions.sender_case") {
@@ -152,8 +152,8 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if viper.IsSet("THEHIVE.port") {
 			conf.AppConfigTheHive.Port = viper.GetInt("THEHIVE.port")
 		}
-		if viper.IsSet("THEHIVE.cacheTtl") {
-			conf.AppConfigTheHive.CacheTTL = viper.GetInt("THEHIVE.cacheTtl")
+		if viper.IsSet("THEHIVE.cache_ttl") {
+			conf.AppConfigTheHive.CacheTTL = viper.GetInt("THEHIVE.cache_ttl")
 		}
 		if viper.IsSet("THEHIVE.api_key") {
 			conf.AppConfigTheHive.ApiKey = viper.GetString("THEHIVE.api_key")
@@ -169,8 +169,8 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if viper.IsSet("WEBHOOKSERVER.port") {
 			conf.AppConfigWebHookServer.Port = viper.GetInt("WEBHOOKSERVER.port")
 		}
-		if viper.IsSet("WEBHOOKSERVER.ttlTmpInfo") {
-			conf.AppConfigWebHookServer.TTLTmpInfo = viper.GetInt("WEBHOOKSERVER.ttlTmpInfo")
+		if viper.IsSet("WEBHOOKSERVER.ttl_tmp_info") {
+			conf.AppConfigWebHookServer.TTLTmpInfo = viper.GetInt("WEBHOOKSERVER.ttl_tmp_info")
 		}
 
 		//Настройки доступа к БД в которую будут записыватся логи
@@ -186,8 +186,8 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if viper.IsSet("DATABASEWRITELOG.namedb") {
 			conf.AppConfigWriteLogDB.NameDB = viper.GetString("DATABASEWRITELOG.namedb")
 		}
-		if viper.IsSet("DATABASEWRITELOG.storageNamedb") {
-			conf.AppConfigWriteLogDB.StorageNameDB = viper.GetString("DATABASEWRITELOG.storageNamedb")
+		if viper.IsSet("DATABASEWRITELOG.storage_name_db") {
+			conf.AppConfigWriteLogDB.StorageNameDB = viper.GetString("DATABASEWRITELOG.storage_name_db")
 		}
 
 		return nil

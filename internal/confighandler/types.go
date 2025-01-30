@@ -59,7 +59,7 @@ type Handshake struct {
 
 type AppConfigNATS struct {
 	Port          int               `validate:"gt=0,lte=65535" yaml:"port"`
-	CacheTTL      int               `validate:"gt=10,lte=86400" yaml:"cacheTtl"`
+	CacheTTL      int               `validate:"gt=10,lte=86400" yaml:"cache_ttl"`
 	Host          string            `validate:"required" yaml:"host"`
 	Prefix        string            `yaml:"prefix"`
 	Subscriptions SubscriptionsNATS `yaml:"subscriptions"`
@@ -67,13 +67,13 @@ type AppConfigNATS struct {
 
 type AppConfigTheHive struct {
 	Port     int    `validate:"gt=0,lte=65535" yaml:"port"`
-	CacheTTL int    `validate:"gt=10,lte=86400" yaml:"cacheTtl"`
+	CacheTTL int    `validate:"gt=10,lte=86400" yaml:"cache_ttl"`
 	Host     string `validate:"required" yaml:"host"`
 	ApiKey   string `validate:"required"`
 }
 
 type AppConfigWebHookServer struct {
-	TTLTmpInfo int    `validate:"gt=9,lte=86400" yaml:"ttlTmpInfo"`
+	TTLTmpInfo int    `validate:"gt=9,lte=86400" yaml:"ttl_tmp_info"`
 	Port       int    `validate:"gt=0,lte=65535" yaml:"port"`
 	Host       string `validate:"required" yaml:"host"`
 	Name       string `validate:"required" yaml:"name"`
@@ -96,5 +96,5 @@ type AppConfigWriteLogDB struct {
 	User          string `yaml:"user"`
 	Passwd        string `yaml:"passwd"`
 	NameDB        string `yaml:"namedb"`
-	StorageNameDB string `yaml:"storageNamedb"`
+	StorageNameDB string `yaml:"storage_name_db"`
 }
