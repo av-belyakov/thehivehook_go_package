@@ -1,5 +1,5 @@
 # Dockerfile собирать с аргументом --build-arg
-# sudo docker build -t gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test_image --build-arg VERSION=v0.3.2 .
+# sudo docker build tag gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test_image --build-arg VERSION=v0.3.2 .
 # для удаления временного образа
 # docker image prune -a --force --filter="label=temporary"
 
