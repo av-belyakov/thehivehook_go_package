@@ -1,4 +1,5 @@
 stages:
+  - sync
   - build
   - push
   - deploy
@@ -9,6 +10,14 @@ default:
 
 .docker-login-script: &docker-login
   - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+
+sync-file-job:
+  stage: sync
+  only:
+    changes:
+      - $CI_PROJECT_DIR/README.md
+  script:
+    - "curl -v --request PUT --header PRIVATE-TOKEN:$GCM_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message=Update README.md -F content=\"< $CI_PROJECT_DIR/README.md\" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/README.md"
 
 build-job:
   stage: build
