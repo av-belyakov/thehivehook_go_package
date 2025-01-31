@@ -1,3 +1,6 @@
+variables:
+  MAJOR_BRANCH: master
+
 stages:
   - sync
   - build
@@ -11,26 +14,34 @@ default:
 .docker-login-script: &docker-login
   - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
 
-.rule-readme-file: &rule-readme
-  - if: $CI_COMMIT_REF_NAME == "master"
+.change-readme-never-commit: &readme-no-commit
+  - if: $CI_COMMIT_BRANCH == $MAJOR_BRANCH
     changes:
       - README.md
     when: never
 
-.rule-branch-only: &rule-branch-master
-  - if: $CI_COMMIT_REF_NAME == "master"
+.change-readme-commit: &readme-commit
+  - if: $CI_COMMIT_BRANCH
+    changes:
+      - README.md
+    when: on_success
+
+.is-branch-master-commit: &master-commit
+  - if: $CI_COMMIT_BRANCH == $MAJOR_BRANCH || $CI_COMMIT_REF_NAME == $MAJOR_BRANCH
     when: on_success
 
 sync-file-job:
   stage: sync
+  rules:
+    - *readme-commit
   script:
     - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message=Update README.md -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/README.md'
 
 build-job:
   stage: build
   rules:
-    - *rule-readme
-    - *rule-branch-master
+    - *readme-no-commit
+    - *master-commit
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
     # удаляем промежуточный образ с меткой temporary
@@ -41,8 +52,8 @@ build-job:
 push-latest:
   stage: push
   rules:
-    - *rule-readme
-    - *rule-branch-master
+    - *readme-no-commit
+    - *master-commit
   script:
     # поскольку у нас нет гарантии, что это задание будет выполнено тем же пользователем, который
     # создавал изображение на предыдущем шаге, мы повторно загружаем его локально.
@@ -55,8 +66,8 @@ push-latest:
 deploy-prod:
   stage: deploy
   rules:
-    - *rule-readme
-    - *rule-branch-master
+    - *readme-no-commit
+    - *master-commit
   script:
     - "curl -X POST --fail -F token=$GET_REGISTRIE_TOKEN -F ref=master http://gitlab.cloud.gcm/api/v4/projects/726/trigger/pipeline"
   environment: production
