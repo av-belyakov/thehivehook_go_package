@@ -3,6 +3,8 @@
 # для удаления временного образа
 # docker image prune -a --force --filter="label=temporary"
 
+#https://hands-on.cloud/docker/add-user-docker-group/
+
 FROM golang:1.23.4-alpine AS packages_image
 ENV PATH /usr/local/go/bin:$PATH
 WORKDIR /go/src
