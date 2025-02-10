@@ -1,6 +1,7 @@
 # Dockerfile собирать с аргументом --build-arg
 # sudo docker build tag gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test_image --build-arg VERSION=v0.3.2 .
-# для удаления временного образа
+# 
+# для удаления временного образа, можно через ci/cd, можно руками 
 # docker image prune -a --force --filter="label=temporary"
 
 FROM golang:1.23.4-alpine AS packages_image
@@ -36,4 +37,3 @@ COPY --from=build_image /go/src/README.md ./
 COPY config/* ./config/
 
 ENTRYPOINT [ "./app" ]
-#ENTRYPOINT [ "su", "-l", "-c", "./app", "${USERNAME}" ]
