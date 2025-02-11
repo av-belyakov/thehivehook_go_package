@@ -64,7 +64,7 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 
 	setCommonSettings := func(fn string) error {
 		viper.SetConfigFile(fn)
-		viper.SetConfigType("yaml")
+		viper.SetConfigType("yml")
 		if err := viper.ReadInConfig(); err != nil {
 			return err
 		}
@@ -102,7 +102,7 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 
 	setSpecial := func(fn string) error {
 		viper.SetConfigFile(fn)
-		viper.SetConfigType("yaml")
+		viper.SetConfigType("yml")
 		if err := viper.ReadInConfig(); err != nil {
 			return err
 		}
@@ -212,7 +212,7 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		return &conf, err
 	}
 
-	fileNameCommon, err := getFileName("config.yaml", confPath, list)
+	fileNameCommon, err := getFileName("config.yml", confPath, list)
 	if err != nil {
 		return &conf, err
 	}
@@ -224,12 +224,12 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 
 	var fn string
 	if envList["GO_HIVEHOOK_MAIN"] == "development" {
-		fn, err = getFileName("config_dev.yaml", confPath, list)
+		fn, err = getFileName("config_dev.yml", confPath, list)
 		if err != nil {
 			return &conf, err
 		}
 	} else {
-		fn, err = getFileName("config_prod.yaml", confPath, list)
+		fn, err = getFileName("config_prod.yml", confPath, list)
 		if err != nil {
 			return &conf, err
 		}

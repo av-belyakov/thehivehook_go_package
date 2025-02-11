@@ -4,8 +4,8 @@ services:
   app:
     container_name: gcm_thehivehook_go_package
     environment:
-      - GO_HIVEHOOK_THAPIKEY=ERHs96mbKEcx0nq8w/Xa+sjnk50ZmoSk
-      - GO_HIVEHOOK_DBWLOGPASSWD=i2J-QYv-jmL-CFs
+      - GO_HIVEHOOK_THAPIKEY=$HIVEHOOK_THAPIKEY
+      - GO_HIVEHOOK_DBWLOGPASSWD=$HIVEHOOK_DBWLOGPASSWD
     image: gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:latest
     restart: unless-stopped
     # пробрасываем user ID для корректной записи в логов
