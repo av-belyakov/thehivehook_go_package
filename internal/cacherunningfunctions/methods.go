@@ -116,25 +116,3 @@ func (crm *CacheRunningFunctions) getNumberAttempts(id string) (int, bool) {
 
 	return storage.numberAttempts, ok
 }
-
-/*
-// getFunctionCompletionStatus статус завершения функции
-func (crm *CacheRunningFunctions) getFunctionCompletionStatus(id string) bool {
-	storage, ok := crm.cacheStorage.storages[id]
-	if !ok {
-		return true
-	}
-
-	return storage.isCompletedSuccessfully
-}
-
-// getFunctionExecutionStatus статус выполнения функции
-func (crm *CacheRunningFunctions) getFunctionExecutionStatus(id string) bool {
-	storage, ok := crm.cacheStorage.storages[id]
-	if !ok {
-		return false
-	}
-
-	return storage.isFunctionExecution
-}
-*/
