@@ -51,8 +51,9 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 	}
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", wh.host, wh.port),
-		Handler: mux,
+		Addr: fmt.Sprintf("%s:%d", wh.host, wh.port),
+		//Handler: mux,
+		Handler: addContext(ctx, mux),
 	}
 	wh.server = server
 
@@ -69,6 +70,12 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 	<-ctx.Done()
 
 	return ctx.Err()
+}
+
+func addContext(ctx context.Context, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 //******************** функциональные настройки webhookserver ***********************

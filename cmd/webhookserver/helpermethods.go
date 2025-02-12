@@ -1,6 +1,8 @@
 package webhookserver
 
 import (
+	"context"
+
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 )
 
@@ -48,72 +50,82 @@ func NewChannelRequest() *RequestFromWebHook {
 	return &RequestFromWebHook{}
 }
 
-// GetRequestId метод возвращает уникальный идентификатор запроса
+// GetContext возвращает контекст
+func (r *RequestFromWebHook) GetContext() context.Context {
+	return r.ctx
+}
+
+// SetContext устанавливает контекст
+func (r *RequestFromWebHook) SetContext(v context.Context) {
+	r.ctx = v
+}
+
+// GetRequestId возвращает уникальный идентификатор запроса
 func (r *RequestFromWebHook) GetRequestId() string {
 	return r.RequestId
 }
 
-// SetRequestId метод устанавливает уникальный идентификатор запроса
+// SetRequestId устанавливает уникальный идентификатор запроса
 func (r *RequestFromWebHook) SetRequestId(v string) {
 	r.RequestId = v
 }
 
-// GetElementType метод возвращает тип элемента
+// GetElementType возвращает тип элемента
 func (r *RequestFromWebHook) GetElementType() string {
 	return r.ElementType
 }
 
-// SetElementType метод устанавливает тип элемента
+// SetElementType устанавливает тип элемента
 func (r *RequestFromWebHook) SetElementType(v string) {
 	r.ElementType = v
 }
 
-// GetRootId метод возвращает основной идентификатор кейса или алерта
+// GetRootId возвращает основной идентификатор кейса или алерта
 func (r *RequestFromWebHook) GetRootId() string {
 	return r.RootId
 }
 
-// SetRootId метод устанавливает основной идентификатор кейса или алерта
+// SetRootId устанавливает основной идентификатор кейса или алерта
 func (r *RequestFromWebHook) SetRootId(v string) {
 	r.RootId = v
 }
 
-// GetCaseId метод возвращает идентификатор кейса
+// GetCaseId возвращает идентификатор кейса
 func (r *RequestFromWebHook) GetCaseId() string {
 	return r.CaseId
 }
 
-// SetCaseId метод устанавливает идентификатор кейса
+// SetCaseId устанавливает идентификатор кейса
 func (r *RequestFromWebHook) SetCaseId(v string) {
 	r.CaseId = v
 }
 
-// GetCommand метод возвращает команду, на основе которой выполняются определенные действия
+// GetCommand возвращает команду, на основе которой выполняются определенные действия
 func (r *RequestFromWebHook) GetCommand() string {
 	return r.Command
 }
 
-// SetCommand метод устанавливает команду, на основе которой выполняются определенные действия
+// SetCommand устанавливает команду, на основе которой выполняются определенные действия
 func (r *RequestFromWebHook) SetCommand(v string) {
 	r.Command = v
 }
 
-// GetOrder метод возвращает распоряжение
+// GetOrder возвращает распоряжение
 func (r *RequestFromWebHook) GetOrder() string {
 	return r.Order
 }
 
-// SetOrder метод устанавливает распоряжение
+// SetOrder устанавливает распоряжение
 func (r *RequestFromWebHook) SetOrder(v string) {
 	r.Order = v
 }
 
-// GetData метод возвращает некий набор данных
+// GetData возвращает некий набор данных
 func (r *RequestFromWebHook) GetData() interface{} {
 	return r.Data
 }
 
-// SetData метод устанавливает некий набор данных
+// SetData устанавливает некий набор данных
 func (r *RequestFromWebHook) SetData(i interface{}) {
 	r.Data = i
 }

@@ -1,18 +1,21 @@
 package natsapi
 
 import (
+	"context"
+
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 )
 
 // RequestFromNats структура запроса из модуля
 type RequestFromNats struct {
-	Data        interface{}                            //набор данных
-	RequestId   string                                 //id запроса
-	ElementType string                                 //тип элемента
-	RootId      string                                 //идентификатор по которому в TheHive будет выполнятся поиск
-	CaseId      string                                 //идентификатор кейса в TheHive
-	Command     string                                 //команда
-	Order       string                                 //распоряжение
+	Data        interface{} //набор данных
+	RequestId   string      //id запроса
+	ElementType string      //тип элемента
+	RootId      string      //идентификатор по которому в TheHive будет выполнятся поиск
+	CaseId      string      //идентификатор кейса в TheHive
+	Command     string      //команда
+	Order       string      //распоряжение
+	ctx         context.Context
 	ChanOutput  chan commoninterfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
 }
 

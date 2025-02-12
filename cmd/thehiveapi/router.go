@@ -18,7 +18,9 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
-				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
+				api.cacheRunningFunction.SetMethod(msg.GetRootId(), func(_ int) bool {
+					///
+					///
 					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -27,18 +29,26 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					}
 
 					newRes := NewChannelRespons()
-					newRes.SetRequestId(msg.GetRequestId())
+					newRes.SetRequestId(msg.GetRootId())
 					newRes.SetStatusCode(statusCode)
 					newRes.SetData(res)
 
-					msg.GetChanOutput() <- newRes
-					close(msg.GetChanOutput())
+					select {
+					case <-msg.GetContext().Done():
+						return true
+
+					default:
+						msg.GetChanOutput() <- newRes
+
+					}
 
 					return true
 				})
 
 			case "get_ttp":
 				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
+					///
+					///
 					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -47,12 +57,18 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					}
 
 					newRes := NewChannelRespons()
-					newRes.SetRequestId(msg.GetRequestId())
+					newRes.SetRequestId(msg.GetRootId())
 					newRes.SetStatusCode(statusCode)
 					newRes.SetData(res)
 
-					msg.GetChanOutput() <- newRes
-					close(msg.GetChanOutput())
+					select {
+					case <-msg.GetContext().Done():
+						return true
+
+					default:
+						msg.GetChanOutput() <- newRes
+
+					}
 
 					return true
 				})

@@ -1,5 +1,7 @@
 package commoninterfaces
 
+import "context"
+
 //************ каналы *************
 
 type ChannelResponser interface {
@@ -21,6 +23,8 @@ type ChannelRequester interface {
 	OrderHandler
 	GetData() interface{}
 	SetData(interface{})
+	GetContext() context.Context
+	SetContext(v context.Context)
 	GetChanOutput() chan ChannelResponser
 	SetChanOutput(chan ChannelResponser)
 }
