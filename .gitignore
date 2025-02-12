@@ -3,3 +3,4 @@ logs
 theHiveApiKey.txt
 .env
 app
+*.gz

@@ -44,61 +44,59 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	case "case":
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
-		go func() {
-			wh.logger.Send("log_to_db", fmt.Sprintf("received case id '%d', a request is being sent for additional information about observable and ttl", eventElement.Object.CaseId))
+		wh.logger.Send("log_to_db", fmt.Sprintf("received case id '%d', a request is being sent for additional information about observable and ttl", eventElement.Object.CaseId))
 
-			readyMadeEventCase, err := CreateEvenCase(eventElement.RootId, wh.chanInput)
-			if err != nil {
-				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+		readyMadeEventCase, err := CreateEvenCase(eventElement.RootId, wh.chanInput)
+		if err != nil {
+			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
-				return
-			}
+			return
+		}
 
-			caseEvent := map[string]interface{}{}
-			if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
-				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+		caseEvent := map[string]interface{}{}
+		if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
+			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
-				return
-			}
+			return
+		}
 
-			readyMadeEventCase.Source = wh.name
-			readyMadeEventCase.Case = caseEvent
+		readyMadeEventCase.Source = wh.name
+		readyMadeEventCase.Case = caseEvent
 
-			wh.logger.Send("log_to_db", fmt.Sprintf("additional information on case id '%d' has been successfully received", eventElement.Object.CaseId))
+		wh.logger.Send("log_to_db", fmt.Sprintf("additional information on case id '%d' has been successfully received", eventElement.Object.CaseId))
 
-			ec, err := json.Marshal(readyMadeEventCase)
-			if err != nil {
-				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+		ec, err := json.Marshal(readyMadeEventCase)
+		if err != nil {
+			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
-				return
-			}
+			return
+		}
 
-			//-------------------------------------------------------------------
-			//----------- ЗАПИСЬ в файл ЭТО ТОЛЬКО ДЛЯ ТЕСТОВ -------------------
-			//-------------------------------------------------------------------
-			if str, err := supportingfunctions.NewReadReflectJSONSprint(ec); err == nil {
-				wh.logger.Send("log_for_test", fmt.Sprintf("\n%s\n", str))
-			}
-			//-------------------------------------------------------------------
-			if eventElement.Object.CaseId == 39100 {
-				fmt.Println("func 'Routers' resived case id 39100")
-			}
+		//-------------------------------------------------------------------
+		//----------- ЗАПИСЬ в файл ЭТО ТОЛЬКО ДЛЯ ТЕСТОВ -------------------
+		//-------------------------------------------------------------------
+		if str, err := supportingfunctions.NewReadReflectJSONSprint(ec); err == nil {
+			wh.logger.Send("log_for_test", fmt.Sprintf("\n%s\n", str))
+		}
+		//-------------------------------------------------------------------
+		if eventElement.Object.CaseId == 39100 {
+			fmt.Println("func 'Routers' resived case id 39100")
+		}
 
-			//отправка данных в NATS
-			sendData := NewChannelRequest()
-			sendData.SetRootId(eventElement.RootId)
-			sendData.SetElementType(eventElement.ObjectType)
-			sendData.SetCaseId(strconv.Itoa(eventElement.Object.CaseId))
-			sendData.SetCommand("send case")
-			sendData.SetData(ec)
+		//отправка данных в NATS
+		sendData := NewChannelRequest()
+		sendData.SetRootId(eventElement.RootId)
+		sendData.SetElementType(eventElement.ObjectType)
+		sendData.SetCaseId(strconv.Itoa(eventElement.Object.CaseId))
+		sendData.SetCommand("send case")
+		sendData.SetData(ec)
 
-			wh.chanInput <- ChanFromWebHookServer{
-				ForSomebody: "to nats",
-				Data:        sendData,
-			}
+		wh.chanInput <- ChanFromWebHookServer{
+			ForSomebody: "to nats",
+			Data:        sendData,
+		}
 
-			wh.logger.Send("log_to_db", fmt.Sprintf("information on case id '%d' sending to NATS", eventElement.Object.CaseId))
-		}()
+		wh.logger.Send("log_to_db", fmt.Sprintf("information on case id '%d' sending to NATS", eventElement.Object.CaseId))
 
 	case "case_artifact":
 	case "case_task":

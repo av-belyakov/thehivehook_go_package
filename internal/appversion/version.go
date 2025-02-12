@@ -2,5 +2,5 @@ package appversion
 
 // GetVersion возвращает номер версии приложения
 func GetVersion() string {
-	return "0.3.10"
+	return "0.3.11"
 }
