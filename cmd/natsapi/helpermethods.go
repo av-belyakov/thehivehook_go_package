@@ -1,6 +1,10 @@
 package natsapi
 
-import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+import (
+	"context"
+
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+)
 
 //********************* Response ********************
 
@@ -44,6 +48,16 @@ func (r *ResponsToNats) SetData(v []byte) {
 // NewChannelRequest конструктор формирующий структуру для выполнения запросов к модулю apithehive
 func NewChannelRequest() *RequestFromNats {
 	return &RequestFromNats{}
+}
+
+// GetContext возвращает контекст
+func (r *RequestFromNats) GetContext() context.Context {
+	return r.ctx
+}
+
+// SetContext устанавливает контекст
+func (r *RequestFromNats) SetContext(v context.Context) {
+	r.ctx = v
 }
 
 // GetRequestId метод возвращает уникальный идентификатор запроса

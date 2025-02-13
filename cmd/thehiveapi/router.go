@@ -18,13 +18,9 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
-				fmt.Printf("=== thehiveapi router, command:'%s' rootId:'%s'\n", msg.GetCommand(), msg.GetRequestId())
-
-				go api.cacheRunningFunction.SetMethod("observables"+msg.GetRootId(), func(_ int) bool {
-					defer close(msg.GetChanOutput())
-
-					fmt.Println("zzz Method GET OBSERVABLE")
-
+				api.cacheRunningFunction.SetMethod(msg.GetRootId(), func(_ int) bool {
+					///
+					///
 					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -37,22 +33,22 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					newRes.SetStatusCode(statusCode)
 					newRes.SetData(res)
 
-					msg.GetChanOutput() <- newRes
+					select {
+					case <-msg.GetContext().Done():
+						return true
 
-					//что бы данную гроутину не держала ссылка на объект
-					newRes = NewChannelRespons()
+					default:
+						msg.GetChanOutput() <- newRes
+
+					}
 
 					return true
 				})
 
 			case "get_ttp":
-				fmt.Printf("=== thehiveapi router, command:'%s' rootId:'%s'\n", msg.GetCommand(), msg.GetRequestId())
-
-				go api.cacheRunningFunction.SetMethod("ttp"+msg.GetRootId(), func(_ int) bool {
-					defer close(msg.GetChanOutput())
-
-					fmt.Println("zzz Method GET TTP")
-
+				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
+					///
+					///
 					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -65,10 +61,14 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					newRes.SetStatusCode(statusCode)
 					newRes.SetData(res)
 
-					msg.GetChanOutput() <- newRes
+					select {
+					case <-msg.GetContext().Done():
+						return true
 
-					//что бы данную гроутину не держала ссылка на объект
-					newRes = NewChannelRespons()
+					default:
+						msg.GetChanOutput() <- newRes
+
+					}
 
 					return true
 				})
