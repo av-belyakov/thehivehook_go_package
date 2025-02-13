@@ -18,7 +18,13 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
-				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
+				fmt.Printf("=== thehiveapi router, command:'%s' rootId:'%s'\n", msg.GetCommand(), msg.GetRequestId())
+
+				go api.cacheRunningFunction.SetMethod("observables"+msg.GetRootId(), func(_ int) bool {
+					defer close(msg.GetChanOutput())
+
+					fmt.Println("zzz Method GET OBSERVABLE")
+
 					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -27,18 +33,26 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					}
 
 					newRes := NewChannelRespons()
-					newRes.SetRequestId(msg.GetRequestId())
+					newRes.SetRequestId(msg.GetRootId())
 					newRes.SetStatusCode(statusCode)
 					newRes.SetData(res)
 
 					msg.GetChanOutput() <- newRes
-					close(msg.GetChanOutput())
+
+					//что бы данную гроутину не держала ссылка на объект
+					newRes = NewChannelRespons()
 
 					return true
 				})
 
 			case "get_ttp":
-				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
+				fmt.Printf("=== thehiveapi router, command:'%s' rootId:'%s'\n", msg.GetCommand(), msg.GetRequestId())
+
+				go api.cacheRunningFunction.SetMethod("ttp"+msg.GetRootId(), func(_ int) bool {
+					defer close(msg.GetChanOutput())
+
+					fmt.Println("zzz Method GET TTP")
+
 					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -47,20 +61,19 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					}
 
 					newRes := NewChannelRespons()
-					newRes.SetRequestId(msg.GetRequestId())
+					newRes.SetRequestId(msg.GetRootId())
 					newRes.SetStatusCode(statusCode)
 					newRes.SetData(res)
 
 					msg.GetChanOutput() <- newRes
-					close(msg.GetChanOutput())
+
+					//что бы данную гроутину не держала ссылка на объект
+					newRes = NewChannelRespons()
 
 					return true
 				})
 
 			case "send_command":
-
-				fmt.Println("TheHive Router reseived new COMMAND", msg.GetData())
-
 				rc, err := getRequestCommandData(msg.GetData())
 				if err != nil {
 					api.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -70,9 +83,6 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 				res := NewChannelRespons()
 				res.SetRequestId(msg.GetRequestId())
-
-				fmt.Println("TheHive Router reseived new !!!Request COMMAND", rc)
-				fmt.Println("[[[ TheHive Router msg.GetOrder()=", msg.GetOrder())
 
 				switch msg.GetOrder() {
 				case "add_case_tag":

@@ -35,7 +35,7 @@ func CreateCache(ctx context.Context, ttl int) (*CacheRunningFunctions, error) {
 }
 
 func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context) {
-	tick := time.NewTicker(5 * time.Second)
+	tick := time.NewTicker(2 * time.Second)
 
 	go func(ctx context.Context, tick *time.Ticker) {
 		<-ctx.Done()
@@ -47,6 +47,8 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 		for id, storage := range crm.cacheStorage.storages {
 			//удаление слишком старых записей
 			if storage.timeExpiry.Before(time.Now()) {
+				fmt.Printf("0000 func 'automaticExecutionMethods', DELETE id:'%s'\n", id)
+
 				crm.DeleteElement(id)
 
 				continue
@@ -66,18 +68,21 @@ func (crm *CacheRunningFunctions) automaticExecutionMethods(ctx context.Context)
 
 			//выполнение кешированной функции
 			go func(cache *CacheRunningFunctions, id string, numberAttempts int, f func(int) bool) {
+				cache.cacheStorage.mutex.Lock()
+				defer cache.cacheStorage.mutex.Unlock()
+
 				//устанавливает что функция выполняется
-				cache.SetIsFunctionExecution(id)
+				cache.setIsFunctionExecution(id)
 				//увеличивает количество попыток выполения функции на 1
-				cache.IncreaseNumberAttempts(id)
+				cache.increaseNumberAttempts(id)
 
 				//при вызове, функция принимает количество попыток обработки
 				if f(numberAttempts) {
-					cache.SetIsCompletedSuccessfully(id)
+					cache.setIsCompletedSuccessfully(id)
 				}
 
 				//отмечает что функция завершила выполнение
-				cache.SetIsFunctionNotExecution(id)
+				cache.setIsFunctionNotExecution(id)
 			}(crm, id, storage.numberAttempts, storage.cacheFunc)
 		}
 		crm.cacheStorage.mutex.RUnlock()

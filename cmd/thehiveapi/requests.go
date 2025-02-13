@@ -26,7 +26,7 @@ func (api *apiTheHiveModule) GetObservables(ctx context.Context, rootId string) 
 		return nil, 0, supportingfunctions.CustomError(err)
 	}
 
-	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 30*time.Second)
+	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 15*time.Second)
 	defer ctxCancel()
 
 	res, statusCode, err := api.query(ctxTimeout, "/api/v1/query?name=case-observables", req, "POST")
@@ -58,7 +58,7 @@ func (api *apiTheHiveModule) GetTTP(ctx context.Context, rootId string) ([]byte,
 		return nil, 0, supportingfunctions.CustomError(err)
 	}
 
-	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 30*time.Second)
+	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 15*time.Second)
 	defer ctxCancel()
 
 	res, statusCode, err := api.query(ctxTimeout, "/api/v1/query?name=case-procedures", req, "POST")
