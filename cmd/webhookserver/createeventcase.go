@@ -25,7 +25,7 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 	chanResTTL := make(chan commoninterfaces.ChannelResponser)
 	defer close(chanResTTL)
 
-	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	fmt.Printf("!!! func 'CreateEvenCase', root id:'%s' START\n", rootId)
@@ -45,18 +45,6 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 
 			rmec.Observables = msg
 		}
-		/*		for res := range chanResObservable {
-
-					//fmt.Println("func 'CreateEventCase', goroutine 'observable' received data")
-
-					msg := []interface{}{}
-					if err := json.Unmarshal(res.GetData(), &msg); err != nil {
-						return err
-					}
-
-					rmec.Observables = msg
-				}
-		*/
 
 		fmt.Println("__________________ goroutine g.Go Observable STOP")
 
@@ -77,17 +65,6 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 
 			rmec.TTPs = msg
 		}
-		/*for res := range chanResTTL {
-
-			//fmt.Println("func 'CreateEventCase', goroutine 'ttl' received data")
-
-			msg := []interface{}{}
-			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
-				return err
-			}
-
-			rmec.TTPs = msg
-		}*/
 
 		fmt.Println("__________________ goroutine g.Go TTP STOP")
 

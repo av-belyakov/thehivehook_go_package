@@ -30,7 +30,9 @@ func (o *SpecialObjectForCache[T]) GetFunc() func(int) bool {
 }
 
 // Comparison сравнение содержимого объектов. В данном случае сревнение
-// нет, это простая заглушка. Метод всегда будет возвращать FALSE.
+// нет, это простая заглушка.
+// Для того что бы не досить thehive метод всегда будет возвращать TRUE.
+// Соответственно не будет заменять объект в работе.
 func (o *SpecialObjectForCache[T]) Comparison(objFromCache T) bool {
-	return false
+	return true
 }
