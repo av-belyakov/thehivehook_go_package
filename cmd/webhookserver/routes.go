@@ -46,12 +46,16 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		wh.logger.Send("log_to_db", fmt.Sprintf("received case id '%d', a request is being sent for additional information about observable and ttl", eventElement.Object.CaseId))
 
+		fmt.Println("___ func 'RouteWebHook', BEFORE func 'CreateEvenCase'")
+
 		readyMadeEventCase, err := CreateEvenCase(r.Context(), eventElement.RootId, wh.chanInput)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 			return
 		}
+
+		fmt.Println("___ func 'RouteWebHook', AFTER func 'CreateEvenCase'")
 
 		caseEvent := map[string]interface{}{}
 		if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {

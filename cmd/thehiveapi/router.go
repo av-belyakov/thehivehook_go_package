@@ -18,9 +18,10 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
-				api.cacheRunningFunction.SetMethod(msg.GetRootId(), func(_ int) bool {
-					///
-					///
+				go api.cacheRunningFunction.SetMethod(msg.GetRootId(), func(_ int) bool {
+
+					fmt.Printf("=== func 'router', command:'%s', root id:'%s'\n", msg.GetCommand(), msg.GetRootId())
+
 					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -35,7 +36,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 					select {
 					case <-msg.GetContext().Done():
-						return true
+						return false
 
 					default:
 						msg.GetChanOutput() <- newRes
@@ -46,9 +47,10 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				})
 
 			case "get_ttp":
-				api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
-					///
-					///
+				go api.cacheRunningFunction.SetMethod(msg.GetRequestId(), func(_ int) bool {
+
+					fmt.Printf("=== func 'router', command:'%s', root id:'%s'\n", msg.GetCommand(), msg.GetRootId())
+
 					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
 					if err != nil {
 						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -63,7 +65,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 					select {
 					case <-msg.GetContext().Done():
-						return true
+						return false
 
 					default:
 						msg.GetChanOutput() <- newRes

@@ -40,6 +40,7 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 		wh.server.Shutdown(ctx)
 		close(wh.chanInput)
 	}()
+
 	routers := map[string]func(http.ResponseWriter, *http.Request){
 		"/":        wh.RouteIndex,
 		"/webhook": wh.RouteWebHook,
@@ -51,8 +52,7 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 	}
 
 	server := &http.Server{
-		Addr: fmt.Sprintf("%s:%d", wh.host, wh.port),
-		//Handler: mux,
+		Addr:    fmt.Sprintf("%s:%d", wh.host, wh.port),
 		Handler: addContext(ctx, mux),
 	}
 	wh.server = server

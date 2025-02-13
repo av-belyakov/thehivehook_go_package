@@ -25,8 +25,10 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 	chanResTTL := make(chan commoninterfaces.ChannelResponser)
 	defer close(chanResTTL)
 
-	ctx, ctxCancel := context.WithTimeout(ctx, 15*time.Second)
-	defer ctxCancel()
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	fmt.Printf("!!! func 'CreateEvenCase', root id:'%s' START\n", rootId)
 
 	g.Go(func() error {
 		select {
@@ -34,7 +36,7 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 			return ctx.Err()
 
 		case res := <-chanResObservable:
-			//fmt.Println("func 'CreateEventCase', goroutine 'observable' received data")
+			fmt.Println("func 'CreateEventCase', goroutine 'observable' received data")
 
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
@@ -66,7 +68,7 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 			return ctx.Err()
 
 		case res := <-chanResTTL:
-			//fmt.Println("func 'CreateEventCase', goroutine 'observable' received data")
+			fmt.Println("func 'CreateEventCase', goroutine 'observable' received data")
 
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {

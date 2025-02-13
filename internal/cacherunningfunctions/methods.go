@@ -14,6 +14,7 @@ func (crm *CacheRunningFunctions) SetMethod(id string, f func(v int) bool) strin
 	//!!!!!!!!!
 	//тут можно сделать проверку есть ли объект с таким id, выполняется ли функция и т.д
 	//!!!!!!!!!!
+	fmt.Println("func 'GetMethod', add func for object with id:", id)
 
 	crm.cacheStorage.storages[id] = storageParameters{
 		timeExpiry: time.Now().Add(crm.ttl),
