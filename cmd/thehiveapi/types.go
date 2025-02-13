@@ -1,18 +1,19 @@
 package thehiveapi
 
 import (
+	"github.com/av-belyakov/cachingstoragewithqueue"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 )
 
 // apiTheHiveModule модуль для взаимодействия с API TheHive
 type apiTheHiveModule struct {
-	cachettl             int
-	port                 int
-	host                 string
-	apiKey               string
-	logger               commoninterfaces.Logger
-	receivingChannel     chan commoninterfaces.ChannelRequester
-	cacheRunningFunction commoninterfaces.CacheFuncRunner
+	cache            *cachingstoragewithqueue.CacheStorageWithQueue[interface{}]
+	logger           commoninterfaces.Logger
+	apiKey           string
+	host             string
+	receivingChannel chan commoninterfaces.ChannelRequester
+	cachettl         int
+	port             int
 }
 
 // theHiveAPIOptions функциональные опции
@@ -36,4 +37,14 @@ type Query struct {
 type ErrorAnswer struct {
 	Err     string `json:"type"`
 	Message string `json:"message"`
+}
+
+// SpecialObjectForCache является вспомогательным типом который реализует интерфейс
+// CacheStorageFuncHandler[T any] где в методе Comparison(objFromCache T) bool необходимо
+// реализовать подробное сравнение объекта типа T.
+// Нужен для пакета cachingstoragewithqueue
+type SpecialObjectForCache[T any] struct {
+	object      T
+	handlerFunc func(int) bool
+	id          string
 }

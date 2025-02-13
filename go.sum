@@ -1,3 +1,5 @@
+github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250211120103-65b18658dec7 h1:Nm5IwCsWMGKJOo7kTMxowMr6+Cdhu1SWCHZYXdqIiIc=
+github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250211120103-65b18658dec7/go.mod h1:KWRLxhLhcltDkzJUBrbHeH454lhscBuh1TrjwEYYBhg=
 github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e h1:Nuyap04s2KGKUrd313QSxFJKXvaj1e6x/NxA5gIMayE=
 github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e/go.mod h1:yW2ev3nXPP3WY8svBWJpg4PQRl67MTGIaaiXJ0ULRZ8=
 github.com/av-belyakov/thehivehook_go_package v0.0.0-20250114144138-2182dee8dc9a h1:WKSDKUXjhmYFTgJdp0x5yId1sRfreK+M4XrFeiart1A=

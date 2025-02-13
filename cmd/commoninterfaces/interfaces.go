@@ -1,6 +1,8 @@
 package commoninterfaces
 
-import "context"
+import (
+	"context"
+)
 
 //************ каналы *************
 
@@ -83,12 +85,4 @@ type Messager interface {
 
 type WriterLoggingData interface {
 	Write(typeLogFile, str string) bool
-}
-
-//************** кэширование функций *****************
-
-type CacheFuncRunner interface {
-	SetMethod(id string, f func(int) bool) string
-	GetMethod(id string) (func(int) bool, bool)
-	DeleteElement(id string)
 }

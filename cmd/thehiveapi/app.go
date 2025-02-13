@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 
+	"github.com/av-belyakov/cachingstoragewithqueue"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/cacherunningfunctions"
 )
 
 // New настраивает модуль взаимодействия с API TheHive
@@ -16,6 +16,16 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 		logger:           logger,
 		receivingChannel: make(chan commoninterfaces.ChannelRequester),
 	}
+
+	cache, err := cachingstoragewithqueue.NewCacheStorage[interface{}](
+		cachingstoragewithqueue.WithMaxTtl[interface{}](300),
+		cachingstoragewithqueue.WithTimeTick[interface{}](3),
+		cachingstoragewithqueue.WithMaxSize[interface{}](15),
+		cachingstoragewithqueue.WithEnableAsyncProcessing[interface{}](1))
+	if err != nil {
+		return api, err
+	}
+	api.cache = cache
 
 	for _, opt := range opts {
 		if err := opt(api); err != nil {
@@ -30,13 +40,10 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
 func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
-	crf, err := cacherunningfunctions.CreateCache(ctx, api.cachettl)
-	if err != nil {
-		return api.receivingChannel, err
-	}
+	//обработка кэша
+	go api.cache.StartAutomaticExecution(ctx)
 
-	api.cacheRunningFunction = crf
-
+	//обработка маршрутов
 	go api.router(ctx)
 
 	return api.receivingChannel, nil

@@ -149,6 +149,7 @@ func server(ctx context.Context) {
 	//мост между каналами различных модулей
 	go router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
 
+	//для отладки через pprof
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()

@@ -20,6 +20,7 @@ require (
 )
 
 require (
+	github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250211120103-65b18658dec7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.6.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
