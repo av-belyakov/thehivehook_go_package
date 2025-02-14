@@ -49,7 +49,8 @@ func (r *ResponseChannelTheHive) SetData(v []byte) {
 	r.Data = v
 }
 
-func (r *ResponseChannelTheHive) sendToChan(ch chan<- commoninterfaces.ChannelResponser) {
+// SendToChan отправляет ответ через полученый канал соответвтующий интерфейсу ChannelResponser
+func (r *ResponseChannelTheHive) SendToChan(ch chan<- commoninterfaces.ChannelResponser) {
 	if ch != nil {
 		ch <- r
 	}

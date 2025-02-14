@@ -18,14 +18,14 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
-				go func(id string) {
+				go func(command, id string) {
 					so := NewSpecialObjectForCache[interface{}]()
-					so.SetID(id)
+					so.SetID(command + id)
 					so.SetFunc(func(_ int) bool {
 
-						fmt.Printf("=== func 'router', command:'%s', root id:'%s'\n", msg.GetCommand(), msg.GetRootId())
+						fmt.Printf("=== func 'router', command:'%s', root id:'%s' (%s)\n", command, id, command+id)
 
-						res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
+						res, statusCode, err := api.GetObservables(ctx, id)
 						if err != nil {
 							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
@@ -33,7 +33,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 						}
 
 						newRes := NewChannelRespons()
-						newRes.SetRequestId(msg.GetRootId())
+						newRes.SetRequestId(id)
 						newRes.SetStatusCode(statusCode)
 						newRes.SetData(res)
 
@@ -51,17 +51,17 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 					//добавляем объект в очередь для обработки
 					api.cache.PushObjectToQueue(so)
-				}(msg.GetRootId())
+				}(msg.GetCommand(), msg.GetRootId())
 
 			case "get_ttp":
-				go func(id string) {
+				go func(command, id string) {
 					so := NewSpecialObjectForCache[interface{}]()
-					so.SetID(id)
+					so.SetID(command + id)
 					so.SetFunc(func(_ int) bool {
 
-						fmt.Printf("=== func 'router', command:'%s', root id:'%s'\n", msg.GetCommand(), msg.GetRootId())
+						fmt.Printf("=== func 'router', command:'%s', root id:'%s' (%s)\n", command, id, command+id)
 
-						res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
+						res, statusCode, err := api.GetTTP(ctx, id)
 						if err != nil {
 							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
@@ -69,7 +69,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 						}
 
 						newRes := NewChannelRespons()
-						newRes.SetRequestId(msg.GetRootId())
+						newRes.SetRequestId(id)
 						newRes.SetStatusCode(statusCode)
 						newRes.SetData(res)
 
@@ -87,117 +87,66 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 					//добавляем объект в очередь для обработки
 					api.cache.PushObjectToQueue(so)
-				}(msg.GetRootId())
+				}(msg.GetCommand(), msg.GetRootId())
 
 			case "send_command":
 				rc, err := getRequestCommandData(msg.GetData())
 				if err != nil {
 					api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+					continue
 				}
-
-				chRes := msg.GetChanOutput()
-
-				res := NewChannelRespons()
-				res.SetRequestId(msg.GetRequestId())
 
 				switch msg.GetOrder() {
 				case "add_case_tag":
 					go func(id string) {
-						so := NewSpecialObjectForCache[interface{}]()
-						so.SetID(id)
-						so.SetFunc(func(countAttempts int) bool {
-							_, statusCode, err := api.AddCaseTags(ctx, rc)
+						res := NewChannelRespons()
+						res.SetRequestId(id)
 
-							if err != nil {
-								api.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-								if countAttempts >= 10 {
-									res.SetStatusCode(statusCode)
-									res.SetError(err)
-									res.sendToChan(chRes)
-
-									return true
-								}
-
-								return false
-							}
-
+						_, statusCode, err := api.AddCaseTags(ctx, rc)
+						res.SetStatusCode(statusCode)
+						if err != nil {
+							res.SetError(err)
+							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						} else {
 							api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
+						}
 
-							res.SetStatusCode(statusCode)
-							res.sendToChan(chRes)
-
-							return true
-						})
-
-						//добавляем объект в очередь для обработки
-						api.cache.PushObjectToQueue(so)
-					}(msg.GetRootId())
+						res.SendToChan(msg.GetChanOutput())
+					}(msg.GetRequestId())
 
 				case "add_case_task":
 					go func(id string) {
-						so := NewSpecialObjectForCache[interface{}]()
-						so.SetID(id)
-						so.SetFunc(func(countAttempts int) bool {
-							_, statusCode, err := api.AddCaseTask(ctx, rc)
+						res := NewChannelRespons()
+						res.SetRequestId(id)
 
-							if err != nil {
-								api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						_, statusCode, err := api.AddCaseTask(ctx, rc)
+						res.SetStatusCode(statusCode)
+						if err != nil {
+							res.SetError(err)
+							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						} else {
+							api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
+						}
 
-								if countAttempts >= 10 {
-									res.SetStatusCode(statusCode)
-									res.SetError(err)
-									res.sendToChan(chRes)
-
-									return true
-								}
-
-								return false
-							}
-
-							api.logger.Send("info", fmt.Sprintf("when making a request to add a new task for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
-
-							res.SetStatusCode(statusCode)
-							res.sendToChan(chRes)
-
-							return true
-						})
-
-						//добавляем объект в очередь для обработки
-						api.cache.PushObjectToQueue(so)
+						res.SendToChan(msg.GetChanOutput())
 					}(msg.GetRequestId())
 
 				case "set_case_custom_field":
 					go func(id string) {
-						so := NewSpecialObjectForCache[interface{}]()
-						so.SetID(id)
-						so.SetFunc(func(countAttempts int) bool {
-							_, statusCode, err := api.AddCaseCustomFields(ctx, rc)
+						res := NewChannelRespons()
+						res.SetRequestId(id)
 
-							if err != nil {
-								api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						_, statusCode, err := api.AddCaseCustomFields(ctx, rc)
+						res.SetStatusCode(statusCode)
+						if err != nil {
+							res.SetError(err)
+							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						} else {
+							api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
+						}
 
-								if countAttempts >= 10 {
-									res.SetStatusCode(statusCode)
-									res.SetError(err)
-									res.sendToChan(chRes)
-
-									return true
-								}
-
-								return false
-							}
-
-							api.logger.Send("info", fmt.Sprintf("when making a request to add a new custom field for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
-
-							res.SetStatusCode(statusCode)
-							res.sendToChan(chRes)
-
-							return true
-						})
-
-						//добавляем объект в очередь для обработки
-						api.cache.PushObjectToQueue(so)
+						res.SendToChan(msg.GetChanOutput())
 					}(msg.GetRequestId())
 				}
 			}
