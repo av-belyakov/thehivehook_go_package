@@ -17,11 +17,13 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 		receivingChannel: make(chan commoninterfaces.ChannelRequester),
 	}
 
+	l := NewLogWrite(logger)
 	cache, err := cachingstoragewithqueue.NewCacheStorage[interface{}](
 		cachingstoragewithqueue.WithMaxTtl[interface{}](300),
 		cachingstoragewithqueue.WithTimeTick[interface{}](1),
 		cachingstoragewithqueue.WithMaxSize[interface{}](15),
-		cachingstoragewithqueue.WithEnableAsyncProcessing[interface{}](1))
+		cachingstoragewithqueue.WithEnableAsyncProcessing[interface{}](1),
+		cachingstoragewithqueue.WithLogging[interface{}](l))
 	if err != nil {
 		return api, err
 	}
