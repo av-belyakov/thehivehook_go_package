@@ -38,14 +38,14 @@ func NewReadReflectJSONSprint(b []byte) (string, error) {
 
 func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) string {
 	var (
-		nameStr string
-		str     strings.Builder = strings.Builder{}
-
+		nameStr     string
 		isCleanLine bool
 	)
 
 	r := reflect.TypeOf(anyType)
 	ws := GetWhitespace(num)
+	str := strings.Builder{}
+	defer str.Reset()
 
 	if n, ok := name.(int); ok {
 		nameStr = fmt.Sprintf("%s%v.", ws, n+1)
@@ -89,8 +89,9 @@ func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) st
 }
 
 func readReflectMapSprint(list map[string]interface{}, num int) string {
-	var str strings.Builder = strings.Builder{}
 	ws := GetWhitespace(num)
+	str := strings.Builder{}
+	defer str.Reset()
 
 	for k, v := range list {
 		r := reflect.TypeOf(v)
@@ -124,8 +125,9 @@ func readReflectMapSprint(list map[string]interface{}, num int) string {
 }
 
 func readReflectSliceSprint(list []interface{}, num int) string {
-	var str strings.Builder = strings.Builder{}
 	ws := GetWhitespace(num)
+	str := strings.Builder{}
+	defer str.Reset()
 
 	for k, v := range list {
 		r := reflect.TypeOf(v)
