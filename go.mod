@@ -3,7 +3,7 @@ module github.com/av-belyakov/thehivehook_go_package
 go 1.23.4
 
 require (
-	github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250213154349-ebb416270141
+	github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250214120945-4e600c02a2be
 	github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e
 	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20250123120502-11e9e7cc85ed
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
@@ -52,7 +52,6 @@ require (
 	go.opentelemetry.io/otel v1.34.0 // indirect
 	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
