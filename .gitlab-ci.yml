@@ -1,5 +1,6 @@
 variables:
   MAJOR_BRANCH: master
+  TEST_BRANCH: dev_test_branch
 
 stages:
   - sync
@@ -28,6 +29,10 @@ default:
 
 .is-branch-master-commit: &master-commit
   - if: $CI_COMMIT_BRANCH == $MAJOR_BRANCH || $CI_COMMIT_REF_NAME == $MAJOR_BRANCH
+    when: on_success
+
+.is-branch-dev-test-commit: &dev-test-commit
+  - if: $CI_COMMIT_BRANCH == $TEST_BRANCH || $CI_COMMIT_REF_NAME == $TEST_BRANCH
     when: on_success
 
 sync-file-job:
@@ -63,6 +68,17 @@ push-latest:
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
     - docker push $CI_REGISTRY_IMAGE:latest
 
+#тестовая сборка
+deploy-test:
+  stage: deploy
+  rules:
+    - *readme-no-commit
+    - *dev-test-commit
+  script:
+    #тест ГЦМ
+    - "curl -X POST --fail -F token=$GET_REGISTRIE_TOKEN -F ref=master http://gitlab.cloud.gcm/api/v4/projects/709/trigger/pipeline"
+
+#основная сборка
 deploy-prod:
   stage: deploy
   rules:
