@@ -84,7 +84,7 @@ build-test:
     #- *merge-with-branch-testing
   script:
     - docker rmi $CI_REGISTRY_IMAGE:test || true
-    - docker buildx build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
     #удаляем промежуточный образ с меткой temporary
     - docker image prune -a --force --filter="label=temporary"
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:test
