@@ -8,7 +8,7 @@ services:
       - GO_HIVEHOOK_DBWLOGPASSWD=$HIVEHOOK_DBWLOGPASSWD
     image: gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:latest
     restart: unless-stopped
-    # пробрасываем user ID для корректной записи в логов
+    #пробрасываем user ID для корректной записи в логов
     user: root
     command: chmod 777 /opt/thehivehook_go_package/logs && \
              chown 1500:1500 /opt/thehivehook_go_package/logs
