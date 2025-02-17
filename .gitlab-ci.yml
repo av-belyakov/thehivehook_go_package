@@ -40,11 +40,9 @@ default:
 
 .is-branch-dev-test-commit: &dev-test-commit
   - if: $CI_COMMIT_BRANCH == $BRANCH_TEST || $CI_COMMIT_REF_NAME == $BRANCH_TEST
-    when: on_success
 
 .is-branch-master-commit: &master-commit
   - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
-    when: on_success
 
 # 
 #.is-merge-with-branch-testing: &merge-with-branch-testing
@@ -127,6 +125,7 @@ deploy-test:
     - *readme-no-commit
     - *docker-compose-no-commit
     - *dev-test-commit
+    - *master-commit
     #- *merge-with-branch-testing
   script:
     #тест ГЦМ
