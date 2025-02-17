@@ -2,16 +2,16 @@ package wrappers
 
 // WrappersZabbixInteractionSettings настройки для обертки взаимодействия с модулем zabbixapi
 type WrappersZabbixInteractionSettings struct {
-	NetworkPort int         //сетевой порт
+	EventTypes  []EventType //типы событий
 	NetworkHost string      //ip адрес или доменное имя
 	ZabbixHost  string      //zabbix host
-	EventTypes  []EventType //типы событий
+	NetworkPort int         //сетевой порт
 }
 
 type EventType struct {
-	IsTransmit bool
 	EventType  string
 	ZabbixKey  string
+	IsTransmit bool
 	Handshake  Handshake
 }
 
