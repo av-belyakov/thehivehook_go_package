@@ -38,23 +38,33 @@ default:
       - docker-compose.yml
     when: on_success
 
-.is-merge-with-master: &merge-with-master
-  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    changes:
-      - paths:
-          - '**/*'
-      - compare_to: 
-          - "refs/heads/$BRANCH_MAJOR"
+.is-branch-dev-test-commit: &dev-test-commit
+  - if: $CI_COMMIT_BRANCH == $BRANCH_TEST || $CI_COMMIT_REF_NAME == $BRANCH_TEST
     when: on_success
 
-.is-merge-with-branch-testing: &merge-with-branch-testing
-  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    changes:
-      - paths:
-          - '**/*'
-      - compare_to: 
-          - "refs/heads/$BRANCH_TEST"
+.is-branch-master-commit: &master-commit
+  - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
     when: on_success
+
+# 
+#.is-merge-with-branch-testing: &merge-with-branch-testing
+#  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+#    changes: #Такое описание changes будет работать только начиная с версии 15.5
+#      paths: 
+#        - '**/*'
+#      compare_to: 
+#        - 'refs/heads/$BRANCH_TEST'
+#    when: on_success
+#
+#.is-merge-with-master: &merge-with-master
+#  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+#    changes:
+#      paths:
+#        - '**/*'
+#      compare_to: 
+#        - 'refs/heads/$BRANCH_MAJOR'
+#    when: on_success
+#
 
 #синхронизируем файл README.md
 sync-file-readme:
@@ -84,7 +94,8 @@ build-test:
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
-    - *merge-with-branch-testing
+    - *dev-test-commit
+    #- *merge-with-branch-testing
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
     # удаляем промежуточный образ с меткой temporary
@@ -99,7 +110,8 @@ build-prod:
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
-    - *merge-with-master
+    - *master-commit
+    #- *merge-with-master
   script:
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
     # удаляем промежуточный образ с меткой temporary
@@ -114,7 +126,8 @@ deploy-test:
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
-    - *merge-with-branch-testing
+    - *dev-test-commit
+    #- *merge-with-branch-testing
   script:
     #тест ГЦМ
     - "curl -X POST --fail -F token=$GCM_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/726/trigger/pipeline"
@@ -125,7 +138,8 @@ deploy-prod:
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
-    - *merge-with-master
+    - *master-commit
+    #- *merge-with-master
   script:
     - "curl -X POST --fail -F token=$RCMSPB_GCM_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/748/trigger/pipeline"
   environment: production
