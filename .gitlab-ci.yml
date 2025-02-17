@@ -30,13 +30,8 @@ default:
   - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
     changes:
       - docker-compose.yml
+      - docker-compose.rcm.yml
     when: never
-
-.change-docker-compose-commit: &docker-compose-commit
-  - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
-    changes:
-      - docker-compose.yml
-    when: on_success
 
 .is-branch-dev-test-commit: &dev-test-commit
   - if: $CI_COMMIT_BRANCH == $BRANCH_TEST || $CI_COMMIT_REF_NAME == $BRANCH_TEST
@@ -44,45 +39,38 @@ default:
 .is-branch-master-commit: &master-commit
   - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
 
-# 
-#.is-merge-with-branch-testing: &merge-with-branch-testing
-#  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-#    changes: #Такое описание changes будет работать только начиная с версии 15.5
-#      paths: 
-#        - '**/*'
-#      compare_to: 
-#        - 'refs/heads/$BRANCH_TEST'
-#    when: on_success
-#
-#.is-merge-with-master: &merge-with-master
-#  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-#    changes:
-#      paths:
-#        - '**/*'
-#      compare_to: 
-#        - 'refs/heads/$BRANCH_MAJOR'
-#    when: on_success
-#
-
 #синхронизируем файл README.md
 sync-file-readme:
   stage: sync
   rules:
     - *readme-commit
   script:
-    #Главный центр мониторинга
+    #Главный центр мониторинга (или test)
     - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/README.md'
     #РЦМ Санкт-Петербург
     - 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSPB_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/748/repository/files/README.md'
 
-#синхронизируем файл docker-compose.yml
+#синхронизируем файл docker-compose.yml (test или GCM)
 sync-file-docker-compose:
   stage: sync
   rules:
-    - *docker-compose-commit
+    - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
+      changes:
+        - docker-compose.yml
+      when: on_success
   script:
-    #Главный центр мониторинга
+    #Главный центр мониторинга (или test)
     - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.yml" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/docker-compose.yml'
+
+#синхронизируем файл docker-compose.rcm.yml (для РЦМ)
+sync-file-docker-compose-rcm:
+  stage: sync
+  rules:
+    - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
+      changes:
+        - docker-compose.rcm.yml
+      when: on_success
+  script:
     #РЦМ Санкт-Петербург
     - 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSPB_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/748/repository/files/docker-compose.yml'
 
@@ -95,7 +83,7 @@ build-test:
     - *dev-test-commit
     #- *merge-with-branch-testing
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
+    - docker buildx build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
     # удаляем промежуточный образ с меткой temporary
     - docker image prune -a --force --filter="label=temporary"
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:test
@@ -113,7 +101,7 @@ build-prod:
     - *master-commit
     #- *merge-with-master
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
+    - docker buildx build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA .
     # удаляем промежуточный образ с меткой temporary
     - docker image prune -a --force --filter="label=temporary"
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
@@ -144,3 +132,22 @@ deploy-prod:
   script:
     - "curl -X POST --fail -F token=$RCMSPB_GCM_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/748/trigger/pipeline"
   environment: production
+#
+#.is-merge-with-branch-testing: &merge-with-branch-testing
+#  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+#    changes: #Такое описание changes будет работать только начиная с версии 15.5
+#      paths:
+#        - '**/*'
+#      compare_to:
+#        - 'refs/heads/$BRANCH_TEST'
+#    when: on_success
+#
+#.is-merge-with-master: &merge-with-master
+#  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+#    changes:
+#      paths:
+#        - '**/*'
+#      compare_to:
+#        - 'refs/heads/$BRANCH_MAJOR'
+#    when: on_success
+#
