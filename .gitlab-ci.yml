@@ -127,7 +127,9 @@ deploy-prod:
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
-    - *master-commit
+    - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
+      when: manual
+      allow_failure: true
     #- *merge-with-master
   script:
     - "curl -X POST --fail -F token=$RCMSPB_GCM_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/748/trigger/pipeline"
