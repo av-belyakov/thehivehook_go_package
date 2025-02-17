@@ -39,19 +39,21 @@ default:
     when: on_success
 
 .is-merge-with-master: &merge-with-master
-  - if: $CI_COMMIT_BRANCH
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     changes:
-      compare_to: "refs/heads/$BRANCH_MAJOR"
-      paths:
-        - "**/*"
+      - paths:
+          - '**/*'
+      - compare_to: 
+          - "refs/heads/$BRANCH_MAJOR"
     when: on_success
 
 .is-merge-with-branch-testing: &merge-with-branch-testing
-  - if: $CI_COMMIT_BRANCH
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     changes:
-      compare_to: "refs/heads/$BRANCH_TEST"
-      paths:
-        - "**/*"
+      - paths:
+          - '**/*'
+      - compare_to: 
+          - "refs/heads/$BRANCH_TEST"
     when: on_success
 
 #синхронизируем файл README.md
