@@ -44,18 +44,14 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	case "case":
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
-		wh.logger.Send("log_to_db", fmt.Sprintf("received case id '%d', a request is being sent for additional information about observable and ttl", eventElement.Object.CaseId))
+		wh.logger.Send("info", fmt.Sprintf("received case id '%d', a request is being sent for additional information about observable and ttl", eventElement.Object.CaseId))
 
-		fmt.Println("___ func 'RouteWebHook', object type:'CASE' BEFORE func 'CreateEvenCase'")
-
-		readyMadeEventCase, err := CreateEvenCase(r.Context(), eventElement.RootId, wh.chanInput)
+		readyMadeEventCase, err := CreateEvenCase(r.Context(), eventElement.RootId, eventElement.Object.CaseId, wh.chanInput)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 			return
 		}
-
-		fmt.Println("___ func 'RouteWebHook', object type:'CASE' AFTER func 'CreateEvenCase'")
 
 		caseEvent := map[string]interface{}{}
 		if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
@@ -67,7 +63,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		readyMadeEventCase.Source = wh.name
 		readyMadeEventCase.Case = caseEvent
 
-		wh.logger.Send("log_to_db", fmt.Sprintf("additional information on case id '%d' has been successfully received", eventElement.Object.CaseId))
+		wh.logger.Send("info", fmt.Sprintf("additional information on case id '%d' has been successfully received", eventElement.Object.CaseId))
 
 		ec, err := json.Marshal(readyMadeEventCase)
 		if err != nil {
@@ -100,7 +96,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			Data:        sendData,
 		}
 
-		wh.logger.Send("log_to_db", fmt.Sprintf("information on case id '%d' sending to NATS", eventElement.Object.CaseId))
+		wh.logger.Send("info", fmt.Sprintf("information on case id '%d' sending to NATS", eventElement.Object.CaseId))
 
 	case "case_artifact":
 	case "case_task":
@@ -147,19 +143,12 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		}
 		//-------------------------------------------------------------------
 
-		//fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
-		//if res, err := json.MarshalIndent(readyMadeEventAlert, "", " "); err == nil {
-		//	fmt.Println(string(res))
-		//}
-		//fmt.Println("------ func 'RouteWebHook' ------- ALERT -----")
-
 		//отправка данных в NATS
 		sendData := NewChannelRequest()
 		sendData.SetRootId(eventElement.RootId)
 		sendData.SetElementType(eventElement.ObjectType)
 		sendData.SetCommand("send alert")
 		sendData.SetData(ea)
-		//sendData.SetChanOutput(chanResObservable)
 
 		wh.chanInput <- ChanFromWebHookServer{
 			ForSomebody: "to nats",

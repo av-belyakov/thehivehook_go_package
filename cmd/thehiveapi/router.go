@@ -22,8 +22,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					so := NewSpecialObjectForCache[interface{}]()
 					so.SetID(command + id)
 					so.SetFunc(func(_ int) bool {
-
-						fmt.Printf("=== func 'router', command:'%s', root id:'%s' (%s)\n", command, id, command+id)
+						api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", command, id, msg.GetCaseId()))
 
 						res, statusCode, err := api.GetObservables(ctx, id)
 						if err != nil {
@@ -36,6 +35,8 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 						newRes.SetRequestId(id)
 						newRes.SetStatusCode(statusCode)
 						newRes.SetData(res)
+
+						api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", command, id, statusCode))
 
 						select {
 						case <-msg.GetContext().Done():
@@ -58,8 +59,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					so := NewSpecialObjectForCache[interface{}]()
 					so.SetID(command + id)
 					so.SetFunc(func(_ int) bool {
-
-						fmt.Printf("=== func 'router', command:'%s', root id:'%s' (%s)\n", command, id, command+id)
+						api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", command, id, msg.GetCaseId()))
 
 						res, statusCode, err := api.GetTTP(ctx, id)
 						if err != nil {
@@ -72,6 +72,8 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 						newRes.SetRequestId(id)
 						newRes.SetStatusCode(statusCode)
 						newRes.SetData(res)
+
+						api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", command, id, statusCode))
 
 						select {
 						case <-msg.GetContext().Done():

@@ -13,7 +13,7 @@ import (
 
 // CreateEvenCase создает новый объект case, содержащий дополнительную информацию типа объектов observables
 // и ttp информацию по которым дополнительно запрашивают из TheHive
-func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFromWebHookServer) (ReadyMadeEventCase, error) {
+func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput chan<- ChanFromWebHookServer) (ReadyMadeEventCase, error) {
 	var (
 		g    errgroup.Group
 		rmec ReadyMadeEventCase = ReadyMadeEventCase{}
@@ -28,8 +28,6 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	fmt.Printf("!!! func 'CreateEvenCase', root id:'%s' START\n", rootId)
-
 	g.Go(func() error {
 		select {
 		case <-ctx.Done():
@@ -40,12 +38,11 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 			// можно убрать return ctx.Err() и оставить просто return
 			// вот только надо ли, пока не знаю
 			//
+			//return ctx.Err()
 
-			return ctx.Err()
+			return nil
 
 		case res := <-chanResObservable:
-			fmt.Println("func 'CreateEventCase', goroutine 'observable' received data")
-
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				return err
@@ -54,8 +51,6 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 			rmec.Observables = msg
 		}
 
-		fmt.Println("__________________ goroutine g.Go Observable STOP")
-
 		return nil
 	})
 	g.Go(func() error {
@@ -68,12 +63,11 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 			// можно убрать return ctx.Err() и оставить просто return
 			// вот только надо ли, пока не знаю
 			//
+			//return ctx.Err()
 
-			return ctx.Err()
+			return nil
 
 		case res := <-chanResTTL:
-			fmt.Println("func 'CreateEventCase', goroutine 'observable' received data")
-
 			msg := []interface{}{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				return err
@@ -82,8 +76,6 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 			rmec.TTPs = msg
 		}
 
-		fmt.Println("__________________ goroutine g.Go TTP STOP")
-
 		return nil
 	})
 
@@ -91,6 +83,7 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 	reqObservable := NewChannelRequest()
 	reqObservable.SetContext(ctx)
 	reqObservable.SetRootId(rootId)
+	reqObservable.SetCaseId(fmt.Sprint(caseId))
 	reqObservable.SetCommand("get_observables")
 	reqObservable.SetChanOutput(chanResObservable)
 	chanInput <- ChanFromWebHookServer{
@@ -102,6 +95,7 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 	reqTTP := NewChannelRequest()
 	reqTTP.SetContext(ctx)
 	reqTTP.SetRootId(rootId)
+	reqTTP.SetCaseId(fmt.Sprint(caseId))
 	reqTTP.SetCommand("get_ttp")
 	reqTTP.SetChanOutput(chanResTTL)
 	chanInput <- ChanFromWebHookServer{
@@ -110,8 +104,6 @@ func CreateEvenCase(ctx context.Context, rootId string, chanInput chan<- ChanFro
 	}
 
 	err := g.Wait()
-
-	fmt.Println("func 'CreateEvenCase', STOP...")
 
 	//что бы данную гроутину не держала ссылка на объекты
 	reqObservable = NewChannelRequest()
