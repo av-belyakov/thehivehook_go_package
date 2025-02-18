@@ -137,7 +137,7 @@ deploy-prod:
       allow_failure: true
     #- *merge-with-master
   script:
-    - "curl -X POST --fail -F token=$RCMSPB_GCM_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/748/trigger/pipeline"
+    - "curl -X POST --fail -F token=$RCMSPB_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/748/trigger/pipeline"
   environment: production
 #
 #.is-merge-with-branch-testing: &merge-with-branch-testing
