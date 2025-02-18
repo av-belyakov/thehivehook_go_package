@@ -13,13 +13,14 @@ RUN echo 'packages_image' && \
 
 FROM golang:1.23.4-alpine AS build_image
 LABEL temporary=''
+ARG BRANCH
 WORKDIR /go/
 COPY --from=packages_image /go ./
 RUN echo -e "build_image" && \
     rm -r ./src && \
     apk update && \
     apk add --no-cache git && \
-    git clone https://github.com/av-belyakov/thehivehook_go_package.git ./src/ && \
+    git clone -b ${BRANCH} https://github.com/av-belyakov/thehivehook_go_package.git  ./src/ && \
     go build -C ./src/cmd/ -o ../app
 
 FROM alpine
