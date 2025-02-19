@@ -8,14 +8,15 @@ type WrappersZabbixInteractionSettings struct {
 	NetworkPort int         //сетевой порт
 }
 
+// EventType описание события в Zabbix
 type EventType struct {
 	EventType  string
 	ZabbixKey  string
-	IsTransmit bool
 	Handshake  Handshake
+	IsTransmit bool
 }
 
 type Handshake struct {
-	TimeInterval int
 	Message      string
+	TimeInterval int
 }
