@@ -149,12 +149,4 @@ deploy-prod:
 #        - 'refs/heads/$BRANCH_TEST'
 #    when: on_success
 #
-#.is-merge-with-master: &merge-with-master
-#  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-#    changes:
-#      paths:
-#        - '**/*'
-#      compare_to:
-#        - 'refs/heads/$BRANCH_MAJOR'
-#    when: on_success
-#
+
