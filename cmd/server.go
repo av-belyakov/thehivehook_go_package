@@ -104,13 +104,11 @@ func server(ctx context.Context) {
 		thehiveapi.WithCacheTTL(confTheHiveAPI.CacheTTL))
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
-
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
 	}
 	chReqTheHiveAPI, err := apiTheHive.Start(ctx)
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
-
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
 	}
 
@@ -127,13 +125,11 @@ func server(ctx context.Context) {
 	apiNats, err := natsapi.New(logging, natsOptsAPI...)
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
-
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
 	chReqNatsAPI, chNatsAPIReq, err := apiNats.Start(ctx)
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
-
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
 
@@ -148,7 +144,6 @@ func server(ctx context.Context) {
 		webhookserver.WithVersion(appversion.GetVersion()))
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
-
 		log.Fatalf("error module 'webhookserver': %s\n", err.Error())
 	}
 
