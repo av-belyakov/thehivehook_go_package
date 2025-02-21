@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250219104049-8986f654e5d6
-	github.com/av-belyakov/simplelogger v0.0.0-20250221113600-b961996e1b4c
+	github.com/av-belyakov/simplelogger v0.0.0-20250221120631-077109604215
 	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20250123120502-11e9e7cc85ed
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
 	github.com/go-playground/validator/v10 v10.25.0
