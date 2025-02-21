@@ -52,7 +52,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println("Version:", simpleLogger.GetVersion())
+	fmt.Println("Version:", simplelogger.GetVersion())
 	fmt.Println("___ OPTIONS:", opts)
 
 	confDB := conf.GetApplicationWriteLogDB()

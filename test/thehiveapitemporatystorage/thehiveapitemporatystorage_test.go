@@ -29,9 +29,9 @@ var (
 )
 
 type CacheMethodResponse struct {
-	StatusCode   int
-	Error        error
 	BodyResponse []byte
+	Error        error
+	StatusCode   int
 }
 
 type storageParameters struct {
@@ -176,8 +176,8 @@ var _ = Describe("Testthehiveapitemporatystorage", Ordered, func() {
 	/*
 			* !!!!!!!!!!!!!!!!!
 		 	* новую версию пока не выкатываю в прод потому что есть проблемы
-			* с этим тестом и остальные тесты не до конца исправлены под новый
-			* логгер
+			* с этим тестом и остальные тесты не до конца исправлены под
+			* новый логгер
 			* !!!!!!!!!!!!!!!!!
 	*/
 	a

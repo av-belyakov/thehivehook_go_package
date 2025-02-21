@@ -17,7 +17,7 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
-	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
+	helperfunc "github.com/av-belyakov/thehivehook_go_package/test/helpfunc"
 )
 
 var _ = Describe("Testthehivegetcase", Ordered, func() {
@@ -97,7 +97,7 @@ var _ = Describe("Testthehivegetcase", Ordered, func() {
 
 	Context("Тест 2. Запрос кейса по его номеру через метод GetCaseEvent", func() {
 		It("При выполнении запроса на получении объекта 'event' Case ошибок быть не должно", func() {
-			logging := logginghandler.New()
+			logging := helperfunc.NewLoggingForTest()
 			conf := confighandler.AppConfigTheHive{
 				Port:   9000,
 				Host:   "thehive.cloud.gcm",
@@ -135,7 +135,7 @@ var _ = Describe("Testthehivegetcase", Ordered, func() {
 
 	Context("Тест 3. Запрос кейса по его номеру через метод GetCaseEvent", func() {
 		It("Должна быть получена специальная ошибка datamodels.ConnectionError при подключении к неверному доменному имени", func() {
-			logging := logginghandler.New()
+			logging := helperfunc.NewLoggingForTest()
 			conf := confighandler.AppConfigTheHive{
 				Port:   9000,
 				Host:   "1thehive.cloud.gcm",

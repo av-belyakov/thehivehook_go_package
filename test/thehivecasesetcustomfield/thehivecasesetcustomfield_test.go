@@ -14,7 +14,7 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
+	helperfunc "github.com/av-belyakov/thehivehook_go_package/test/helpfunc"
 )
 
 type CustomFieldParameters struct {
@@ -59,7 +59,8 @@ var _ = Describe("Testthehivecasesetcustomfield", Ordered, func() {
 
 	Context("Тест 1. Добавление CustomFiled к заданному кейсу TheHive", func() {
 		It("При выполнении запроса ошибок быть не должно", func() {
-			logging := logginghandler.New()
+
+			logging := helperfunc.NewLoggingForTest()
 
 			conf := confighandler.AppConfigTheHive{
 				Port:   9000,

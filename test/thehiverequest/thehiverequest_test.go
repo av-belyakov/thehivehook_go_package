@@ -18,7 +18,7 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
+	helperfunc "github.com/av-belyakov/thehivehook_go_package/test/helpfunc"
 )
 
 var _ = Describe("Testthehiverequest", Ordered, func() {
@@ -49,7 +49,7 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 		conf, errConf = confighandler.NewConfig(rootDir)
 		confTheHive := conf.GetApplicationTheHive()
 
-		logging := logginghandler.New()
+		logging := helperfunc.NewLoggingForTest()
 
 		go func() {
 			for {

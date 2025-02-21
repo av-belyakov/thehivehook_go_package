@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -20,12 +19,10 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
-const ROOT_DIR = "thehivehook_go_package"
+const Root_Dir = "thehivehook_go_package"
 
 var _ = Describe("Testwebhookserver", Ordered, func() {
 	var (
-		rootDir string = "thehivehook_go_package"
-
 		webHookServer *webhookserver.WebHookServer
 
 		conf              *confighandler.ConfigApp
@@ -46,7 +43,7 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			log.Fatalln(err)
 		}
 
-		conf, errConf = confighandler.NewConfig(rootDir)
+		conf, errConf = confighandler.NewConfig(Root_Dir)
 		confTheHiveAPI = conf.GetApplicationTheHive()
 		confWebHookServer = conf.GetApplicationWebHookServer()
 	})
@@ -82,27 +79,30 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 				syscall.SIGQUIT)
 
 			go func() {
-				sigChan := make(chan os.Signal, 1)
-				osCall := <-sigChan
-				log.Printf("system call:%+v", osCall)
+				log.Printf("system call:%+v", <-ctx.Done())
 
 				cancel()
 			}()
 
-			simpleLogger, err := simplelogger.NewSimpleLogger(ctx, ROOT_DIR, getLoggerSettings(conf.GetListLogs()))
+			var listLog []simplelogger.OptionsManager
+			for _, v := range conf.GetListLogs() {
+				listLog = append(listLog, v)
+			}
+			opts := simplelogger.CreateOptions(listLog...)
+			simpleLogger, err := simplelogger.NewSimpleLogger(ctx, Root_Dir, opts)
 			if err != nil {
 				log.Fatalf("error module 'simplelogger': %v", err)
 			}
 
-			channelZabbix := make(chan commoninterfaces.Messager)
+			chZabbix := make(chan commoninterfaces.Messager)
 			go func() {
-				for msg := range channelZabbix {
+				for msg := range chZabbix {
 					fmt.Println("INFO for Zabbix:", msg)
 				}
 			}()
 
-			logging := logginghandler.New()
-			go logginghandler.LoggingHandler(ctx, simpleLogger, channelZabbix, logging.GetChan())
+			logging := logginghandler.New(simpleLogger, chZabbix)
+			logging.Start(ctx)
 
 			//инициализация модуля взаимодействия с TheHive
 			apiTheHive, err := thehiveapi.New(
@@ -153,19 +153,3 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 		})
 	})
 })
-
-func getLoggerSettings(cls []confighandler.LogSet) []simplelogger.Options {
-	loggerConf := make([]simplelogger.Options, 0, len(cls))
-
-	for _, v := range cls {
-		loggerConf = append(loggerConf, simplelogger.Options{
-			MsgTypeName:     v.MsgTypeName,
-			WritingToFile:   v.WritingFile,
-			PathDirectory:   v.PathDirectory,
-			WritingToStdout: v.WritingStdout,
-			MaxFileSize:     v.MaxFileSize,
-		})
-	}
-
-	return loggerConf
-}
