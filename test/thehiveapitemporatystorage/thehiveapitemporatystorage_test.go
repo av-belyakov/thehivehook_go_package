@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"sync"
@@ -13,6 +14,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	"github.com/av-belyakov/simplelogger"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
@@ -170,8 +173,32 @@ var _ = Describe("Testthehiveapitemporatystorage", Ordered, func() {
 		})
 	})
 
+	/*
+			* !!!!!!!!!!!!!!!!!
+		 	* новую версию пока не выкатываю в прод потому что есть проблемы
+			* с этим тестом и остальные тесты не до конца исправлены под новый
+			* логгер
+			* !!!!!!!!!!!!!!!!!
+	*/
+	a
 	Context("Тест 2. Добавляем обработчики", func() {
-		logging := logginghandler.New()
+		chZabbix := make(chan commoninterfaces.Messager)
+
+		var listLog []simplelogger.OptionsManager
+		for _, v := range []string{"error", "info"} {
+			listLog = append(listLog, &confighandler.LogSet{
+				MsgTypeName: v,
+			})
+		}
+		opts := simplelogger.CreateOptions(listLog...)
+		simpleLogger, err := simplelogger.NewSimpleLogger(context.Background(), "placeholder_misp", opts)
+		if err != nil {
+			log.Fatalf("error module 'simplelogger': %v", err)
+		}
+
+		logging := logginghandler.New(simpleLogger, chZabbix)
+		logging.Start(context.Background())
+
 		conf := confighandler.AppConfigTheHive{
 			Port:   9000,
 			Host:   "thehive.cloud.gcm",

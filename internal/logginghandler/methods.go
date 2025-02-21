@@ -2,14 +2,8 @@ package logginghandler
 
 import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 
-func New() *LoggingChan {
-	return &LoggingChan{
-		logChan: make(chan commoninterfaces.Messager),
-	}
-}
-
 func (l *LoggingChan) GetChan() <-chan commoninterfaces.Messager {
-	return l.logChan
+	return l.chanLogging
 }
 
 func (l *LoggingChan) Send(msgType, message string) {
@@ -17,11 +11,11 @@ func (l *LoggingChan) Send(msgType, message string) {
 	ms.SetType(msgType)
 	ms.SetMessage(message)
 
-	l.logChan <- ms
+	l.chanLogging <- ms
 }
 
 func (l *LoggingChan) Close() {
-	close(l.logChan)
+	close(l.chanLogging)
 }
 
 func NewMessageLogging() *MessageLogging {

@@ -2,6 +2,7 @@ package simplelogger_test
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -15,8 +16,9 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
+const Root_Dir string = "thehivehook_go_package"
+
 var (
-	rootDir      string = "thehivehook_go_package"
 	conf         *confighandler.ConfigApp
 	simpleLogger *simplelogger.SimpleLoggerSettings
 	esc          *elasticsearchapi.ElasticsearchDB
@@ -33,32 +35,39 @@ func TestMain(m *testing.M) {
 	}
 
 	//чтение конфигурационных файлов
-	conf, err = confighandler.NewConfig(rootDir)
+	conf, err = confighandler.NewConfig(Root_Dir)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	//инициализация модуля взаимодействия с БД
+	//инициализация логгера
+	var listLog []simplelogger.OptionsManager
+	for k, v := range conf.GetListLogs() {
+		fmt.Printf("%d. values:'%+v'\n", k, v)
+		listLog = append(listLog, v)
+	}
+
+	opts := simplelogger.CreateOptions(listLog...)
+	simpleLogger, err = simplelogger.NewSimpleLogger(context.Background(), Root_Dir, opts)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println("Version:", simpleLogger.GetVersion())
+	fmt.Println("___ OPTIONS:", opts)
+
 	confDB := conf.GetApplicationWriteLogDB()
-	esc, err = elasticsearchapi.NewElasticsearchConnect(elasticsearchapi.Settings{
-		Port:    confDB.Port,
-		Host:    confDB.Host,
-		User:    confDB.User,
-		Passwd:  confDB.Passwd,
-		IndexDB: confDB.StorageNameDB,
-	})
-	if err != nil {
-		log.Fatalln(err)
+	if esc, err := elasticsearchapi.NewElasticsearchConnect(elasticsearchapi.Settings{
+		Port:               confDB.Port,
+		Host:               confDB.Host,
+		User:               confDB.User,
+		Passwd:             confDB.Passwd,
+		IndexDB:            confDB.StorageNameDB,
+		NameRegionalObject: conf.Name,
+	}); err != nil {
+		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
+	} else {
+		simpleLogger.SetDataBaseInteraction(esc)
 	}
-
-	//инициализация логера
-	simpleLogger, err = simplelogger.NewSimpleLogger(context.Background(), rootDir, getLoggerSettings(conf.GetListLogs()))
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	//инициализация в логере возможности взаимодействия с БД
-	simpleLogger.SetDataBaseInteraction(esc)
 
 	os.Exit(m.Run())
 }
@@ -71,21 +80,4 @@ func TestSimpleLogger(t *testing.T) {
 
 	ok = simpleLogger.Write("info", "test info message")
 	assert.True(t, ok)
-}
-
-func getLoggerSettings(cls []confighandler.LogSet) []simplelogger.Options {
-	loggerConf := make([]simplelogger.Options, 0, len(cls))
-
-	for _, v := range cls {
-		loggerConf = append(loggerConf, simplelogger.Options{
-			WritingToDB:     v.WritingDB,
-			WritingToFile:   v.WritingFile,
-			WritingToStdout: v.WritingStdout,
-			MsgTypeName:     v.MsgTypeName,
-			PathDirectory:   v.PathDirectory,
-			MaxFileSize:     v.MaxFileSize,
-		})
-	}
-
-	return loggerConf
 }

@@ -17,12 +17,12 @@ type CommonInfo struct {
 
 // CommonAppConfig общие настройки
 type CommonAppConfig struct {
-	LogList []LogSet
+	LogList []*LogSet
 	Zabbix  ZabbixOptions
 }
 
 type Logs struct {
-	Logging []LogSet
+	Logging []*LogSet
 }
 
 type LogSet struct {

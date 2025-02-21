@@ -3,20 +3,20 @@ module github.com/av-belyakov/thehivehook_go_package
 go 1.23.4
 
 require (
-	github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250214120945-4e600c02a2be
-	github.com/av-belyakov/simplelogger v0.0.0-20250113074237-c90989ef4b7e
+	github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250219104049-8986f654e5d6
+	github.com/av-belyakov/simplelogger v0.0.0-20250221113600-b961996e1b4c
 	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20250123120502-11e9e7cc85ed
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
-	github.com/go-playground/validator/v10 v10.24.0
+	github.com/go-playground/validator/v10 v10.25.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.24
-	github.com/nats-io/nats.go v1.39.0
+	github.com/nats-io/nats.go v1.39.1
 	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac
+	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa
 	golang.org/x/sync v0.11.0
 )
 
@@ -33,7 +33,7 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20250208200701-d0013a598941 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/klauspost/compress v1.17.11 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

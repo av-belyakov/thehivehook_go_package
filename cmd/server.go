@@ -8,6 +8,7 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/av-belyakov/simplelogger"
+
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/elasticsearchapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
@@ -35,11 +36,16 @@ func server(ctx context.Context) {
 
 	confWebHook := confApp.GetApplicationWebHookServer()
 
-	//******************************************************
-	//********** инициализация модуля логирования **********
-	simpleLogger, err := simplelogger.NewSimpleLogger(ctx, Root_Dir, getLoggerSettings(confApp.GetListLogs()))
+	// ****************************************************************************
+	// ********************* инициализация модуля логирования *********************
+	var listLog []simplelogger.OptionsManager
+	for _, v := range confApp.GetListLogs() {
+		listLog = append(listLog, v)
+	}
+	opts := simplelogger.CreateOptions(listLog...)
+	simpleLogger, err := simplelogger.NewSimpleLogger(ctx, Root_Dir, opts)
 	if err != nil {
-		log.Fatalf("error module 'simplelogger': %s", err.Error())
+		log.Fatalf("error module 'simplelogger': %v", err)
 	}
 
 	//*********************************************************************************
@@ -60,7 +66,7 @@ func server(ctx context.Context) {
 
 	//******************************************************************
 	//********** инициализация модуля взаимодействия с Zabbix **********
-	channelZabbix := make(chan commoninterfaces.Messager)
+	chZabbix := make(chan commoninterfaces.Messager)
 	wzis := wrappers.WrappersZabbixInteractionSettings{
 		NetworkPort: confApp.Zabbix.NetworkPort,
 		NetworkHost: confApp.Zabbix.NetworkHost,
@@ -80,15 +86,15 @@ func server(ctx context.Context) {
 		})
 	}
 	wzis.EventTypes = eventTypes
-	wrappers.WrappersZabbixInteraction(ctx, wzis, simpleLogger, channelZabbix)
+	wrappers.WrappersZabbixInteraction(ctx, wzis, simpleLogger, chZabbix)
 
 	//******************************************************************
 	//********** инициализация обработчика логирования данных **********
-	logging := logginghandler.New()
-	go logginghandler.LoggingHandler(ctx, simpleLogger, channelZabbix, logging.GetChan())
+	logging := logginghandler.New(simpleLogger, chZabbix)
+	logging.Start(ctx)
 
-	//********************************************************
-	//********** инициализация TheHive API модуля ************
+	//******************************************************************
+	//************** инициализация TheHive API модуля ******************
 	confTheHiveAPI := confApp.GetApplicationTheHive()
 	apiTheHive, err := thehiveapi.New(
 		logging,
