@@ -111,6 +111,8 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 				chanResTTL        chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
 			)
 
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+
 			wg.Add(1)
 			go func() {
 				for res := range chanResObservable {
@@ -159,6 +161,7 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 
 			fmt.Println("SEND Request for Observable, uuid:", uuidObservable)
 			reqObservable := webhookserver.NewChannelRequest()
+			reqObservable.SetContext(ctx)
 			reqObservable.SetRequestId(uuidObservable)
 			reqObservable.SetRootId(rootId)
 			reqObservable.SetCommand("get_observables")
@@ -167,6 +170,7 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 
 			fmt.Println("SEND Request for TTP, uuid:", uuidTTP)
 			reqTTP := webhookserver.NewChannelRequest()
+			reqTTP.SetContext(ctx)
 			reqTTP.SetRequestId(uuidTTP)
 			reqTTP.SetRootId(rootId)
 			reqTTP.SetCommand("get_ttp")
@@ -181,6 +185,8 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 			time.Sleep(10 * time.Second)
 
 			chanDone <- struct{}{}
+
+			cancel()
 
 			Expect(statusCodeObservable).Should(Equal(200))
 			Expect(myUuidResObservable).Should(Equal(uuidObservable))
