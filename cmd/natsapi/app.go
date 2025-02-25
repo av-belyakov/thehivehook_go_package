@@ -4,7 +4,6 @@ package natsapi
 import (
 	"context"
 	"fmt"
-	"runtime"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -45,9 +44,8 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 		fmt.Sprintf("%s:%d", api.host, api.port),
 		nats.MaxReconnects(-1),
 		nats.ReconnectWait(3*time.Second))
-	_, f, l, _ := runtime.Caller(0)
 	if err != nil {
-		return api.receivingChannel, api.sendingChannel, fmt.Errorf("'%w' %s:%d", err, f, l-4)
+		return api.receivingChannel, api.sendingChannel, supportingfunctions.CustomError(err)
 	}
 
 	//обработка разрыва соединения с NATS
