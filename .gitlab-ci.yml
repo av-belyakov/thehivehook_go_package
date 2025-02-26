@@ -46,7 +46,7 @@ default:
 get_version:
   stage: .pre
   script:
-    - "V=`awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_DIR/internal/appversion/version.go`; echo 'version $V'"
+    - "V=`awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_DIR/internal/appversion/version.go`; echo \"version $V\""
 #    - "application version awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_DIR/internal/appversion/version.go"
 
 sync-file:
