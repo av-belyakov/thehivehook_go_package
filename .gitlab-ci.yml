@@ -55,12 +55,12 @@ get_version:
     - "echo CI_PROJECT_NAME:$CI_PROJECT_NAME"
     - "echo CI_PROJECT_PATH:$CI_PROJECT_PATH"
     - "echo CI_PROJECT_URL:$CI_PROJECT_URL"
-    - "echo awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_URL/internal%2Fappversion%2Fversion.go"
+    - "awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_URL/internal%2Fappversion%2Fversion.go"
 
 sync-file:
   stage: sync
   script:
-    - "echo awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_URL/internal%2Fappversion%2Fversion.go"
+    - "awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_URL/internal%2Fappversion%2Fversion.go"
 
 #синхронизируем файл README.md
 sync-file-readme:
