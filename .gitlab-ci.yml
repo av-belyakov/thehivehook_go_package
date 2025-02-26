@@ -46,7 +46,7 @@ default:
 get_version:
   stage: .pre
   script:
-    - 'awk ''/[0-9].[0-9].[0-9]/ {gsub(/"/, ""); print $2}'' $CI_REGISTRY_IMAGE/internal/appversion/version.go'
+    - "V=`awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_DIR/internal/appversion/version.go`; echo \"version $V\""
 
 #синхронизируем файл README.md
 sync-file-readme:
