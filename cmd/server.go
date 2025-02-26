@@ -61,18 +61,13 @@ func server(ctx context.Context) {
 	}); err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 	} else {
+		//подключение логирования в БД
 		simpleLogger.SetDataBaseInteraction(esc)
 	}
 
 	//******************************************************************
 	//********** инициализация модуля взаимодействия с Zabbix **********
 	chZabbix := make(chan commoninterfaces.Messager)
-	wzis := wrappers.WrappersZabbixInteractionSettings{
-		NetworkPort: confApp.Zabbix.NetworkPort,
-		NetworkHost: confApp.Zabbix.NetworkHost,
-		ZabbixHost:  confApp.Zabbix.ZabbixHost,
-	}
-
 	eventTypes := []wrappers.EventType(nil)
 	for _, v := range confApp.Zabbix.EventTypes {
 		eventTypes = append(eventTypes, wrappers.EventType{
@@ -85,8 +80,13 @@ func server(ctx context.Context) {
 			},
 		})
 	}
-	wzis.EventTypes = eventTypes
-	wrappers.WrappersZabbixInteraction(ctx, wzis, simpleLogger, chZabbix)
+	wzSettings := wrappers.WrappersZabbixInteractionSettings{
+		NetworkPort: confApp.Zabbix.NetworkPort,
+		NetworkHost: confApp.Zabbix.NetworkHost,
+		ZabbixHost:  confApp.Zabbix.ZabbixHost,
+		EventTypes:  eventTypes,
+	}
+	wrappers.WrappersZabbixInteraction(ctx, wzSettings, simpleLogger, chZabbix)
 
 	//******************************************************************
 	//********** инициализация обработчика логирования данных **********
@@ -106,6 +106,7 @@ func server(ctx context.Context) {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
 	}
+	//запуск модуля
 	chReqTheHiveAPI, err := apiTheHive.Start(ctx)
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
@@ -127,6 +128,7 @@ func server(ctx context.Context) {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
+	//запуск модуля
 	chReqNatsAPI, chNatsAPIReq, err := apiNats.Start(ctx)
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
@@ -148,13 +150,18 @@ func server(ctx context.Context) {
 	}
 
 	//мост между каналами различных модулей
-	go router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
+	router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
 
 	//для отладки через pprof
+	//http://localhost:6060/debug/pprof/
+	//go tool pprof http://localhost:6060/debug/pprof/heap
+	//go tool pprof http://localhost:6060/debug/pprof/goroutine
+	//go tool pprof http://localhost:6060/debug/pprof/allocs
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
 
+	//запуск модуля
 	if err = webHook.Start(ctx); err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 	}

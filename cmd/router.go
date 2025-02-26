@@ -14,23 +14,25 @@ func router(
 	toTheHiveAPI chan<- commoninterfaces.ChannelRequester,
 	toNatsAPI chan<- commoninterfaces.ChannelRequester) {
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
 
-		case msg := <-fromWebHook:
-			switch msg.ForSomebody {
-			case "to thehive":
-				toTheHiveAPI <- msg.Data
+			case msg := <-fromWebHook:
+				switch msg.ForSomebody {
+				case "to thehive":
+					toTheHiveAPI <- msg.Data
 
-			case "to nats":
-				toNatsAPI <- msg.Data
+				case "to nats":
+					toNatsAPI <- msg.Data
+				}
+
+			case msg := <-fromNatsAPI:
+				toTheHiveAPI <- msg
+
 			}
-
-		case msg := <-fromNatsAPI:
-			toTheHiveAPI <- msg
-
 		}
-	}
+	}()
 }

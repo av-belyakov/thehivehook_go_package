@@ -4,17 +4,17 @@ package webhookserver
 import (
 	"context"
 	"fmt"
-	"log"
+	"net"
 	"net/http"
 	"strings"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"golang.org/x/sync/errgroup"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
 func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFromWebHookServer, error) {
 	chanOutput := make(chan ChanFromWebHookServer)
-
 	whs := &WebHookServer{
 		name:      "nobody",
 		version:   "0.1.1",
@@ -51,27 +51,45 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 		mux.HandleFunc(k, v)
 	}
 
-	server := &http.Server{
+	wh.server = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", wh.host, wh.port),
-		Handler: addContext(ctx, mux),
+		Handler: mux, //addContext(ctx, mux),
+		BaseContext: func(_ net.Listener) context.Context {
+			return ctx
+		},
 	}
-	wh.server = server
 
-	go func() {
-		if errServer := server.ListenAndServe(); errServer != nil {
-			log.Fatal(errServer)
-		}
-	}()
+	g, gCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		// вывод информационного сообщения при старте приложения
+		infoMsg := getInformationMessage(wh.name, wh.host, wh.port)
+		wh.logger.Send("info", strings.ToLower(infoMsg))
 
-	// вывод информационного сообщения при старте приложения
-	infoMsg := getInformationMessage(wh.name, wh.host, wh.port)
-	wh.logger.Send("info", strings.ToLower(infoMsg))
+		return wh.server.ListenAndServe()
+	})
+	g.Go(func() error {
+		<-gCtx.Done()
 
-	<-ctx.Done()
+		return wh.server.Shutdown(context.Background())
+	})
 
-	return ctx.Err()
+	return g.Wait()
+
+	//
+	//	go func() {
+	//		if errServer := server.ListenAndServe(); errServer != nil {
+	//			log.Fatal(errServer)
+	//		}
+	//	}()
+	//	// вывод информационного сообщения при старте приложения
+	//	infoMsg := getInformationMessage(wh.name, wh.host, wh.port)
+	//	wh.logger.Send("info", strings.ToLower(infoMsg))
+	//	<-ctx.Done()
+	//	return ctx.Err()
+	//
 }
 
+// addContext добавляет context к входящим запросам
 func addContext(ctx context.Context, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		next.ServeHTTP(w, r.WithContext(ctx))
