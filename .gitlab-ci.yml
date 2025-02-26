@@ -47,12 +47,6 @@ get_version:
   stage: .pre
   script:
     - "V=`awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_DIR/internal/appversion/version.go`; echo \"version $V\""
-#    - "application version awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_DIR/internal/appversion/version.go"
-
-sync-file:
-  stage: sync
-  script:
-    - "awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_URL%2Finternal%2Fappversion%2Fversion.go"
 
 #синхронизируем файл README.md
 sync-file-readme:
