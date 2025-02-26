@@ -45,8 +45,8 @@ default:
 #выводим версию приложения
 get_version:
   stage: .pre
-  rules:
-    - if: $CI_COMMIT_BRANCH == "dev_create_listenerBehindnats_26.02.2025"
+#  rules:
+#    - if: $CI_COMMIT_BRANCH == "dev_create_listenerBehindnats_26.02.2025"
 #      when: manual
 #      allow_failure: true
   script:
