@@ -6,8 +6,8 @@ NATS:
   port: 4222
   cache_ttl: 3600
   subscriptions:
-    sender_case: "object.casetype"
-    sender_alert: "object.alerttype"
+    sender_case: "object.casetype.local"
+    sender_alert: "object.alerttype.local"
     listener_command: "object.commandstype"
 THEHIVE:
   host: "thehive.cloud.gcm"

@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -19,13 +20,18 @@ import (
 )
 
 var (
-	nc *nats.Conn
-	f  *os.File
+	nc     *nats.Conn
+	fc, fa *os.File
 
 	chDone chan struct{} = make(chan struct{})
 
 	err error
 )
+
+type Element struct {
+	Source string                      `json:"source"`
+	Event  datamodels.CaseEventElement `json:"event"`
+}
 
 func ClientNATS(host string, port int) (*nats.Conn, error) {
 	nc, err = nats.Connect(
@@ -55,38 +61,72 @@ func init() {
 		log.Panicln(err)
 	}
 
-	f, err = os.OpenFile(filepath.Join("internal", "listenerbehindnats", "case_test.log"), os.O_RDWR|os.O_CREATE, 0644)
+	fc, err = os.OpenFile(filepath.Join("internal", "listenerbehindnats", "case_test.log"), os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	fa, err = os.OpenFile(filepath.Join("internal", "listenerbehindnats", "alert_test.log"), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Panicln(err)
 	}
 }
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill, syscall.SIGINT)
+	defer stop()
 
 	go func() {
-		log.Printf("system call:%+v", <-ctx.Done())
+		<-ctx.Done()
 
 		nc.Close()
-		f.Close()
-		stop()
+		fc.Close()
+		fa.Close()
 	}()
 
-	nc.Subscribe("object.casetype", func(msg *nats.Msg) {
-		ee := datamodels.CaseEventElement{}
+	ee := Element{}
+
+	//этот модуль может принимать несколько одинаковых сообщений от разных
+	//источников, если например, запущены две копии thehivehook_go, одна для тестов
+	//локально, а другая может быть развернута в докере
+	//по этому стоит поменять наименование подписки, что бы она была только для
+	//локального модуля
+
+	//для кейсов
+	nc.Subscribe("object.casetype.local", func(msg *nats.Msg) {
 		err = json.Unmarshal(msg.Data, &ee)
 		if err != nil {
 			log.Println(err)
 		}
 
-		fmt.Printf("Received object type:'%s', root id:'%s' case id:'%d'\n", ee.ObjectType, ee.RootId, ee.Object.CaseId)
+		fmt.Printf("Received Case object case id:'%d', root id:'%s'\n", ee.Event.Object.CaseId, ee.Event.RootId)
 
 		str, err := supportingfunctions.NewReadReflectJSONSprint(msg.Data)
 		if err != nil {
 			log.Panicln(err)
 		}
 
-		_, err = f.WriteString(str)
+		_, err = fc.WriteString(fmt.Sprintf("---------------\n%s\n", str))
+		if err != nil {
+			log.Panicln(err)
+		}
+	})
+
+	//для алертов
+	nc.Subscribe("object.alerttype.local", func(msg *nats.Msg) {
+		err = json.Unmarshal(msg.Data, &ee)
+		if err != nil {
+			log.Println(err)
+		}
+
+		fmt.Printf("Received Alert object root id:'%s'\n", ee.Event.RootId)
+
+		str, err := supportingfunctions.NewReadReflectJSONSprint(msg.Data)
+		if err != nil {
+			log.Panicln(err)
+		}
+
+		_, err = fa.WriteString(fmt.Sprintf("---------------\n%s\n", str))
 		if err != nil {
 			log.Panicln(err)
 		}

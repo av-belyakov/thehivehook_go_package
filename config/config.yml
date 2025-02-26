@@ -24,10 +24,10 @@ LOGGING:
       writingDB: false,
     }
   - {
-      msgTypeName: "log_to_db",
-      writingFile: false,
+      msgTypeName: "any_log",
+      writingFile: true,
       pathDirectory: "logs",
-      writingStdout: true,
+      writingStdout: false,
       maxFileSize: 30000000,
       writingDB: false,
     }

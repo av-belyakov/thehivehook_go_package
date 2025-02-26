@@ -92,6 +92,15 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			isSendCase := msg.GetCommand() != "send case"
 			isSendAlert := msg.GetCommand() != "send alert"
 
+			//-------------------------------------------------------------------
+			//----------- ЗАПИСЬ в файл ЭТО ТОЛЬКО ДЛЯ ТЕСТОВ -------------------
+			//-------------------------------------------------------------------
+			if b, ok := msg.GetData().([]byte); ok {
+				if str, err := supportingfunctions.NewReadReflectJSONSprint(b); err == nil {
+					api.logger.Send("log_for_test", fmt.Sprintf("\n%s\n", str))
+				}
+			}
+
 			if !isSendCase && !isSendAlert {
 				continue
 			}
@@ -107,7 +116,7 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			switch msg.GetElementType() {
 			case "case":
 				subscription = api.subscriptions.senderCase
-				description = fmt.Sprintf("%s with id: '%s' has been successfully transferred", msg.GetElementType(), msg.GetCaseId())
+				description = fmt.Sprintf("%s with id: '%s', rootId:'%s' has been successfully transferred", msg.GetElementType(), msg.GetCaseId(), msg.GetRootId())
 
 			case "alert":
 				subscription = api.subscriptions.senderAlert
@@ -123,7 +132,7 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
 
-			api.logger.Send("log_to_db", description)
+			api.logger.Send("info", description)
 		}
 	}
 }

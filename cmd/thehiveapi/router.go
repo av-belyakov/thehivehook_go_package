@@ -19,8 +19,14 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 			switch msg.GetCommand() {
 			case "get_observables":
 				go func(command, id string) {
-					so := NewSpecialObjectForCache[interface{}]()
+					so := NewSpecialObjectForCache[any]()
 					so.SetID(command + id)
+
+					//для того что бы выполнить сравнение объектов нужно передать
+					//этот объект so.SetObject
+					//хотя для thehivehook_go может это не надо, надо обдумать!!!
+					//so.SetObject(msg.GetData())
+
 					so.SetFunc(func(_ int) bool {
 						api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", command, id, msg.GetCaseId()))
 
@@ -56,7 +62,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 			case "get_ttp":
 				go func(command, id string) {
-					so := NewSpecialObjectForCache[interface{}]()
+					so := NewSpecialObjectForCache[any]()
 					so.SetID(command + id)
 					so.SetFunc(func(_ int) bool {
 						api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", command, id, msg.GetCaseId()))
@@ -156,7 +162,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 	}
 }
 
-func getRequestCommandData(i interface{}) (RequestCommand, error) {
+func getRequestCommandData(i any) (RequestCommand, error) {
 	rc := RequestCommand{}
 
 	data, ok := i.([]byte)

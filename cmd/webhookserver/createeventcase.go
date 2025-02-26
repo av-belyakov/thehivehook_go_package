@@ -14,10 +14,7 @@ import (
 // CreateEvenCase создает новый объект case, содержащий дополнительную информацию типа объектов observables
 // и ttp информацию по которым дополнительно запрашивают из TheHive
 func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput chan<- ChanFromWebHookServer) (ReadyMadeEventCase, error) {
-	var (
-		g    errgroup.Group
-		rmec ReadyMadeEventCase = ReadyMadeEventCase{}
-	)
+	rmec := ReadyMadeEventCase{}
 
 	chanResObservable := make(chan commoninterfaces.ChannelResponser)
 	defer close(chanResObservable)
@@ -28,6 +25,7 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
+	var g errgroup.Group
 	g.Go(func() error {
 		select {
 		case <-ctx.Done():

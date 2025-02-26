@@ -18,12 +18,12 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 	}
 
 	l := NewLogWrite(logger)
-	cache, err := cachingstoragewithqueue.NewCacheStorage[interface{}](
-		cachingstoragewithqueue.WithMaxTtl[interface{}](300),
-		cachingstoragewithqueue.WithTimeTick[interface{}](1),
-		cachingstoragewithqueue.WithMaxSize[interface{}](15),
-		cachingstoragewithqueue.WithEnableAsyncProcessing[interface{}](1),
-		cachingstoragewithqueue.WithLogging[interface{}](l))
+	cache, err := cachingstoragewithqueue.NewCacheStorage(
+		cachingstoragewithqueue.WithMaxTtl[any](300),
+		cachingstoragewithqueue.WithTimeTick[any](1),
+		cachingstoragewithqueue.WithMaxSize[any](15),
+		cachingstoragewithqueue.WithEnableAsyncProcessing[any](1),
+		cachingstoragewithqueue.WithLogging[any](l))
 	if err != nil {
 		return api, err
 	}

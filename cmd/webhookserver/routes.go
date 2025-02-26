@@ -42,10 +42,14 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 	switch eventElement.ObjectType {
 	case "case":
+		wh.logger.Send("info", fmt.Sprintf("received caseId:'%d', rootId:'%s', operation:'%s', a request is being sent for additional information about 'observable' and 'ttl' objects", eventElement.Object.CaseId, eventElement.RootId, eventElement.Operation))
+
+		//********** TEST ***********
+		wh.logger.Send("any_log", fmt.Sprintf("--------\ncaseId:'%d', rootId:'%s', operation:'%s', object:'%v', details:'%v'", eventElement.Object.CaseId, eventElement.RootId, eventElement.Operation, eventElement.Object, eventElement.Details))
+		//***************************
+
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
-		wh.logger.Send("info", fmt.Sprintf("received case id '%d', a request is being sent for additional information about observable and ttl", eventElement.Object.CaseId))
-
 		readyMadeEventCase, err := CreateEvenCase(r.Context(), eventElement.RootId, eventElement.Object.CaseId, wh.chanInput)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
@@ -72,18 +76,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//-------------------------------------------------------------------
-		//----------- ЗАПИСЬ в файл ЭТО ТОЛЬКО ДЛЯ ТЕСТОВ -------------------
-		//-------------------------------------------------------------------
-		if str, err := supportingfunctions.NewReadReflectJSONSprint(ec); err == nil {
-			wh.logger.Send("log_for_test", fmt.Sprintf("\n%s\n", str))
-		}
-		//-------------------------------------------------------------------
-		if eventElement.Object.CaseId == 39100 {
-			fmt.Println("func 'Routers' resived case id 39100")
-		}
-
-		//отправка данных в NATS
+		//передача в NATS
 		sendData := NewChannelRequest()
 		sendData.SetRootId(eventElement.RootId)
 		sendData.SetElementType(eventElement.ObjectType)
@@ -102,6 +95,8 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	case "case_task":
 	case "case_task_log":
 	case "alert":
+		wh.logger.Send("info", fmt.Sprintf("received alert rootId:'%s', operation:'%s'", eventElement.RootId, eventElement.Operation))
+
 		if eventElement.Operation == "delete" {
 			return
 		}
@@ -135,15 +130,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//-------------------------------------------------------------------
-		//----------- ЗАПИСЬ в файл ЭТО ТОЛЬКО ДЛЯ ТЕСТОВ -------------------
-		//-------------------------------------------------------------------
-		if str, err := supportingfunctions.NewReadReflectJSONSprint(ea); err == nil {
-			wh.logger.Send("log_for_test", fmt.Sprintf("\n%s\n", str))
-		}
-		//-------------------------------------------------------------------
-
-		//отправка данных в NATS
+		//передача в NATS
 		sendData := NewChannelRequest()
 		sendData.SetRootId(eventElement.RootId)
 		sendData.SetElementType(eventElement.ObjectType)

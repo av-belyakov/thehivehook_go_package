@@ -37,7 +37,6 @@ func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHook
 // Start выполняет запуск модуля
 func (wh *WebHookServer) Start(ctx context.Context) error {
 	defer func() {
-		wh.server.Shutdown(ctx)
 		close(wh.chanInput)
 	}()
 
@@ -90,11 +89,11 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 }
 
 // addContext добавляет context к входящим запросам
-func addContext(ctx context.Context, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
-}
+//func addContext(ctx context.Context, next http.Handler) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		next.ServeHTTP(w, r.WithContext(ctx))
+//	})
+//}
 
 //******************** функциональные настройки webhookserver ***********************
 
