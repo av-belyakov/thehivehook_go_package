@@ -56,6 +56,11 @@ get_version:
     - "echo CI_PROJECT_PATH:$CI_PROJECT_PATH"
     - 'awk ''/[0-9].[0-9].[0-9]/ {gsub(/"/, ""); print $2}'' http://gitlab.cloud.gcm/api/v4/projects/$CI_PROJECT_ID/repository/files /internal/appversion/version.go'
 
+sync-file:
+  stage: sync
+  script:
+    - 'awk ''/[0-9].[0-9].[0-9]/ {gsub(/"/, ""); print $2}'' http://gitlab.cloud.gcm/api/v4/projects/$CI_PROJECT_ID/repository/files /internal/appversion/version.go'
+
 #синхронизируем файл README.md
 sync-file-readme:
   stage: sync
