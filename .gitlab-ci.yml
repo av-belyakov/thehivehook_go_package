@@ -55,7 +55,7 @@ get_version:
     - "echo CI_PROJECT_NAME:$CI_PROJECT_NAME"
     - "echo CI_PROJECT_PATH:$CI_PROJECT_PATH"
     - "echo CI_PROJECT_URL:$CI_PROJECT_URL"
-    - "awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_URL%2Finternal%2Fappversion%2Fversion.go"
+    - "awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_DIR/internal%2Fappversion%2Fversion.go"
 
 sync-file:
   stage: sync
