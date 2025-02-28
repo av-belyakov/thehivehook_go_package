@@ -79,6 +79,7 @@ func main() {
 	go func() {
 		<-ctx.Done()
 
+		nc.Drain()
 		nc.Close()
 		fc.Close()
 		fa.Close()
@@ -106,7 +107,7 @@ func main() {
 			log.Panicln(err)
 		}
 
-		_, err = fc.WriteString(fmt.Sprintf("---------------\n%s\n", str))
+		_, err = fc.WriteString(fmt.Sprintf(" ------- %s --------\n%s\n", time.Now(), str))
 		if err != nil {
 			log.Panicln(err)
 		}
@@ -126,11 +127,13 @@ func main() {
 			log.Panicln(err)
 		}
 
-		_, err = fa.WriteString(fmt.Sprintf("---------------\n%s\n", str))
+		_, err = fa.WriteString(fmt.Sprintf(" ------- %s --------\n%s\n", time.Now(), str))
 		if err != nil {
 			log.Panicln(err)
 		}
 	})
+
+	nc.Flush()
 
 	fmt.Println("Start package listener NATS messages")
 

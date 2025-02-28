@@ -68,6 +68,7 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 
 	go func(ctx context.Context, nc *nats.Conn) {
 		<-ctx.Done()
+		nc.Drain()
 		nc.Close()
 	}(ctx, nc)
 

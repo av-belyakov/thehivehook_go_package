@@ -160,6 +160,7 @@ func server(ctx context.Context) {
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
+	//------------------------------------------
 
 	//запуск модуля
 	if err = webHook.Start(ctx); err != nil {

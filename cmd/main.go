@@ -12,7 +12,6 @@ func main() {
 
 	go func() {
 		<-ctx.Done()
-
 		stop()
 	}()
 

@@ -24,15 +24,20 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 
 // RouteWebHook маршрут при обращении к '/webhook'
 func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
+	eventElement := datamodels.CaseEventElement{}
 	bodyByte, err := io.ReadAll(r.Body)
 	if err != nil {
 		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 		return
 	}
-	defer r.Body.Close()
+	defer func() {
+		r.Body.Close()
 
-	eventElement := datamodels.CaseEventElement{}
+		bodyByte = []byte{}
+		eventElement = datamodels.CaseEventElement{}
+	}()
+
 	err = json.Unmarshal(bodyByte, &eventElement)
 	if err != nil {
 		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
