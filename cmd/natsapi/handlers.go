@@ -76,6 +76,8 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
 
+			api.natsConnection.Flush()
+
 			return
 		}
 	}
@@ -131,6 +133,12 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			if err := api.natsConnection.Publish(subscription, data); err != nil {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
+
+			api.natsConnection.Flush()
+
+			//api.natsConnection.
+			//попробовать самому почистить!!!
+			data = []byte{}
 
 			api.logger.Send("info", description)
 		}

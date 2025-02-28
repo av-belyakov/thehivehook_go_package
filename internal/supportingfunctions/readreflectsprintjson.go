@@ -12,40 +12,44 @@ import (
 // Для данной функции не требуется описание текст, так как обработка JSON сообщения
 // осуществляется с помощью пакета reflect
 func NewReadReflectJSONSprint(b []byte) (string, error) {
-	var str string
 	errSrc := "error decoding the json file, it may be empty"
+	str := strings.Builder{}
+	defer str.Reset()
 
 	listMap := map[string]interface{}{}
 	if err := json.Unmarshal(b, &listMap); err == nil {
 		if len(listMap) == 0 {
-			return str, errors.New(errSrc)
+			return "", errors.New(errSrc)
 		}
 
-		return readReflectMapSprint(listMap, 0), err
+		readReflectMapSprint(listMap, &str, 0)
+
+		return str.String(), err
 	}
 
 	listSlice := []interface{}{}
 	if err := json.Unmarshal(b, &listSlice); err == nil {
 		if len(listSlice) == 0 {
-			return str, errors.New(errSrc)
+			return "", errors.New(errSrc)
 		}
 
-		return readReflectSliceSprint(listSlice, 0), err
+		readReflectSliceSprint(listSlice, &str, 0)
+
+		return str.String(), err
 	}
 
-	return str, fmt.Errorf("the contents of the file are not Map or Slice")
+	return str.String(), fmt.Errorf("the contents of the file are not Map or Slice")
 }
 
 func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) string {
 	var (
+		str         string
 		nameStr     string
 		isCleanLine bool
 	)
 
 	r := reflect.TypeOf(anyType)
 	ws := GetWhitespace(num)
-	str := strings.Builder{}
-	defer str.Reset()
 
 	if n, ok := name.(int); ok {
 		nameStr = fmt.Sprintf("%s%v.", ws, n+1)
@@ -58,7 +62,7 @@ func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) st
 	}
 
 	if r == nil {
-		return str.String()
+		return str
 	}
 
 	switch r.Kind() {
@@ -70,47 +74,45 @@ func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) st
 			dataStr = strings.ReplaceAll(dataStr, "\n", "")
 		}
 
-		str.WriteString(fmt.Sprintf("%s \"%s\"\n", nameStr, dataStr))
+		str = fmt.Sprintf("%s \"%s\"\n", nameStr, dataStr)
 
 	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
-		str.WriteString(fmt.Sprintf("%s %d\n", nameStr, reflect.ValueOf(anyType).Int()))
+		str = fmt.Sprintf("%s %d\n", nameStr, reflect.ValueOf(anyType).Int())
 
 	case reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		str.WriteString(fmt.Sprintf("%s %d\n", nameStr, reflect.ValueOf(anyType).Uint()))
+		str = fmt.Sprintf("%s %d\n", nameStr, reflect.ValueOf(anyType).Uint())
 
 	case reflect.Float32, reflect.Float64:
-		str.WriteString(fmt.Sprintf("%s %v\n", nameStr, int(reflect.ValueOf(anyType).Float())))
+		str = fmt.Sprintf("%s %v\n", nameStr, int(reflect.ValueOf(anyType).Float()))
 
 	case reflect.Bool:
-		str.WriteString(fmt.Sprintf("%s %v\n", nameStr, reflect.ValueOf(anyType).Bool()))
+		str = fmt.Sprintf("%s %v\n", nameStr, reflect.ValueOf(anyType).Bool())
 	}
 
-	return str.String()
+	return str
 }
 
-func readReflectMapSprint(list map[string]interface{}, num int) string {
+func readReflectMapSprint(list map[string]interface{}, str *strings.Builder, num int) {
 	ws := GetWhitespace(num)
-	str := strings.Builder{}
-	defer str.Reset()
 
 	for k, v := range list {
 		r := reflect.TypeOf(v)
 
 		if r == nil {
-			return str.String()
+			return
 		}
 
 		switch r.Kind() {
 		case reflect.Map:
 			if v, ok := v.(map[string]interface{}); ok {
 				str.WriteString(fmt.Sprintf("%s%s:\n", ws, k))
-				str.WriteString(readReflectMapSprint(v, num+1))
+				readReflectMapSprint(v, str, num+1)
 			}
 
 		case reflect.Slice:
 			if v, ok := v.([]interface{}); ok {
 				str.WriteString(fmt.Sprintf("%s%s:\n", ws, k))
-				str.WriteString(readReflectSliceSprint(v, num+1))
+				readReflectSliceSprint(v, str, num+1)
 			}
 
 		case reflect.Array:
@@ -120,33 +122,29 @@ func readReflectMapSprint(list map[string]interface{}, num int) string {
 			str.WriteString(readReflectAnyTypeSprint(k, v, num))
 		}
 	}
-
-	return str.String()
 }
 
-func readReflectSliceSprint(list []interface{}, num int) string {
+func readReflectSliceSprint(list []interface{}, str *strings.Builder, num int) {
 	ws := GetWhitespace(num)
-	str := strings.Builder{}
-	defer str.Reset()
 
 	for k, v := range list {
 		r := reflect.TypeOf(v)
 
 		if r == nil {
-			return str.String()
+			return
 		}
 
 		switch r.Kind() {
 		case reflect.Map:
 			if v, ok := v.(map[string]interface{}); ok {
 				str.WriteString(fmt.Sprintf("%s%d.\n", ws, k+1))
-				str.WriteString(readReflectMapSprint(v, num+1))
+				readReflectMapSprint(v, str, num+1)
 			}
 
 		case reflect.Slice:
 			if v, ok := v.([]interface{}); ok {
 				str.WriteString(fmt.Sprintf("%s%d.\n", ws, k+1))
-				str.WriteString(readReflectSliceSprint(v, num+1))
+				readReflectSliceSprint(v, str, num+1)
 			}
 
 		case reflect.Array:
@@ -156,6 +154,4 @@ func readReflectSliceSprint(list []interface{}, num int) string {
 			str.WriteString(readReflectAnyTypeSprint(k, v, num))
 		}
 	}
-
-	return str.String()
 }

@@ -28,8 +28,8 @@ LABEL author='Artemij Belyakov'
 ARG VERSION
 ARG USERNAME=dockeruser
 ARG US_DIR=/opt/thehivehook_go_package
-RUN addgroup --g 1500 groupcontainer
-RUN adduser -u 1500 -G groupcontainer -D ${USERNAME} --home ${US_DIR}
+RUN addgroup --g 1500 groupcontainer && \
+    adduser -u 1500 -G groupcontainer -D ${USERNAME} --home ${US_DIR}
 USER ${USERNAME}
 WORKDIR ${US_DIR}
 RUN mkdir ./logs
