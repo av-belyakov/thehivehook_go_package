@@ -10,6 +10,7 @@ import (
 	"github.com/av-belyakov/simplelogger"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/constants"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/elasticsearchapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
@@ -23,7 +24,7 @@ import (
 
 // server здесь реализована вся логика запуска thehivehook_go_package
 func server(ctx context.Context) {
-	rootPath, err := supportingfunctions.GetRootPath(Root_Dir)
+	rootPath, err := supportingfunctions.GetRootPath(constants.Root_Dir)
 	if err != nil {
 		log.Fatalf("error, it is impossible to form root path (%s)", err.Error())
 	}
@@ -43,7 +44,7 @@ func server(ctx context.Context) {
 		listLog = append(listLog, v)
 	}
 	opts := simplelogger.CreateOptions(listLog...)
-	simpleLogger, err := simplelogger.NewSimpleLogger(ctx, Root_Dir, opts)
+	simpleLogger, err := simplelogger.NewSimpleLogger(ctx, constants.Root_Dir, opts)
 	if err != nil {
 		log.Fatalf("error module 'simplelogger': %v", err)
 	}

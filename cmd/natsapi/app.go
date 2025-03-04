@@ -4,11 +4,13 @@ package natsapi
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/nats-io/nats.go"
 
 	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/constants"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
@@ -49,6 +51,8 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 		return api.receivingChannel, api.sendingChannel, supportingfunctions.CustomError(err)
 	}
 
+	log.Printf("%vconnect to NATS with address %v%s:%d%v\n", constants.Ansi_Bright_Green, constants.Ansi_Dark_Gray, api.host, api.port, constants.Ansi_Reset)
+
 	//обработка разрыва соединения с NATS
 	nc.SetDisconnectErrHandler(func(c *nats.Conn, err error) {
 		api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("the connection with NATS has been disconnected (%w)", err)).Error())
@@ -69,8 +73,7 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 
 	go func(ctx context.Context, nc *nats.Conn) {
 		<-ctx.Done()
-		nc.Drain()
-		nc.Close()
+		nc.Drain() //это лучше чем nc.Close() завершает соединение
 	}(ctx, nc)
 
 	return api.receivingChannel, api.sendingChannel, nil

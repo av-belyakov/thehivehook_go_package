@@ -1,8 +1,11 @@
-package webhookserver
+package constants
 
 const (
+	Root_Dir = "thehivehook_go_package"
+
 	Ansi_Reset                 = "\033[0m"
 	Ansi_White                 = "\033[97m"
+	Ansi_Dark_Gray             = "\033[90m"
 	Ansi_Bright_Red            = "\033[91m"
 	Ansi_Bright_Dark           = "\033[30m"
 	Ansi_Bright_Orange         = "\033[33m"
