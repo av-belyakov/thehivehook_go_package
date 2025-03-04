@@ -42,6 +42,7 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", api.host, api.port),
+		//nats.RetryOnFailedConnect(true),
 		nats.MaxReconnects(-1),
 		nats.ReconnectWait(3*time.Second))
 	if err != nil {

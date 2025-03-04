@@ -2,10 +2,12 @@ package natsapi
 
 import "errors"
 
+// GetDataReceptionChannel канал для вывода данных из модуля
 func (mnats *ModuleNATS) GetDataReceptionChannel() <-chan SettingsOutputChan {
 	return mnats.chanOutputNATS
 }
 
+// SendingData отправка данных из модуля
 func (mnats *ModuleNATS) SendingData(data SettingsOutputChan) {
 	mnats.chanOutputNATS <- data
 }

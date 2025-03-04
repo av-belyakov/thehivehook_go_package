@@ -1,7 +1,5 @@
 package main
 
-//listenerbehindnats
-
 import (
 	"context"
 	"encoding/json"
@@ -36,8 +34,10 @@ type Element struct {
 func ClientNATS(host string, port int) (*nats.Conn, error) {
 	nc, err = nats.Connect(
 		fmt.Sprintf("%s:%d", host, port),
+		//nats.RetryOnFailedConnect(true),
 		nats.MaxReconnects(-1),
-		nats.ReconnectWait(3*time.Second))
+		nats.ReconnectWait(3*time.Second),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func ClientNATS(host string, port int) (*nats.Conn, error) {
 }
 
 func init() {
-	nc, err = ClientNATS("nats.cloud.gcm", 4222)
+	nc, err = ClientNATS("192.168.13.208", 4222)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -80,9 +80,11 @@ func main() {
 		<-ctx.Done()
 
 		nc.Drain()
-		nc.Close()
+		//nc.Close()
 		fc.Close()
 		fa.Close()
+
+		chDone <- struct{}{}
 	}()
 
 	ee := Element{}
