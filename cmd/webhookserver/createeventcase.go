@@ -41,7 +41,7 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 			return nil
 
 		case res := <-chanResObservable:
-			msg := []interface{}{}
+			msg := []any{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				return err
 			}
@@ -66,7 +66,7 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 			return nil
 
 		case res := <-chanResTTL:
-			msg := []interface{}{}
+			msg := []any{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
 				return err
 			}

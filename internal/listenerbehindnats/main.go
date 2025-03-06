@@ -11,8 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/nats-io/nats.go"
 
+	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
@@ -20,8 +22,10 @@ import (
 var (
 	nc     *nats.Conn
 	fc, fa *os.File
+	conf   *confighandler.ConfigApp
 
-	chDone chan struct{} = make(chan struct{})
+	chDone  chan struct{} = make(chan struct{})
+	rootDir string        = "thehivehook_go_package"
 
 	err error
 )
@@ -56,7 +60,17 @@ func ClientNATS(host string, port int) (*nats.Conn, error) {
 }
 
 func init() {
-	nc, err = ClientNATS("192.168.13.208", 4222)
+	//загружаем ключи и пароли
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatalln(err)
+	}
+
+	conf, err = confighandler.NewConfig(rootDir)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	nc, err = ClientNATS("192.168.9.208", 4222)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -80,7 +94,6 @@ func main() {
 		<-ctx.Done()
 
 		nc.Drain()
-		//nc.Close()
 		fc.Close()
 		fa.Close()
 
@@ -96,7 +109,7 @@ func main() {
 	//локального модуля
 
 	//для кейсов
-	nc.Subscribe("object.casetype.local", func(msg *nats.Msg) {
+	nc.Subscribe(conf.Subscriptions.SenderCase, func(msg *nats.Msg) {
 		err = json.Unmarshal(msg.Data, &ee)
 		if err != nil {
 			log.Println(err)
@@ -116,7 +129,7 @@ func main() {
 	})
 
 	//для алертов
-	nc.Subscribe("object.alerttype.local", func(msg *nats.Msg) {
+	nc.Subscribe(conf.Subscriptions.SenderAlert, func(msg *nats.Msg) {
 		err = json.Unmarshal(msg.Data, &ee)
 		if err != nil {
 			log.Println(err)

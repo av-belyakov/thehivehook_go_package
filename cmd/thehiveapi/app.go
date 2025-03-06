@@ -43,7 +43,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 // запросы к модулю выполняются через данный канал
 func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
 	//обработка кэша
-	go api.cache.StartAutomaticExecution(ctx)
+	api.cache.StartAutomaticExecution(ctx)
 
 	//обработка маршрутов
 	go api.router(ctx)

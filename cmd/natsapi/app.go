@@ -45,23 +45,38 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", api.host, api.port),
 		//nats.RetryOnFailedConnect(true),
+		//имя клиента
+		nats.Name("thehivehook"),
+		//неограниченное количество попыток переподключения
 		nats.MaxReconnects(-1),
-		nats.ReconnectWait(3*time.Second))
+		//время ожидания до следующей попытки переподключения (по умолчанию 2 сек.)
+		nats.ReconnectWait(3*time.Second),
+		//обработка разрыва соединения с NATS
+		nats.DisconnectErrHandler(func(c *nats.Conn, err error) {
+			api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("the connection with NATS has been disconnected (%w)", err)).Error())
+		}),
+		//обработка переподключения к NATS
+		nats.ReconnectHandler(func(c *nats.Conn) {
+			api.logger.Send("info", "the connection to NATS has been re-established")
+		}),
+		//поиск медленных получателей (не обязательный для данного приложения параметр)
+		nats.ErrorHandler(func(c *nats.Conn, s *nats.Subscription, err error) {
+			if err == nats.ErrSlowConsumer {
+				pendingMsgs, _, err := s.Pending()
+				if err != nil {
+					api.logger.Send("warning", fmt.Sprintf("couldn't get pending messages: %v", err))
+
+					return
+				}
+
+				api.logger.Send("warning", fmt.Sprintf("Falling behind with %d pending messages on subject %q.\n", pendingMsgs, s.Subject))
+			}
+		}))
 	if err != nil {
 		return api.receivingChannel, api.sendingChannel, supportingfunctions.CustomError(err)
 	}
 
 	log.Printf("%vconnect to NATS with address %v%s:%d%v\n", constants.Ansi_Bright_Green, constants.Ansi_Dark_Gray, api.host, api.port, constants.Ansi_Reset)
-
-	//обработка разрыва соединения с NATS
-	nc.SetDisconnectErrHandler(func(c *nats.Conn, err error) {
-		api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("the connection with NATS has been disconnected (%w)", err)).Error())
-	})
-
-	//обработка переподключения к NATS
-	nc.SetReconnectHandler(func(c *nats.Conn) {
-		api.logger.Send("info", "the connection to NATS has been re-established")
-	})
 
 	api.natsConnection = nc
 
