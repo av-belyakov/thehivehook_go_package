@@ -19,7 +19,7 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	io.WriteString(w, "Hello WebHookServer version "+wh.version)
+	io.WriteString(w, fmt.Sprintf("Hello, WebHookServer version %s.", wh.version))
 }
 
 // RouteWebHook маршрут при обращении к '/webhook'

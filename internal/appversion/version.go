@@ -2,5 +2,5 @@ package appversion
 
 // GetVersion версия приложения
 func GetVersion() string {
-	return "0.4.8"
+	return "0.4.9"
 }

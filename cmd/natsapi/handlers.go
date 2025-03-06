@@ -136,10 +136,6 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 
 			api.natsConnection.Flush()
 
-			//api.natsConnection.
-			//попробовать самому почистить!!!
-			data = []byte{}
-
 			api.logger.Send("info", description)
 		}
 	}
