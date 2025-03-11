@@ -1,7 +1,6 @@
 COMMONINFO:
   file_name: "config production"
 NATS:
-  prefix: "test"
   host: "nats.cloud.gcm"
   port: 4222
   cache_ttl: 3600
