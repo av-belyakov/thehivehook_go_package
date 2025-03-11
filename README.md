@@ -20,7 +20,6 @@
 
 #### Переменные окружения отвечающие за подключение к NATS
 
-- GO_HIVEHOOK_NPREFIX
 - GO_HIVEHOOK_NHOST
 - GO_HIVEHOOK_NPORT
 - GO_HIVEHOOK_NCACHETTL - данный параметр должен содержать время жизни записи

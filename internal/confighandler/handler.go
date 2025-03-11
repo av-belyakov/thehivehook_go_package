@@ -23,7 +23,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			"GO_HIVEHOOK_MAIN": "",
 
 			//Подключение к NATS
-			"GO_HIVEHOOK_NPREFIX":             "",
 			"GO_HIVEHOOK_NHOST":               "",
 			"GO_HIVEHOOK_NPORT":               "",
 			"GO_HIVEHOOK_NSUBSENDERCASE":      "",
@@ -113,9 +112,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		}
 
 		//Настройки для модуля подключения к NATS
-		if viper.IsSet("NATS.prefix") {
-			conf.AppConfigNATS.Prefix = viper.GetString("NATS.prefix")
-		}
 		if viper.IsSet("NATS.host") {
 			conf.AppConfigNATS.Host = viper.GetString("NATS.host")
 		}
@@ -240,9 +236,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 	}
 
 	//Настройки для модуля подключения к NATS
-	if envList["GO_HIVEHOOK_NPREFIX"] != "" {
-		conf.AppConfigNATS.Prefix = envList["GO_HIVEHOOK_NPREFIX"]
-	}
 	if envList["GO_HIVEHOOK_NHOST"] != "" {
 		conf.AppConfigNATS.Host = envList["GO_HIVEHOOK_NHOST"]
 	}

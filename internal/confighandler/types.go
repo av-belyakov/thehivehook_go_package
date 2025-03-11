@@ -61,7 +61,6 @@ type AppConfigNATS struct {
 	Port          int               `validate:"gt=0,lte=65535" yaml:"port"`
 	CacheTTL      int               `validate:"gt=10,lte=86400" yaml:"cache_ttl"`
 	Host          string            `validate:"required" yaml:"host"`
-	Prefix        string            `yaml:"prefix"`
 	Subscriptions SubscriptionsNATS `yaml:"subscriptions"`
 }
 
