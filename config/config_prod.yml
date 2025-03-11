@@ -2,7 +2,7 @@ COMMONINFO:
   file_name: "config production"
 NATS:
   prefix: "test"
-  host: "192.168.9.208"
+  host: "nats.cloud.gcm"
   port: 4222
   cache_ttl: 3600
   subscriptions:
