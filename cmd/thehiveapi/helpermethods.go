@@ -168,10 +168,18 @@ func (o *SpecialObjectForCache[T]) GetFunc() func(int) bool {
 	return o.handlerFunc
 }
 
-// Comparison сравнение содержимого объектов. В данном случае сревнение
-// нет, это простая заглушка.
+// Comparison сравнение содержимого объектов
+// В данном случае сравнение нет, это простая заглушка.
 // Для того что бы не досить thehive метод всегда будет возвращать TRUE.
 // Соответственно не будет заменять объект в работе.
 func (o *SpecialObjectForCache[T]) Comparison(objFromCache T) bool {
 	return true
+}
+
+// MatchingAndReplacement сопоставление элементов объекта и замена этих значений
+// в объекте который уже находится в кеше
+// В данном случае простая заглушка, так как метод Comparison тоже является заглушкой.
+// Этот метод даже не будет вызыватся, потому метод Comparison возвращает всегда true.
+func (o *SpecialObjectForCache[T]) MatchingAndReplacement(objFromCache T) T {
+	return objFromCache
 }
