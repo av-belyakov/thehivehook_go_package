@@ -160,10 +160,12 @@ func (o *SpecialObjectForCache[T]) GetObject() T {
 	return o.object
 }
 
+// SetFunc функция-обработчик, которую необходимо выполнить
 func (o *SpecialObjectForCache[T]) SetFunc(f func(int) bool) {
 	o.handlerFunc = f
 }
 
+// GetFunc функция-обработчик, которую необходимо выполнить
 func (o *SpecialObjectForCache[T]) GetFunc() func(int) bool {
 	return o.handlerFunc
 }
