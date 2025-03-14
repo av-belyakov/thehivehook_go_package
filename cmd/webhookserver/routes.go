@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
@@ -25,7 +26,9 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 		status = os.Getenv("GO_HIVEHOOK_MAIN")
 	}
 
-	io.WriteString(w, fmt.Sprintf("Hello, WebHookServer version %s, application status:'%s'", wh.version, status))
+	numberHours := int(time.Since(wh.timeStart).Hours())
+
+	io.WriteString(w, fmt.Sprintf("Hello, WebHookServer version %s, application status:'%s'. The number of hours since the start of the application %d.", wh.version, status, numberHours))
 }
 
 // RouteWebHook маршрут при обращении к '/webhook'

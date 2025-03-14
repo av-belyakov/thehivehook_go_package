@@ -22,3 +22,9 @@ func TestTimeDuraction(t *testing.T) {
 
 	assert.Equal(t, currentTime.Year(), 2025)
 }
+
+func TestSub(t *testing.T) {
+	timeStart := time.Date(2025, time.March, 13, 21, 32, 0, 0, time.Local)
+
+	t.Log("count hours:", int(time.Since(timeStart).Hours()))
+}
