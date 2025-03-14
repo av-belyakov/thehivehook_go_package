@@ -1,7 +1,6 @@
 COMMONINFO:
   file_name: "config_dev"
 NATS:
-  prefix: "test"
   host: "192.168.9.208"
   port: 4222
   cache_ttl: 3600
@@ -11,8 +10,8 @@ NATS:
     listener_command: "object.commandstype.test"
 THEHIVE:
   host: "thehive.cloud.gcm"
-  port: 9001
-  cache_ttl: 3600
+  port: 9000
+  cache_ttl: 43200
 WEBHOOKSERVER:
   name: "gcm-test"
   host: "192.168.9.208"
@@ -21,6 +20,6 @@ WEBHOOKSERVER:
 DATABASEWRITELOG:
   host: "datahook.cloud.gcm"
   port: 9200
-  namedb: "nameDB"
+  namedb: ""
   storage_name_db: "thehivehook_go_package"
   user: "log_writer"

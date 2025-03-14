@@ -26,11 +26,11 @@ type Querys struct {
 
 // Query структура запроса к TheHive
 type Query struct {
+	ExtraData []string `json:"extraData,omitempty"`
 	Name      string   `json:"_name,omitempty"`
 	IDOrName  string   `json:"idOrName,omitempty"`
 	From      int64    `json:"from"`
 	To        int      `json:"to,omitempty"`
-	ExtraData []string `json:"extraData,omitempty"`
 }
 
 // ErrorAnswer структура описания ошибок получаемых от TheHive

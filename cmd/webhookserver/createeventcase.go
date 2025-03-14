@@ -103,9 +103,5 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 
 	err := g.Wait()
 
-	//что бы данную гроутину не держала ссылка на объекты
-	reqObservable = NewChannelRequest()
-	reqTTP = NewChannelRequest()
-
 	return rmec, err
 }
