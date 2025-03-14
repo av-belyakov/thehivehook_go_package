@@ -44,9 +44,8 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", api.host, api.port),
-		//nats.RetryOnFailedConnect(true),
 		//имя клиента
-		nats.Name("thehivehook"),
+		nats.Name(fmt.Sprintf("thehivehook.%s", api.nameRegionalObject)),
 		//неограниченное количество попыток переподключения
 		nats.MaxReconnects(-1),
 		//время ожидания до следующей попытки переподключения (по умолчанию 2 сек.)

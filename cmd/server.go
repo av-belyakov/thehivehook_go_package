@@ -127,6 +127,7 @@ func server(ctx context.Context) {
 		natsapi.WithHost(confNatsSAPI.Host),
 		natsapi.WithPort(confNatsSAPI.Port),
 		natsapi.WithCacheTTL(confNatsSAPI.CacheTTL),
+		natsapi.WithNameRegionalObject(confWebHook.Name),
 		natsapi.WithSubSenderCase(confNatsSAPI.Subscriptions.SenderCase),
 		natsapi.WithSubSenderAlert(confNatsSAPI.Subscriptions.SenderAlert),
 		natsapi.WithSubListenerCommand(confNatsSAPI.Subscriptions.ListenerCommand)}

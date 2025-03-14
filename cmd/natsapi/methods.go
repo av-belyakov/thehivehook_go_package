@@ -93,3 +93,13 @@ func WithSubListenerCommand(v string) NatsApiOptions {
 		return nil
 	}
 }
+
+// WithNameRegionalObject устанавливает наименование которое будет отображатся в
+// статистике подключенных клиентов NATS
+func WithNameRegionalObject(v string) NatsApiOptions {
+	return func(n *apiNatsModule) error {
+		n.nameRegionalObject = v
+
+		return nil
+	}
+}
