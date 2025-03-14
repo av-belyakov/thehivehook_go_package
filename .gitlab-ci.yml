@@ -7,9 +7,17 @@ stages:
   - build
   - deploy
 
-default:
+.main-runner-tags: &build-tags
   tags:
+    # это на моем ПК (используется для сборки)
     - thehivehook_go
+
+.deploy-runner-tags: &main-tags
+  tags:
+    # это на datahook, занимается всей синхронизацией, а так же разворачиванием
+    # продуктового приложения, кроме того отправляет тригер на разворачивание
+    # тестового приложения
+    - thehivehook_go_gcm
 
 .docker-login-script: &docker-login
   - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
@@ -34,6 +42,7 @@ default:
     changes:
       - docker-compose.yml
       - docker-compose.rcm.yml
+      - docker-compose.test-gcm.yml
     when: never
 
 .is-branch-dev-test-commit: &dev-test-commit
@@ -45,35 +54,61 @@ default:
 #выводим версию приложения
 get_version:
   stage: .pre
+  <<: *main-tags
   script:
-    - "V=`awk '/[0-9].[0-9].[0-9]/ {gsub(/\"/, \"\"); print $2}' $CI_PROJECT_DIR/internal/appversion/version.go`; echo \"version $V\""
+    - 'V=`awk ''/[0-9].[0-9].[0-9]/; {print $2}'' $CI_PROJECT_DIR/internal/appversion/version`; echo "version $V"'
 
 #синхронизируем файл README.md
 sync-file-readme:
   stage: sync
+  <<: *main-tags
   rules:
     - *readme-commit
   script:
-    #Главный центр мониторинга (или test)
-    - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/README.md'
+    #Главный центр мониторинга (ТЕСТОВОЕ ПРИЛОЖЕНИЕ)
+    - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_TEST_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/README.md'
     #РЦМ Санкт-Петербург
     - 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSPB_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/748/repository/files/README.md'
+    #
+    # здесь нужно не забыть добавить переменные PRIVATE-TOKEN:* и поменять номер репозитория!
+    #
+    #РЦМ Калининград
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMKGD_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
+    #РЦМ Ставрополь
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSTA_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
+    #РЦМ Симферополь
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSR_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
+    #РЦМ Москва и МО
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMMSK_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
+    #РЦМ Смоленск
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMLNX_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
+    #РЦМ Хабаровск
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMKHA_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
+    #РЦМ Нижний Новгород
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMNIZ_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
+    #РЦМ Новосибирск
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMNVS_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
+    #РЦМ Екатеринбург
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSVE_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
+    #РЦМ Ростов-на-Дону
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMROS_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
 
-#синхронизируем файл docker-compose.yml (test или GCM)
+#синхронизируем файл docker-compose.test-gcm.yml (Test GCM)
 sync-file-docker-compose:
   stage: sync
+  <<: *main-tags
   rules:
     - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
       changes:
-        - docker-compose.yml
+        - docker-compose.test-gcm.yml
       when: on_success
   script:
-    #Главный центр мониторинга (или test)
-    - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.yml" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/docker-compose.yml'
+    - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_TEST_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.test-gcm.yml" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/docker-compose.yml'
 
 #синхронизируем файл docker-compose.rcm.yml (для РЦМ)
 sync-file-docker-compose-rcm:
   stage: sync
+  <<: *main-tags
   rules:
     - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
       changes:
@@ -82,18 +117,46 @@ sync-file-docker-compose-rcm:
   script:
     #РЦМ Санкт-Петербург
     - 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSPB_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/748/repository/files/docker-compose.yml'
+    #
+    # здесь нужно не забыть добавить переменные PRIVATE-TOKEN:* и поменять номер репозитория!
+    #
+    #РЦМ Калининград
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMKGD_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
+    #РЦМ Ставрополь
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSTA_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
+    #РЦМ Симферополь
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSR_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
+    #РЦМ Москва и МО
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMMSK_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
+    #РЦМ Смоленск
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMLNX_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
+    #РЦМ Хабаровск
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMKHA_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
+    #РЦМ Нижний Новгород
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMNIZ_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
+    #РЦМ Новосибирск
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMNVS_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
+    #РЦМ Екатеринбург
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSVE_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
+    #РЦМ Ростов-на-Дону
+    #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMROS_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.rcm.yml" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/docker-compose.yml'
 
 #сборка тестового образа
 build-test:
   stage: build
+  <<: *build-tags
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
     - *dev-test-commit
-    #- *merge-with-branch-testing
   script:
+    # удаляем старый образ
     - docker rmi $CI_REGISTRY_IMAGE:test || true
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA --build-arg BRANCH=$BRANCH_TEST .
+    - >
+      docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+       --build-arg VERSION=$CI_COMMIT_SHORT_SHA \
+       --build-arg BRANCH=$BRANCH_TEST \
+       --build-arg STATUS=development .
     # удаляем промежуточный образ с меткой temporary
     - *docker-image-pure
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:test
@@ -104,37 +167,37 @@ build-test:
 #сборка основного образа
 build-prod:
   stage: build
+  <<: *build-tags
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
     - *master-commit
-    #- *merge-with-master
   script:
     - docker rmi $CI_REGISTRY_IMAGE:latest || true
     - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA --build-arg VERSION=$CI_COMMIT_SHORT_SHA --build-arg BRANCH=$BRANCH_MAJOR .
-    # удаляем промежуточный образ с меткой temporary
     - *docker-image-pure
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:latest
     - *docker-login
     - docker push $CI_REGISTRY_IMAGE:latest
     - docker rmi $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA || true
 
-#развёртывание тестовой сборки (пока что это будет GCM)
+#развёртывание тестовой сборки (ГЦМ test)
 deploy-test:
   stage: deploy
+  <<: *main-tags
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
     - *dev-test-commit
     - *master-commit
-    #- *merge-with-branch-testing
   script:
     #тест ГЦМ
-    - "curl -X POST --fail -F token=$GCM_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/726/trigger/pipeline"
+    - "curl -X POST --fail -F token=$GCM_TEST_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/726/trigger/pipeline"
 
 #развёртывание основной сборки (все регионы)
 deploy-prod:
   stage: deploy
+  <<: *main-tags
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
@@ -143,8 +206,46 @@ deploy-prod:
       allow_failure: true
     #- *merge-with-master
   script:
+    #РЦМ Санкт-Петербург
     - "curl -X POST --fail -F token=$RCMSPB_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/748/trigger/pipeline"
+    #
+    # здесь нужно не забыть добавить переменные token:* и поменять номер репозитория!
+    #
+    #РЦМ Калининград
+    #- "curl -X POST --fail -F token=$RCMKGD_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
+    #РЦМ Ставрополь
+    #- "curl -X POST --fail -F token=$RCMSTA_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
+    #РЦМ Симферополь
+    #- "curl -X POST --fail -F token=$RCMSR_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
+    #РЦМ Москва и МО
+    #- "curl -X POST --fail -F token=$RCMMSK_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
+    #РЦМ Смоленск
+    #- "curl -X POST --fail -F token=$RCMLNX_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
+    #РЦМ Хабаровск
+    #- "curl -X POST --fail -F token=$RCMKHA_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
+    #РЦМ Нижний Новгород
+    #- "curl -X POST --fail -F token=$RCMNIZ_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
+    #РЦМ Новосибирск
+    #- "curl -X POST --fail -F token=$RCMNVS_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
+    #РЦМ Екатеринбург
+    #- "curl -X POST --fail -F token=$RCMSVE_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
+    #РЦМ Ростов-на-Дону
+    #- "curl -X POST --fail -F token=$RCMROS_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
   environment: production
+
+#развертывание сборки предназначенной для ГЦМ (продуктовое приложение)
+deploy-prod-gcm:
+  stage: deploy
+  <<: *main-tags
+  rules:
+    - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
+  before_script:
+    - echo "Start deploy thehivehook_go application for GCM"
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker-compose -f $CI_PROJECT_DIR/docker-compose.yml down
+    - docker rmi gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:latest || true
+    - docker-compose -f $CI_PROJECT_DIR/docker-compose.yml up -d --force-recreate --build
 #
 #.is-merge-with-branch-testing: &merge-with-branch-testing
 #  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
