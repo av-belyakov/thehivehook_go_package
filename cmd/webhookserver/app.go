@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"golang.org/x/sync/errgroup"
@@ -18,6 +19,7 @@ func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHook
 	whs := &WebHookServer{
 		name:      "nobody",
 		version:   "0.1.1",
+		timeStart: time.Now(),
 		host:      "127.0.0.1",
 		port:      7575,
 		ttl:       10,
