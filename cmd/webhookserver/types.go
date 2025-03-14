@@ -40,15 +40,15 @@ type ChanFromWebHookServer struct {
 
 // ReadyMadeEventCase готовый, сформированный объект содержащий информацию по кейсу
 type ReadyMadeEventCase struct {
-	Case        map[string]interface{} `json:"event"`
-	Observables []interface{}          `json:"observables"`
-	TTPs        []interface{}          `json:"ttp"`
-	Source      string                 `json:"source"`
+	Case        map[string]any `json:"event"`
+	Observables []any          `json:"observables"`
+	TTPs        []any          `json:"ttp"`
+	Source      string         `json:"source"`
 }
 
 // ReadyMadeEventAlert готовый, сформированный объект содержащий информацию по алерту
 type ReadyMadeEventAlert struct {
-	Event  map[string]interface{} `json:"event"`
-	Alert  map[string]interface{} `json:"alert"`
-	Source string                 `json:"source"`
+	Event  map[string]any `json:"event"`
+	Alert  map[string]any `json:"alert"`
+	Source string         `json:"source"`
 }
