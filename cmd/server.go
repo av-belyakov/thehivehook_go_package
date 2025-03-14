@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	"net/http"
 	_ "net/http/pprof"
@@ -24,6 +25,11 @@ import (
 
 // server здесь реализована вся логика запуска thehivehook_go_package
 func server(ctx context.Context) {
+	version, err := appversion.GetAppVersion()
+	if err != nil {
+		log.Println(err)
+	}
+
 	rootPath, err := supportingfunctions.GetRootPath(constants.Root_Dir)
 	if err != nil {
 		log.Fatalf("error, it is impossible to form root path (%s)", err.Error())
@@ -144,7 +150,7 @@ func server(ctx context.Context) {
 		webhookserver.WithPort(confWebHook.Port),
 		webhookserver.WithHost(confWebHook.Host),
 		webhookserver.WithName(confWebHook.Name),
-		webhookserver.WithVersion(appversion.GetVersion()))
+		webhookserver.WithVersion(version))
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'webhookserver': %s\n", err.Error())
@@ -158,9 +164,11 @@ func server(ctx context.Context) {
 	//go tool pprof http://localhost:6060/debug/pprof/heap
 	//go tool pprof http://localhost:6060/debug/pprof/goroutine
 	//go tool pprof http://localhost:6060/debug/pprof/allocs
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
+		go func() {
+			log.Println(http.ListenAndServe("localhost:6060", nil))
+		}()
+	}
 	//------------------------------------------
 
 	//запуск модуля
