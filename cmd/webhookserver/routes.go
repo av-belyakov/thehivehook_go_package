@@ -28,7 +28,11 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 
 	numberHours := int(time.Since(wh.timeStart).Hours())
 
-	io.WriteString(w, fmt.Sprintf("Hello, WebHookServer version %s, application status:'%s'. The number of hours since the start of the application %d.", wh.version, status, numberHours))
+	io.WriteString(w, fmt.Sprintf(`Hello, WebHookServer version %s, application status:'%s'.\n 
+	                               %d hours have passed since the launch of the app.`,
+		wh.version,
+		status,
+		numberHours))
 }
 
 // RouteWebHook маршрут при обращении к '/webhook'
