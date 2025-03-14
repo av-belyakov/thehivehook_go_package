@@ -39,8 +39,8 @@ RUN addgroup --g 1500 groupcontainer && \
 USER ${USERNAME}
 WORKDIR ${US_DIR}
 RUN mkdir ./logs
-COPY --from=build_image /go/src/app ./
-COPY --from=build_image /go/src/README.md ./
+COPY --from=build_image /go/src/${VERSION}/app ./
+COPY --from=build_image /go/src/${VERSION}/README.md ./
 COPY --from=build_image /go/src/${VERSION}/internal/appversion/version ./ 
 COPY config/* ./config/
 

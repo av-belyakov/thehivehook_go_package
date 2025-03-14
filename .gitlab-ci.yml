@@ -152,10 +152,11 @@ build-test:
   script:
     # удаляем старый образ
     - docker rmi $CI_REGISTRY_IMAGE:test || true
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
-      --build-arg VERSION=$CI_COMMIT_SHORT_SHA \
-      --build-arg BRANCH=$BRANCH_TEST \
-      --build-arg STATUS=development .
+    - >
+      docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+       --build-arg VERSION=$CI_COMMIT_SHORT_SHA \
+       --build-arg BRANCH=$BRANCH_TEST \
+       --build-arg STATUS=development .
     # удаляем промежуточный образ с меткой temporary
     - *docker-image-pure
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:test
