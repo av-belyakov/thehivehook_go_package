@@ -15,7 +15,7 @@ THEHIVE:
 WEBHOOKSERVER:
   name: "gcm"
   host: "192.168.9.53"
-  port: 5000
+  port: 5001
   ttl_tmp_info: 10
 DATABASEWRITELOG:
   host: "datahook.cloud.gcm"
