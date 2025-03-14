@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   app:
-    container_name: gcm_thehivehook_go_package
+    container_name: thehivehook_go.gcm
     environment:
       - GO_HIVEHOOK_THAPIKEY=$HIVEHOOK_THAPIKEY
       - GO_HIVEHOOK_DBWLOGPASSWD=$HIVEHOOK_DBWLOGPASSWD
