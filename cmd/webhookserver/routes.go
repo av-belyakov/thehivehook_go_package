@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
@@ -19,7 +20,12 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	io.WriteString(w, fmt.Sprintf("Hello, WebHookServer version %s.", wh.version))
+	status := "production"
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
+		status = os.Getenv("GO_HIVEHOOK_MAIN")
+	}
+
+	io.WriteString(w, fmt.Sprintf("Hello, WebHookServer version %s, application status:'%s'", wh.version, status))
 }
 
 // RouteWebHook маршрут при обращении к '/webhook'

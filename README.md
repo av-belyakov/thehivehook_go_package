@@ -142,7 +142,7 @@ notification.webhook.endpoints значение с новым 'endpoint', по �
 
 Далее, выполнить:
 
-```json
+```bash
 curl -XPUT -H "Authorization: Bearer <ApiKey>" -H 'Content-type: application/json' <url*или*ip*и*сетевой*порт>/api/config/organisation/notification -d
   '{
     "value": [
