@@ -41,7 +41,7 @@ WORKDIR ${US_DIR}
 RUN mkdir ./logs
 COPY --from=build_image /go/src/${VERSION}/app ./
 COPY --from=build_image /go/src/${VERSION}/README.md ./
-COPY --from=build_image /go/src/${VERSION}/internal/appversion/version ./ 
+COPY --from=build_image /go/src/${VERSION}/version ./ 
 COPY config/* ./config/
 
 ENTRYPOINT [ "./app" ]
