@@ -3,6 +3,7 @@ package webhookserver
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/constants"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
@@ -18,7 +19,7 @@ func getInformationMessage(name, host string, port int) string {
 		appStatus = fmt.Sprintf("%v%s%v", constants.Ansi_Bright_Red, envValue, constants.Ansi_Reset)
 	}
 
-	msg := fmt.Sprintf("Application '%s' v%s was successfully launched", appname.GetName(), version)
+	msg := fmt.Sprintf("Application '%s' v%s was successfully launched", appname.GetName(), strings.Replace(version, "\n", "", -1))
 	fmt.Printf("\n%v%v%s.%v\n", constants.Bold_Font, constants.Ansi_Bright_Green, msg, constants.Ansi_Reset)
 	fmt.Printf("%v%vApplication status is '%s'.%v\n", constants.Underlining, constants.Ansi_Bright_Green, appStatus, constants.Ansi_Reset)
 	fmt.Printf("%vWebhook server settings:%v\n", constants.Ansi_Bright_Green, constants.Ansi_Reset)

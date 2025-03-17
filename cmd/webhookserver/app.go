@@ -75,27 +75,7 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 	})
 
 	return g.Wait()
-
-	//
-	//	go func() {
-	//		if errServer := server.ListenAndServe(); errServer != nil {
-	//			log.Fatal(errServer)
-	//		}
-	//	}()
-	//	// вывод информационного сообщения при старте приложения
-	//	infoMsg := getInformationMessage(wh.name, wh.host, wh.port)
-	//	wh.logger.Send("info", strings.ToLower(infoMsg))
-	//	<-ctx.Done()
-	//	return ctx.Err()
-	//
 }
-
-// addContext добавляет context к входящим запросам
-//func addContext(ctx context.Context, next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		next.ServeHTTP(w, r.WithContext(ctx))
-//	})
-//}
 
 //******************** функциональные настройки webhookserver ***********************
 
