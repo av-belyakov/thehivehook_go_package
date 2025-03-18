@@ -27,6 +27,8 @@ func One() string {
 
 	fmt.Println(Two())
 
+	fmt.Printf("Стрелка вверх: %q\nСтрелка вниз: %q\n", rune(0x2191), rune(0x2193))
+
 	return fmt.Sprintf("function 'One', file:%s, line:%d", f, l)
 }
 
