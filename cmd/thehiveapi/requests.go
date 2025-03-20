@@ -100,6 +100,8 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 		Tags []string `json:"tags"`
 	}
 
+	fmt.Println("func 'apiTheHiveModule.AddCaseTags', START")
+
 	//получаем информацию по кейсу
 	bodyByte, statusCode, err := api.GetCaseEvent(ctx, rc.RootId)
 	if err != nil {
@@ -124,6 +126,9 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 	//если listUniqTags пустой то команда на добавление в TheHive дополнительных
 	//тегов бессмыслена, так как либо список tags пустой, либо в bcee[0].Tags есть все
 	//значения из tags
+
+	fmt.Println("func 'apiTheHiveModule.AddCaseTags', получаем список тегов которых нет bcee[0].Tags, но есть в tags", listUniqTags)
+
 	if len(listUniqTags) == 0 {
 		api.logger.Send("info", fmt.Sprintf("the command to add the tag '%s' to TheHive for rootId '%s' was not executed", rc.Value, rc.RootId))
 
@@ -134,6 +139,8 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 	newTagsQuery := tagsQuery{Tags: bcee[0].Tags}
 	newTagsQuery.Tags = append(newTagsQuery.Tags, listUniqTags...)
 
+	fmt.Println("func 'apiTheHiveModule.AddCaseTags', формируем тело запроса из новых тегов и уже существующих, newTagsQuery", newTagsQuery)
+
 	req, err := json.Marshal(newTagsQuery)
 	if err != nil {
 		return nil, statusCode, supportingfunctions.CustomError(err)
@@ -141,6 +148,8 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 
 	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 15*time.Second)
 	defer ctxCancel()
+
+	fmt.Println("func 'apiTheHiveModule.AddCaseTags', делаем запрос ->")
 
 	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/case/%s", rc.RootId), req, "PATCH")
 	if err != nil {

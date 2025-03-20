@@ -164,7 +164,6 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 func getRequestCommandData(i any) (RequestCommand, error) {
 	rc := RequestCommand{}
-
 	data, ok := i.([]byte)
 	if !ok {
 		return rc, errors.New("'it is not possible to convert a value msg.GetData() to a []byte'")
