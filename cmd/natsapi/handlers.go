@@ -38,10 +38,9 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 	defer func(cancel context.CancelFunc, ch chan cint.ChannelResponser) {
 		cancel()
 		close(ch)
-		ch = nil
 	}(ctxTimeoutCancel, chRes)
 
-	api.logger.Send("info", fmt.Sprintf("the command '%s' has been received, data '%v'", rc.Command, m.Data))
+	api.logger.Send("info", fmt.Sprintf("the command '%s' has been received, data '%v'", rc.Command, string(m.Data)))
 
 	api.sendingChannel <- &RequestFromNats{
 		RequestId:  id,
@@ -59,19 +58,18 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 		case msg := <-chRes:
 			api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
 
-			res := []byte(
-				fmt.Sprintf(`{
+			res := fmt.Appendf(nil, `{
 					"id": \"%s\", 
-					"error": \"%s\",
 					"command": \"%s\", 
 					"status_code": \"%d\", 
 					"data": %v
+					"error": \"%v\",
 					}`,
-					msg.GetRequestId(),
-					msg.GetError().Error(),
-					rc.Command,
-					msg.GetStatusCode(),
-					msg.GetData()))
+				msg.GetRequestId(),
+				rc.Command,
+				msg.GetStatusCode(),
+				msg.GetData(),
+				msg.GetError())
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
