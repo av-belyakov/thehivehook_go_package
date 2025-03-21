@@ -7,20 +7,23 @@ stages:
   - build
   - deploy
 
-.main-runner-tags: &build-tags
+# сборка, это на моем ПК
+.build-runner-tags: &build-tags
   tags:
-    # это на моем ПК (используется для сборки)
-    - thehivehook_go
+    - thehivehook_go.build
 
-.deploy-runner-tags: &main-tags
+# разворачивает тестовую сборку
+.deploy-test-runner-tags: &deploy-test-tags
   tags:
-    # это на datahook, занимается всей синхронизацией, а так же разворачиванием
-    # продуктового приложения, кроме того отправляет тригер на разворачивание
-    # тестового приложения
-    - thehivehook_go_gcm
+    - thehivehook_go.gcm-test
+
+# разворачивает продуктовую сборку
+.deploy-prod-runner-tags: &deploy-prod-tags
+  tags:
+    - thehivehook_go.gcm-prod
 
 .docker-login-script: &docker-login
-  - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
 
 .docker-image-prune: &docker-image-pure
   - docker image prune -a --force --filter="label=temporary"
@@ -51,22 +54,20 @@ stages:
 .is-branch-master-commit: &master-commit
   - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
 
-#выводим версию приложения
+#выводит версию приложения
 get_version:
   stage: .pre
-  <<: *main-tags
+  <<: *deploy-prod-tags
   script:
     - 'V=`awk ''/[0-9].[0-9].[0-9]/; {print $2}'' $CI_PROJECT_DIR/version`; echo "version $V"'
 
-#синхронизируем файл README.md
+#синхронизирует файл README.md (для РЦМ)
 sync-file-readme:
   stage: sync
-  <<: *main-tags
+  <<: *deploy-prod-tags
   rules:
     - *readme-commit
   script:
-    #Главный центр мониторинга (ТЕСТОВОЕ ПРИЛОЖЕНИЕ)
-    - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_TEST_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/README.md'
     #РЦМ Санкт-Петербург
     - 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMSPB_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/748/repository/files/README.md'
     #
@@ -93,22 +94,10 @@ sync-file-readme:
     #РЦМ Ростов-на-Дону
     #- 'curl -v --request PUT --header PRIVATE-TOKEN:$RCMROS_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update README.md" -F content="< $CI_PROJECT_DIR/README.md" http://gitlab.cloud.gcm/api/v4/projects/ /repository/files/README.md'
 
-#синхронизируем файл docker-compose.test-gcm.yml (Test GCM)
-sync-file-docker-compose:
-  stage: sync
-  <<: *main-tags
-  rules:
-    - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
-      changes:
-        - docker-compose.test-gcm.yml
-      when: on_success
-  script:
-    - 'curl -v --request PUT --header PRIVATE-TOKEN:$GCM_TEST_SYNC_FILES_TOKEN -F branch=master -F author_email=nobody@mail.org -F author_name=auto_sync -F commit_message="Update docker-compose.yml" -F content="< $CI_PROJECT_DIR/docker-compose.test-gcm.yml" http://gitlab.cloud.gcm/api/v4/projects/726/repository/files/docker-compose.yml'
-
-#синхронизируем файл docker-compose.rcm.yml (для РЦМ)
+#синхронизирует файл docker-compose.rcm.yml (для РЦМ)
 sync-file-docker-compose-rcm:
   stage: sync
-  <<: *main-tags
+  <<: *deploy-prod-tags
   rules:
     - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
       changes:
@@ -150,14 +139,14 @@ build-test:
     - *docker-compose-no-commit
     - *dev-test-commit
   script:
-    # удаляем старый образ
+    # удаляет старый образ
     - docker rmi $CI_REGISTRY_IMAGE:test || true
     - >
       docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
        --build-arg VERSION=$CI_COMMIT_SHORT_SHA \
        --build-arg BRANCH=$BRANCH_TEST \
        --build-arg STATUS=development .
-    # удаляем промежуточный образ с меткой temporary
+    # удаляет промежуточный образ с меткой temporary
     - *docker-image-pure
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:test
     - *docker-login
@@ -181,30 +170,56 @@ build-prod:
     - docker push $CI_REGISTRY_IMAGE:latest
     - docker rmi $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA || true
 
-#развёртывание тестовой сборки (ГЦМ test)
+#развёртывает тестовую сборку (GCM.test)
 deploy-test:
   stage: deploy
-  <<: *main-tags
+  <<: *deploy-test-tags
   rules:
     - *readme-no-commit
-    - *docker-compose-no-commit
+    - if: $CI_COMMIT_BRANCH == $BRANCH_TEST
+      changes:
+        - docker-compose.yml
+        - docker-compose.rcm.yml
+      when: never
     - *dev-test-commit
-    - *master-commit
+  before_script:
+    - echo "Start deploy thehivehook_go application for GCM.test"
   script:
-    #тест ГЦМ
-    - "curl -X POST --fail -F token=$GCM_TEST_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/726/trigger/pipeline"
+    - *docker-login
+    - docker-compose -f $CI_PROJECT_DIR/docker-compose.test.yml down
+    - docker rmi gitlab.cloud.gcm:5050/a.belyakov/placeholder_misp:test || true
+    - docker-compose -f $CI_PROJECT_DIR/docker-compose.test.yml up -d --force-recreate --build
 
-#развёртывание основной сборки (все регионы)
+#развёртывает основную сборку (GCM)
+deploy-prod-gcm:
+  stage: deploy
+  <<: *deploy-prod-tags
+  rules:
+    - *readme-no-commit
+    - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR
+      changes:
+        - docker-compose.rcm.yml
+        - docker-compose.test-gcm.yml
+      when: never
+    - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
+  before_script:
+    - echo "Start deploy thehivehook_go application for GCM"
+  script:
+    - *docker-login
+    - docker-compose -f $CI_PROJECT_DIR/docker-compose.yml down
+    - docker rmi gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:latest || true
+    - docker-compose -f $CI_PROJECT_DIR/docker-compose.yml up -d --force-recreate --build
+
+#развёртывает основные сборки (для РЦМ)
 deploy-prod:
   stage: deploy
-  <<: *main-tags
+  <<: *deploy-prod-tags
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
     - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
       when: manual
       allow_failure: true
-    #- *merge-with-master
   script:
     #РЦМ Санкт-Петербург
     - "curl -X POST --fail -F token=$RCMSPB_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/748/trigger/pipeline"
@@ -232,28 +247,3 @@ deploy-prod:
     #РЦМ Ростов-на-Дону
     #- "curl -X POST --fail -F token=$RCMROS_TRIGGER -F ref=master http://gitlab.cloud.gcm/api/v4/projects/ /trigger/pipeline"
   environment: production
-
-#развертывание сборки предназначенной для ГЦМ (продуктовое приложение)
-deploy-prod-gcm:
-  stage: deploy
-  <<: *main-tags
-  rules:
-    - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
-  before_script:
-    - echo "Start deploy thehivehook_go application for GCM"
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker-compose -f $CI_PROJECT_DIR/docker-compose.yml down
-    - docker rmi gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:latest || true
-    - docker-compose -f $CI_PROJECT_DIR/docker-compose.yml up -d --force-recreate --build
-#
-#.is-merge-with-branch-testing: &merge-with-branch-testing
-#  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-#    changes: #Такое описание changes будет работать только начиная с версии 15.5
-#      paths:
-#        - '**/*'
-#      compare_to:
-#        - 'refs/heads/$BRANCH_TEST'
-#    when: on_success
-#
-
