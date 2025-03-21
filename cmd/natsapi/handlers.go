@@ -93,11 +93,11 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			isSendAlert := msg.GetCommand() != "send alert"
 
 			//-------------------------------------------------------------------
-			//----------- ЗАПИСЬ в файл ЭТО ТОЛЬКО ДЛЯ ТЕСТОВ -------------------
+			//----------- ЗАПИСЬ в файл обработанных объектов -------------------
 			//-------------------------------------------------------------------
 			if b, ok := msg.GetData().([]byte); ok {
 				if str, err := supportingfunctions.NewReadReflectJSONSprint(b); err == nil {
-					api.logger.Send("log_for_test", fmt.Sprintf("\n%s\n", str))
+					api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
 				}
 			}
 

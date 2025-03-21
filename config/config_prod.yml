@@ -1,25 +1,25 @@
 COMMONINFO:
-  file_name: "config production"
+  file_name: config production
 NATS:
-  host: "nats.cloud.gcm"
+  host: nats.cloud.gcm
   port: 4222
   cache_ttl: 3600
   subscriptions:
-    sender_case: "object.casetype"
-    sender_alert: "object.alerttype"
-    listener_command: "object.commandstype"
+    sender_case: object.casetype
+    sender_alert: object.alerttype
+    listener_command: object.commandstype
 THEHIVE:
-  host: "thehive.cloud.gcm"
+  host: thehive.cloud.gcm
   port: 9000
   cache_ttl: 43200
 WEBHOOKSERVER:
-  name: "gcm"
-  host: "192.168.9.53"
+  name: gcm
+  host: 192.168.9.53
   port: 5001
   ttl_tmp_info: 10
 DATABASEWRITELOG:
-  host: "datahook.cloud.gcm"
+  host: datahook.cloud.gcm
   port: 9200
-  namedb: ""
-  storage_name_db: "thehivehook_go_package"
-  user: "log_writer"
+  namedb:
+  storage_name_db: thehivehook_go_package
+  user: log_writer

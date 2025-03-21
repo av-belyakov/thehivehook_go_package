@@ -62,10 +62,6 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	case "case":
 		wh.logger.Send("info", fmt.Sprintf("received caseId:'%d', rootId:'%s', operation:'%s', a request is being sent for additional information about 'observable' and 'ttl' objects", eventElement.Object.CaseId, eventElement.RootId, eventElement.Operation))
 
-		//********** TEST ***********
-		wh.logger.Send("any_log", fmt.Sprintf("--------\ncaseId:'%d', rootId:'%s', operation:'%s', object:'%v', details:'%v'", eventElement.Object.CaseId, eventElement.RootId, eventElement.Operation, eventElement.Object, eventElement.Details))
-		//***************************
-
 		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		readyMadeEventCase, err := CreateEvenCase(r.Context(), eventElement.RootId, eventElement.Object.CaseId, wh.chanInput)

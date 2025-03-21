@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   app:
-    container_name: thehivehook_go.gcm_test
+    container_name: thehivehook_go.gcm-test
     environment:
       - GO_HIVEHOOK_THAPIKEY=$HIVEHOOK_THAPIKEY
       - GO_HIVEHOOK_DBWLOGPASSWD=$HIVEHOOK_DBWLOGPASSWD
@@ -13,7 +13,7 @@ services:
     command: chmod 777 /opt/thehivehook_go_package/logs && \
              chown 1500:1500 /opt/thehivehook_go_package/logs
     volumes:
-      - /var/log/thehivehook_go_package:/opt/thehivehook_go_package/logs:rw
+      - /var/log/thehivehook_go_package.gcm-test:/opt/thehivehook_go_package/logs:rw
       - ./config:/opt/thehivehook_go_package/config:rw
       #для корректного отображения даты с учетом временной зоны
       - /etc/timezone:/etc/timezone:ro
