@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"strings"
 	"time"
 
@@ -54,7 +55,7 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 
 	wh.server = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", wh.host, wh.port),
-		Handler: mux, //addContext(ctx, mux),
+		Handler: mux,
 		BaseContext: func(_ net.Listener) context.Context {
 			return ctx
 		},
@@ -66,6 +67,11 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 		infoMsg := getInformationMessage(wh.name, wh.host, wh.port)
 		wh.logger.Send("info", strings.ToLower(infoMsg))
 
+		//для отладки через pprof
+		//http://confWebHook.Host:confWebHook.Port/debug/pprof/
+		//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/heap
+		//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/goroutine
+		//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/allocs
 		return wh.server.ListenAndServe()
 	})
 	g.Go(func() error {

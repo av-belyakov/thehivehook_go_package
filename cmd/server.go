@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 
-	"net/http"
 	_ "net/http/pprof"
 
 	"github.com/av-belyakov/simplelogger"
@@ -165,11 +163,11 @@ func server(ctx context.Context) {
 	//go tool pprof http://localhost:6060/debug/pprof/heap
 	//go tool pprof http://localhost:6060/debug/pprof/goroutine
 	//go tool pprof http://localhost:6060/debug/pprof/allocs
-	if os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
-		go func() {
-			log.Println(http.ListenAndServe("localhost:6060", nil))
-		}()
-	}
+	//if os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
+	//	go func() {
+	//		log.Println(http.ListenAndServe("localhost:6060", nil))
+	//	}()
+	//}
 	//------------------------------------------
 
 	//запуск модуля
