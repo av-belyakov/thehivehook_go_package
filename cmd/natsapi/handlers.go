@@ -92,9 +92,9 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			isSendCase := msg.GetCommand() != "send case"
 			isSendAlert := msg.GetCommand() != "send alert"
 
-			//-------------------------------------------------------------------
-			//----------- ЗАПИСЬ в файл обработанных объектов -------------------
-			//-------------------------------------------------------------------
+			//--------------------------------------------------------------
+			//----------- запись в файл обработанных объектов --------------
+			//--------------------------------------------------------------
 			if b, ok := msg.GetData().([]byte); ok {
 				if str, err := supportingfunctions.NewReadReflectJSONSprint(b); err == nil {
 					api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
