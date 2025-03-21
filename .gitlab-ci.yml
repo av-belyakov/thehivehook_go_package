@@ -7,12 +7,12 @@ stages:
   - build
   - deploy
 
-.main-runner-tags: &build-tags
+.build-runner-tags: &build-tags
   tags:
     # это на моем ПК (используется для сборки)
     - thehivehook_go
 
-.deploy-runner-tags: &main-tags
+.deploy-runner-tags: &deploy-tags
   tags:
     # это на datahook, занимается всей синхронизацией, а так же разворачиванием
     # продуктового приложения, кроме того отправляет тригер на разворачивание
@@ -20,7 +20,7 @@ stages:
     - thehivehook_go_gcm
 
 .docker-login-script: &docker-login
-  - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
 
 .docker-image-prune: &docker-image-pure
   - docker image prune -a --force --filter="label=temporary"
@@ -54,14 +54,14 @@ stages:
 #выводим версию приложения
 get_version:
   stage: .pre
-  <<: *main-tags
+  <<: *deploy-tags
   script:
     - 'V=`awk ''/[0-9].[0-9].[0-9]/; {print $2}'' $CI_PROJECT_DIR/version`; echo "version $V"'
 
 #синхронизируем файл README.md
 sync-file-readme:
   stage: sync
-  <<: *main-tags
+  <<: *deploy-tags
   rules:
     - *readme-commit
   script:
@@ -96,7 +96,7 @@ sync-file-readme:
 #синхронизируем файл docker-compose.test-gcm.yml (Test GCM)
 sync-file-docker-compose:
   stage: sync
-  <<: *main-tags
+  <<: *deploy-tags
   rules:
     - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
       changes:
@@ -108,7 +108,7 @@ sync-file-docker-compose:
 #синхронизируем файл docker-compose.rcm.yml (для РЦМ)
 sync-file-docker-compose-rcm:
   stage: sync
-  <<: *main-tags
+  <<: *deploy-tags
   rules:
     - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
       changes:
@@ -184,7 +184,7 @@ build-prod:
 #развёртывание тестовой сборки (ГЦМ test)
 deploy-test:
   stage: deploy
-  <<: *main-tags
+  <<: *deploy-tags
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
@@ -197,7 +197,7 @@ deploy-test:
 #развёртывание основной сборки (все регионы)
 deploy-prod:
   stage: deploy
-  <<: *main-tags
+  <<: *deploy-tags
   rules:
     - *readme-no-commit
     - *docker-compose-no-commit
@@ -236,7 +236,7 @@ deploy-prod:
 #развертывание сборки предназначенной для ГЦМ (продуктовое приложение)
 deploy-prod-gcm:
   stage: deploy
-  <<: *main-tags
+  <<: *deploy-tags
   rules:
     - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
   before_script:
