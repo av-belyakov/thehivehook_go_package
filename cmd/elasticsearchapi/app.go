@@ -50,10 +50,12 @@ func (edb *ElasticsearchDB) Write(msgType, msg string) error {
 		return errors.New("the client parameters for connecting to the Elasticsearch database are not set correctly")
 	}
 
+	fmt.Printf("func 'ElasticsearchDB.Write'\nnameRegionalObject:'%s'\nmaessge:'%s'\n", edb.settings.NameRegionalObject, msg)
+
 	msg = supportingfunctions.ReplaceCommaCharacter(msg)
 
 	tn := time.Now()
-	buf := bytes.NewReader([]byte(fmt.Sprintf(`{
+	buf := bytes.NewReader(fmt.Appendf(nil, `{
 		  "datetime": "%s",
 		  "type": "%s",
 		  "nameRegionalObject": "%s",
@@ -63,19 +65,19 @@ func (edb *ElasticsearchDB) Write(msgType, msg string) error {
 		msgType,
 		edb.settings.NameRegionalObject,
 		msg,
-	)))
+	))
 
 	res, err := edb.client.Index(fmt.Sprintf("logs.%s_%s_%d", edb.settings.IndexDB, strings.ToLower(tn.Month().String()), tn.Year()), buf)
-	defer responseClose(res)
 	if err != nil {
 		return supportingfunctions.CustomError(err)
 	}
+	defer responseClose(res)
 
 	if res.StatusCode == http.StatusCreated || res.StatusCode == http.StatusOK {
 		return nil
 	}
 
-	r := map[string]interface{}{}
+	r := map[string]any{}
 	if err = json.NewDecoder(res.Body).Decode(&r); err != nil {
 		return supportingfunctions.CustomError(err)
 	}

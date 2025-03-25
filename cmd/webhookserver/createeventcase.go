@@ -15,6 +15,7 @@ import (
 // и ttp информацию по которым дополнительно запрашивают из TheHive
 func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput chan<- ChanFromWebHookServer) (ReadyMadeEventCase, error) {
 	rmec := ReadyMadeEventCase{}
+	createCaseErr := &CreateCaseError{}
 
 	chanResObservable := make(chan commoninterfaces.ChannelResponser)
 	defer close(chanResObservable)
@@ -36,14 +37,19 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 			// можно убрать return ctx.Err() и оставить просто return
 			// вот только надо ли, пока не знаю
 			//
-			//return ctx.Err()
 
-			return nil
+			createCaseErr.Type = "context"
+			createCaseErr.Err = ctx.Err()
+
+			return createCaseErr
 
 		case res := <-chanResObservable:
 			msg := []any{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
-				return err
+				createCaseErr.Type = "json"
+				createCaseErr.Err = err
+
+				return createCaseErr
 			}
 
 			rmec.Observables = msg
@@ -61,14 +67,18 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 			// можно убрать return ctx.Err() и оставить просто return
 			// вот только надо ли, пока не знаю
 			//
-			//return ctx.Err()
+			createCaseErr.Type = "context"
+			createCaseErr.Err = ctx.Err()
 
-			return nil
+			return createCaseErr
 
 		case res := <-chanResTTL:
 			msg := []any{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
-				return err
+				createCaseErr.Type = "json"
+				createCaseErr.Err = err
+
+				return createCaseErr
 			}
 
 			rmec.TTPs = msg

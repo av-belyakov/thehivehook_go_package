@@ -2,6 +2,7 @@ package webhookserver
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -66,12 +67,14 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		readyMadeEventCase, err := CreateEvenCase(r.Context(), eventElement.RootId, eventElement.Object.CaseId, wh.chanInput)
 		if err != nil {
-			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+			if !errors.Is(err, &CreateCaseError{Type: "context"}) {
+				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+			}
 
 			return
 		}
 
-		caseEvent := map[string]interface{}{}
+		caseEvent := map[string]any{}
 		if err := json.Unmarshal(bodyByte, &caseEvent); err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
@@ -127,7 +130,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//формируем запрос на поиск дополнительной информации по алерту такой как aler
-		alertEvent := map[string]interface{}{}
+		alertEvent := map[string]any{}
 		if err := json.Unmarshal(bodyByte, &alertEvent); err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
