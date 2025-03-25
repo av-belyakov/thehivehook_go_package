@@ -40,8 +40,6 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 		close(ch)
 	}(ctxTimeoutCancel, chRes)
 
-	api.logger.Send("info", fmt.Sprintf("the command '%s' has been received, data '%v'", rc.Command, string(m.Data)))
-
 	api.sendingChannel <- &RequestFromNats{
 		RequestId:  id,
 		Command:    "send_command",
@@ -58,10 +56,12 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 		case msg := <-chRes:
 			api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
 
-			res := fmt.Appendf(nil, `{
-					"id": \"%s\", 
-					"command": \"%s\", 
-					"status_code": \"%d\", 
+			//наверное не стоит отправлять ответ на команду, хотя надо подумать
+			//
+			/*res := fmt.Appendf(nil, `{
+					"id": \"%s\",
+					"command": \"%s\",
+					"status_code": \"%d\",
 					"data": %v
 					"error": \"%v\",
 					}`,
@@ -73,8 +73,7 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
-
-			api.natsConnection.Flush()
+			api.natsConnection.Flush()*/
 
 			return
 		}

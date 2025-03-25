@@ -105,6 +105,8 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					continue
 				}
 
+				api.logger.Send("info", fmt.Sprintf("the command '%s' has been received, order:'%s', rootId:'%s'", rc.Command, msg.GetOrder(), msg.GetRootId()))
+
 				switch msg.GetOrder() {
 				case "add_case_tag":
 					go func(id string) {
@@ -141,6 +143,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					}(msg.GetRequestId())
 
 				case "set_case_custom_field":
+
 					go func(id string) {
 						res := NewChannelRespons()
 						res.SetRequestId(id)
