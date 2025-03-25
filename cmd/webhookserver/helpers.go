@@ -15,7 +15,7 @@ func getInformationMessage(name, host string, port int) string {
 
 	appStatus := fmt.Sprintf("%vproduction%v", constants.Ansi_Bright_Blue, constants.Ansi_Reset)
 	envValue, ok := os.LookupEnv("GO_HIVEHOOK_MAIN")
-	if ok && envValue == "development" {
+	if ok && (envValue == "development" || envValue == "test") {
 		appStatus = fmt.Sprintf("%v%s%v", constants.Ansi_Bright_Red, envValue, constants.Ansi_Reset)
 	}
 

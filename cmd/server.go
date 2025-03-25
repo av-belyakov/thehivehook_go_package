@@ -158,18 +158,6 @@ func server(ctx context.Context) {
 	//мост между каналами различных модулей
 	router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
 
-	//для отладки через pprof
-	//http://localhost:6060/debug/pprof/
-	//go tool pprof http://localhost:6060/debug/pprof/heap
-	//go tool pprof http://localhost:6060/debug/pprof/goroutine
-	//go tool pprof http://localhost:6060/debug/pprof/allocs
-	//if os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
-	//	go func() {
-	//		log.Println(http.ListenAndServe("localhost:6060", nil))
-	//	}()
-	//}
-	//------------------------------------------
-
 	//запуск модуля
 	if err = webHook.Start(ctx); err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())

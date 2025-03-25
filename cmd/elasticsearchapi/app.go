@@ -50,8 +50,6 @@ func (edb *ElasticsearchDB) Write(msgType, msg string) error {
 		return errors.New("the client parameters for connecting to the Elasticsearch database are not set correctly")
 	}
 
-	fmt.Printf("func 'ElasticsearchDB.Write'\nnameRegionalObject:'%s'\nmaessge:'%s'\n", edb.settings.NameRegionalObject, msg)
-
 	msg = supportingfunctions.ReplaceCommaCharacter(msg)
 
 	tn := time.Now()
