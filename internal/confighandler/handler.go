@@ -224,6 +224,11 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if err != nil {
 			return &conf, err
 		}
+	} else if envList["GO_HIVEHOOK_MAIN"] == "test" {
+		fn, err = getFileName("config_test.yml", confPath, list)
+		if err != nil {
+			return &conf, err
+		}
 	} else {
 		fn, err = getFileName("config_prod.yml", confPath, list)
 		if err != nil {

@@ -5,16 +5,16 @@ NATS:
   port: 4222
   cache_ttl: 3600
   subscriptions:
-    sender_case: object.casetype.test
-    sender_alert: object.alerttype.test
-    listener_command: object.commandstype.test
+    sender_case: object.casetype.local
+    sender_alert: object.alerttype.local
+    listener_command: object.commandstype.local
 THEHIVE:
   host: thehive.cloud.gcm
   port: 9000
   cache_ttl: 43200
 WEBHOOKSERVER:
-  name: gcm-dev-test
-  host: 192.168.9.208
+  name: gcm-test
+  host: 192.168.13.3
   port: 5000
   ttl_tmp_info: 12
 DATABASEWRITELOG:
