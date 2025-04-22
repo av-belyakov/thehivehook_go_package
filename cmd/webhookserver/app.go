@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	_ "net/http/pprof"
+	"net/http/pprof"
+	"os"
 	"strings"
 	"time"
 
@@ -48,6 +49,15 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 		"/webhook": wh.RouteWebHook,
 	}
 
+	//для отладки через pprof (только для теста)
+	//http://confWebHook.Host:confWebHook.Port/debug/pprof/
+	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/heap
+	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/allocs
+	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/goroutine
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" {
+		routers["/debug/pprof/"] = pprof.Index
+	}
+
 	mux := http.NewServeMux()
 	for k, v := range routers {
 		mux.HandleFunc(k, v)
@@ -67,11 +77,6 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 		infoMsg := getInformationMessage(wh.name, wh.host, wh.port)
 		wh.logger.Send("info", strings.ToLower(infoMsg))
 
-		//для отладки через pprof
-		//http://confWebHook.Host:confWebHook.Port/debug/pprof/
-		//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/heap
-		//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/goroutine
-		//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/allocs
 		return wh.server.ListenAndServe()
 	})
 	g.Go(func() error {

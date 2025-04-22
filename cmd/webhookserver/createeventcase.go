@@ -30,14 +30,6 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 	g.Go(func() error {
 		select {
 		case <-ctx.Done():
-			//
-			// для того что бы исключить ошибку типа
-			// 2025-02-14 14:46:24 ERR - thehivehook_go_package - context deadline
-			// exceeded /home/artemij/go/src/thehivehook_go_package/cmd/webhookserver/routes.go:53
-			// можно убрать return ctx.Err() и оставить просто return
-			// вот только надо ли, пока не знаю
-			//
-
 			createCaseErr.Type = "context"
 			createCaseErr.Err = ctx.Err()
 
@@ -60,13 +52,6 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 	g.Go(func() error {
 		select {
 		case <-ctx.Done():
-			//
-			// для того что бы исключить ошибку типа
-			// 2025-02-14 14:46:24 ERR - thehivehook_go_package - context deadline
-			// exceeded /home/artemij/go/src/thehivehook_go_package/cmd/webhookserver/routes.go:53
-			// можно убрать return ctx.Err() и оставить просто return
-			// вот только надо ли, пока не знаю
-			//
 			createCaseErr.Type = "context"
 			createCaseErr.Err = ctx.Err()
 
