@@ -81,15 +81,11 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		cid, err := GetCaseId(eventElement)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-			return
 		}
 
 		caseId, err := strconv.Atoi(cid)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-			return
 		}
 
 		wh.logger.Send("info", fmt.Sprintf("received caseId:'%d', rootId:'%s', operation:'%s', a request is being sent for additional information about 'observable' and 'ttl' objects", caseId, rootId, operation))
