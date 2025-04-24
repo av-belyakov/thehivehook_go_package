@@ -16,7 +16,7 @@ func NewReadReflectJSONSprint(b []byte) (string, error) {
 	str := strings.Builder{}
 	defer str.Reset()
 
-	listMap := map[string]interface{}{}
+	listMap := map[string]any{}
 	if err := json.Unmarshal(b, &listMap); err == nil {
 		if len(listMap) == 0 {
 			return "", errors.New(errSrc)
@@ -27,7 +27,7 @@ func NewReadReflectJSONSprint(b []byte) (string, error) {
 		return str.String(), err
 	}
 
-	listSlice := []interface{}{}
+	listSlice := []any{}
 	if err := json.Unmarshal(b, &listSlice); err == nil {
 		if len(listSlice) == 0 {
 			return "", errors.New(errSrc)
@@ -41,7 +41,7 @@ func NewReadReflectJSONSprint(b []byte) (string, error) {
 	return str.String(), fmt.Errorf("the contents of the file are not Map or Slice")
 }
 
-func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) string {
+func readReflectAnyTypeSprint(name any, anyType any, num int) string {
 	var (
 		str         string
 		nameStr     string
@@ -92,7 +92,7 @@ func readReflectAnyTypeSprint(name interface{}, anyType interface{}, num int) st
 	return str
 }
 
-func readReflectMapSprint(list map[string]interface{}, str *strings.Builder, num int) {
+func readReflectMapSprint(list map[string]any, str *strings.Builder, num int) {
 	ws := GetWhitespace(num)
 
 	for k, v := range list {
@@ -104,13 +104,13 @@ func readReflectMapSprint(list map[string]interface{}, str *strings.Builder, num
 
 		switch r.Kind() {
 		case reflect.Map:
-			if v, ok := v.(map[string]interface{}); ok {
+			if v, ok := v.(map[string]any); ok {
 				str.WriteString(fmt.Sprintf("%s%s:\n", ws, k))
 				readReflectMapSprint(v, str, num+1)
 			}
 
 		case reflect.Slice:
-			if v, ok := v.([]interface{}); ok {
+			if v, ok := v.([]any); ok {
 				str.WriteString(fmt.Sprintf("%s%s:\n", ws, k))
 				readReflectSliceSprint(v, str, num+1)
 			}
@@ -124,7 +124,7 @@ func readReflectMapSprint(list map[string]interface{}, str *strings.Builder, num
 	}
 }
 
-func readReflectSliceSprint(list []interface{}, str *strings.Builder, num int) {
+func readReflectSliceSprint(list []any, str *strings.Builder, num int) {
 	ws := GetWhitespace(num)
 
 	for k, v := range list {
@@ -136,13 +136,13 @@ func readReflectSliceSprint(list []interface{}, str *strings.Builder, num int) {
 
 		switch r.Kind() {
 		case reflect.Map:
-			if v, ok := v.(map[string]interface{}); ok {
+			if v, ok := v.(map[string]any); ok {
 				str.WriteString(fmt.Sprintf("%s%d.\n", ws, k+1))
 				readReflectMapSprint(v, str, num+1)
 			}
 
 		case reflect.Slice:
-			if v, ok := v.([]interface{}); ok {
+			if v, ok := v.([]any); ok {
 				str.WriteString(fmt.Sprintf("%s%d.\n", ws, k+1))
 				readReflectSliceSprint(v, str, num+1)
 			}

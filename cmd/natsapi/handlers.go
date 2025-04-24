@@ -91,23 +91,23 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			isSendCase := msg.GetCommand() != "send case"
 			isSendAlert := msg.GetCommand() != "send alert"
 
-			//--------------------------------------------------------------
-			//----------- запись в файл обработанных объектов --------------
-			//--------------------------------------------------------------
-			if b, ok := msg.GetData().([]byte); ok {
-				if str, err := supportingfunctions.NewReadReflectJSONSprint(b); err == nil {
-					api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
-				}
-			}
-
-			if !isSendCase && !isSendAlert {
-				continue
-			}
-
 			data, ok := msg.GetData().([]byte)
 			if !ok {
 				api.logger.Send("error", supportingfunctions.CustomError(errors.New("it is not possible to convert a value")).Error())
 
+				continue
+			}
+
+			//--------------------------------------------------------------
+			//----------- запись в файл обработанных объектов --------------
+			//--------------------------------------------------------------
+			go func(d []byte) {
+				if str, err := supportingfunctions.NewReadReflectJSONSprint(d); err == nil {
+					api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
+				}
+			}(data)
+
+			if !isSendCase && !isSendAlert {
 				continue
 			}
 
