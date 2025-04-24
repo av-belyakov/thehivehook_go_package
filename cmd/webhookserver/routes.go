@@ -142,7 +142,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//ВНИМАНИЕ!!! На данный момент этот модуль еще ничего не обогащает
 		//нужно ли делать модуль обогатитель пока не ясно
 		//пока до решения этого впроса я еще не дошёл
-		readyMadeEventAlert, err := CreateEvenAlert(rootId, wh.chanInput)
+		readyMadeEventAlert, err := CreateEvenAlert(r.Context(), rootId, wh.chanInput)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
@@ -151,6 +151,11 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 		readyMadeEventAlert.Source = wh.name
 		readyMadeEventAlert.Event = eventElement
+
+		////
+		fmt.Println("_________________________________________________")
+		fmt.Printf("func 'WebHookServer.RouteWebHook' objectType:'%s', sourceName:'%s'\nObj:\n%+v\n", objectType, wh.name, readyMadeEventAlert)
+		////
 
 		ea, err := json.Marshal(readyMadeEventAlert)
 		if err != nil {
