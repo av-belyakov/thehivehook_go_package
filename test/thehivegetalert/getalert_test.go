@@ -63,7 +63,7 @@ func TestGetAlert(t *testing.T) {
 	apiKey := os.Getenv("GO_HIVEHOOK_THAPIKEY")
 	fmt.Println("API KEY:", apiKey)
 
-	b, statusCode, err := apiTheHive(apiKey, "thehive.cloud.gcm", 9000, "~90000326816")
+	b, statusCode, err := apiTheHive(apiKey, "thehive.cloud.gcm", 9000, "~91355930856")
 	assert.NoError(t, err)
 	assert.Equal(t, statusCode, 200)
 	t.Log(string(b))

@@ -103,7 +103,9 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			//--------------------------------------------------------------
 			go func(d []byte) {
 				if str, err := supportingfunctions.NewReadReflectJSONSprint(d); err == nil {
-					api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
+					if str != "" {
+						api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
+					}
 				}
 			}(data)
 
