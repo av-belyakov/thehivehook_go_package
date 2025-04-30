@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
@@ -114,16 +115,23 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//передача в NATS
-		sendData := NewChannelRequest()
-		sendData.SetRootId(rootId)
-		sendData.SetElementType(objectType)
-		sendData.SetCaseId(strconv.Itoa(caseId))
-		sendData.SetCommand("send case")
-		sendData.SetData(ec)
+		//sendData := NewChannelRequest()
+		//sendData.SetRootId(rootId)
+		//sendData.SetElementType(objectType)
+		//sendData.SetCaseId(strconv.Itoa(caseId))
+		//sendData.SetCommand("send case")
+		//sendData.SetData(ec)
 
 		wh.chanInput <- ChanFromWebHookServer{
 			ForSomebody: "to nats",
-			Data:        sendData,
+			//Data:        sendData,
+			Data: datamodels.RequestChan{
+				RootId:      rootId,
+				ElementType: objectType,
+				CaseId:      caseId,
+				Command:     "send case",
+				Data:        ec,
+			},
 		}
 
 		wh.logger.Send("info", fmt.Sprintf("information on case id '%d' sending to NATS", caseId))
@@ -160,15 +168,21 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//передача в NATS
-		sendData := NewChannelRequest()
-		sendData.SetRootId(rootId)
-		sendData.SetElementType(objectType)
-		sendData.SetCommand("send alert")
-		sendData.SetData(ea)
+		//sendData := NewChannelRequest()
+		//sendData.SetRootId(rootId)
+		//sendData.SetElementType(objectType)
+		//sendData.SetCommand("send alert")
+		//sendData.SetData(ea)
 
 		wh.chanInput <- ChanFromWebHookServer{
 			ForSomebody: "to nats",
-			Data:        sendData,
+			//Data:        sendData,
+			Data: datamodels.RequestChan{
+				RootId:      rootId,
+				ElementType: objectType,
+				Command:     "send alert",
+				Data:        ea,
+			},
 		}
 	}
 }

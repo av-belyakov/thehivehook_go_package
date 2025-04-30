@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 )
 
 // WebHookServer непосредственно сам сервер
@@ -34,7 +35,8 @@ type WebHookServerOptions struct {
 
 // ChanFromWebHookServer структура канала для взаимодействия сторонних сервисов с webhookserver
 type ChanFromWebHookServer struct {
-	Data        commoninterfaces.ChannelRequester
+	//Data        commoninterfaces.ChannelRequester
+	Data        datamodels.RequestChan
 	ForSomebody string //для кого данные
 }
 

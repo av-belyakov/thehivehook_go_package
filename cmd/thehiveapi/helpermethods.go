@@ -1,6 +1,8 @@
 package thehiveapi
 
-import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+import (
+	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+)
 
 //********************* Response ********************
 

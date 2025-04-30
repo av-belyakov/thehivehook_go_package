@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 
-	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
@@ -31,21 +31,30 @@ func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 // handlerIncomingCommands обработчик входящих, через NATS, команд
 func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc RequestCommand, m *nats.Msg) {
 	id := uuid.New().String()
-	chRes := make(chan cint.ChannelResponser)
+	//chRes := make(chan cint.ChannelResponser)
+	chRes := make(chan datamodels.ResponseChan)
 
 	ttlTime := (time.Duration(api.cachettl) * time.Second)
 	ctxTimeout, ctxTimeoutCancel := context.WithTimeout(ctx, ttlTime)
-	defer func(cancel context.CancelFunc, ch chan cint.ChannelResponser) {
+	defer func(cancel context.CancelFunc, ch chan datamodels.ResponseChan /*ch chan cint.ChannelResponser*/) {
 		cancel()
 		close(ch)
 	}(ctxTimeoutCancel, chRes)
 
-	api.sendingChannel <- &RequestFromNats{
-		RequestId:  id,
-		Command:    "send_command",
-		Order:      rc.Command,
-		Data:       m.Data,
-		ChanOutput: chRes,
+	//api.sendingChannel <- &RequestFromNats{
+	//	RequestId:  id,
+	//	Command:    "send_command",
+	//	Order:      rc.Command,
+	//	Data:       m.Data,
+	//	ChanOutput: chRes,
+	//}
+
+	api.sendingChannel <- datamodels.RequestChan{
+		RequestId: id,
+		Command:   "send_command",
+		Order:     rc.Command,
+		Data:      m.Data,
+		ChOutput:  chRes,
 	}
 
 	for {
@@ -54,7 +63,8 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 			return
 
 		case msg := <-chRes:
-			api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
+			//api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
+			api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.StatusCode))
 
 			//наверное не стоит отправлять ответ на команду, хотя надо подумать
 			//
@@ -88,10 +98,13 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			return
 
 		case msg := <-api.receivingChannel:
-			isSendCase := msg.GetCommand() != "send case"
-			isSendAlert := msg.GetCommand() != "send alert"
+			//isSendCase := msg.GetCommand() != "send case"
+			isSendCase := msg.Command != "send case"
+			//isSendAlert := msg.GetCommand() != "send alert"
+			isSendAlert := msg.Command != "send alert"
 
-			data, ok := msg.GetData().([]byte)
+			//data, ok := msg.GetData().([]byte)
+			data, ok := msg.Data.([]byte)
 			if !ok {
 				api.logger.Send("error", supportingfunctions.CustomError(errors.New("it is not possible to convert a value")).Error())
 
@@ -114,17 +127,21 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			}
 
 			var subscription, description string
-			switch msg.GetElementType() {
+			//switch msg.GetElementType() {
+			switch msg.ElementType {
 			case "case":
 				subscription = api.subscriptions.senderCase
-				description = fmt.Sprintf("%s with id: '%s', rootId:'%s' has been successfully transferred", msg.GetElementType(), msg.GetCaseId(), msg.GetRootId())
+				//description = fmt.Sprintf("%s with id: '%s', rootId:'%s' has been successfully transferred", msg.GetElementType(), msg.GetCaseId(), msg.GetRootId())
+				description = fmt.Sprintf("%s with id:'%d', rootId:'%s' has been successfully transferred", msg.ElementType, msg.CaseId, msg.RootId)
 
 			case "alert":
 				subscription = api.subscriptions.senderAlert
-				description = fmt.Sprintf("%s with id: '%s' has been successfully transferred", msg.GetElementType(), msg.GetRootId())
+				//description = fmt.Sprintf("%s with id: '%s' has been successfully transferred", msg.GetElementType(), msg.GetRootId())
+				description = fmt.Sprintf("%s with id:'%s' has been successfully transferred", msg.ElementType, msg.RootId)
 
 			default:
-				api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("undefined type '%s' for sending a message to NATS, cannot be processed", msg.GetElementType())).Error())
+				//api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("undefined type '%s' for sending a message to NATS, cannot be processed", msg.GetElementType())).Error())
+				api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("undefined type '%s' for sending a message to NATS, cannot be processed", msg.ElementType)).Error())
 
 				continue
 			}

@@ -3,16 +3,19 @@ package main
 import (
 	"context"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 )
 
 func router(
 	ctx context.Context,
 	fromWebHook <-chan webhookserver.ChanFromWebHookServer,
-	fromNatsAPI <-chan commoninterfaces.ChannelRequester,
-	toTheHiveAPI chan<- commoninterfaces.ChannelRequester,
-	toNatsAPI chan<- commoninterfaces.ChannelRequester) {
+	//fromNatsAPI <-chan commoninterfaces.ChannelRequester,
+	fromNatsAPI <-chan datamodels.RequestChan,
+	//toTheHiveAPI chan<- commoninterfaces.ChannelRequester,
+	toTheHiveAPI chan<- datamodels.RequestChan,
+	//toNatsAPI chan<- commoninterfaces.ChannelRequester,
+	toNatsAPI chan<- datamodels.RequestChan) {
 
 	go func() {
 		for {

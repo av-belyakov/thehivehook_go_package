@@ -7,14 +7,16 @@ import (
 
 	"github.com/av-belyakov/cachingstoragewithqueue"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 )
 
 // New настраивает модуль взаимодействия с API TheHive
 func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHiveModule, error) {
 	api := &apiTheHiveModule{
-		cachettl:         10,
-		logger:           logger,
-		receivingChannel: make(chan commoninterfaces.ChannelRequester),
+		cachettl: 10,
+		logger:   logger,
+		//receivingChannel: make(chan commoninterfaces.ChannelRequester),
+		receivingChannel: make(chan datamodels.RequestChan),
 	}
 
 	l := NewLogWrite(logger)
@@ -41,7 +43,8 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 // Start инициализирует новый модуль взаимодействия с API TheHive
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
+// func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
+func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- datamodels.RequestChan, error) {
 	//обработка кэша
 	api.cache.StartAutomaticExecution(ctx)
 

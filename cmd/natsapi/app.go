@@ -11,6 +11,7 @@ import (
 
 	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/constants"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
@@ -20,9 +21,11 @@ func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 		cachettl: 10,
 		logger:   logger,
 		//прием запросов в NATS
-		receivingChannel: make(chan cint.ChannelRequester),
+		//receivingChannel: make(chan cint.ChannelRequester),
+		receivingChannel: make(chan datamodels.RequestChan),
 		//передача запросов из NATS
-		sendingChannel: make(chan cint.ChannelRequester),
+		//sendingChannel: make(chan cint.ChannelRequester),
+		sendingChannel: make(chan datamodels.RequestChan),
 	}
 
 	for _, opt := range opts {
@@ -37,7 +40,8 @@ func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 // Start инициализирует новый модуль взаимодействия с API NATS
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequester, <-chan cint.ChannelRequester, error) {
+// func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequester, <-chan cint.ChannelRequester, error) {
+func (api *apiNatsModule) Start(ctx context.Context) (chan<- datamodels.RequestChan, <-chan datamodels.RequestChan, error) {
 	if ctx.Err() != nil {
 		return api.receivingChannel, api.sendingChannel, ctx.Err()
 	}

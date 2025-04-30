@@ -4,6 +4,7 @@ import (
 	"github.com/nats-io/nats.go"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 )
 
 // apiNatsSettings настройки для API NATS
@@ -13,10 +14,12 @@ type apiNatsModule struct {
 	host               string
 	nameRegionalObject string
 	subscriptions      subscription
-	receivingChannel   chan commoninterfaces.ChannelRequester
-	sendingChannel     chan commoninterfaces.ChannelRequester
-	cachettl           int
-	port               int
+	//receivingChannel   chan commoninterfaces.ChannelRequester
+	receivingChannel chan datamodels.RequestChan
+	//sendingChannel     chan commoninterfaces.ChannelRequester
+	sendingChannel chan datamodels.RequestChan
+	cachettl       int
+	port           int
 }
 
 type subscription struct {
