@@ -3,7 +3,6 @@ package webhookserver_test
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
@@ -17,7 +16,7 @@ func TestGetter(t *testing.T) {
 	"rootId":     "7yw9243yfw9g27rw",
 	"object": {
 		"createdAt": "2454642554",
-		"caseId":    "1234",
+		"caseId":    1234,
 		"tags":      ["one_tag", "two_tag", "three_tag"]
 	}}`)
 
@@ -47,10 +46,7 @@ func TestGetter(t *testing.T) {
 	})
 
 	t.Run("Test get caseId", func(t *testing.T) {
-		value, err := webhookserver.GetCaseId(list)
-		assert.NoError(t, err)
-
-		caseId, err := strconv.Atoi(value)
+		caseId, err := webhookserver.GetCaseId(list)
 		assert.NoError(t, err)
 
 		assert.Equal(t, caseId, 1234)
