@@ -88,54 +88,55 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			return
 
 		case msg := <-api.receivingChannel:
-			isSendCase := msg.GetCommand() != "send case"
-			isSendAlert := msg.GetCommand() != "send alert"
+			go func(message cint.ChannelRequester) {
+				isSendCase := msg.GetCommand() != "send case"
+				isSendAlert := msg.GetCommand() != "send alert"
 
-			data, ok := msg.GetData().([]byte)
-			if !ok {
-				api.logger.Send("error", supportingfunctions.CustomError(errors.New("it is not possible to convert a value")).Error())
+				data, ok := message.GetData().([]byte)
+				if !ok {
+					api.logger.Send("error", supportingfunctions.CustomError(errors.New("it is not possible to convert a value")).Error())
 
-				continue
-			}
+					return
+				}
 
-			//--------------------------------------------------------------
-			//----------- запись в файл обработанных объектов --------------
-			//--------------------------------------------------------------
-			go func(d []byte) {
-				if str, err := supportingfunctions.NewReadReflectJSONSprint(d); err == nil {
+				//--------------------------------------------------------------
+				//----------- запись в файл обработанных объектов --------------
+				//--------------------------------------------------------------
+				if str, err := supportingfunctions.NewReadReflectJSONSprint(data); err == nil {
 					if str != "" {
 						api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
 					}
 				}
-			}(data)
+				//--------------------------------------------------------------
 
-			if !isSendCase && !isSendAlert {
-				continue
-			}
+				if !isSendCase && !isSendAlert {
+					return
+				}
 
-			var subscription, description string
-			switch msg.GetElementType() {
-			case "case":
-				subscription = api.subscriptions.senderCase
-				description = fmt.Sprintf("%s with id: '%s', rootId:'%s' has been successfully transferred", msg.GetElementType(), msg.GetCaseId(), msg.GetRootId())
+				var subscription, description string
+				switch msg.GetElementType() {
+				case "case":
+					subscription = api.subscriptions.senderCase
+					description = fmt.Sprintf("%s with id: '%s', rootId:'%s' has been successfully transferred", msg.GetElementType(), msg.GetCaseId(), msg.GetRootId())
 
-			case "alert":
-				subscription = api.subscriptions.senderAlert
-				description = fmt.Sprintf("%s with id: '%s' has been successfully transferred", msg.GetElementType(), msg.GetRootId())
+				case "alert":
+					subscription = api.subscriptions.senderAlert
+					description = fmt.Sprintf("%s with id: '%s' has been successfully transferred", msg.GetElementType(), msg.GetRootId())
 
-			default:
-				api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("undefined type '%s' for sending a message to NATS, cannot be processed", msg.GetElementType())).Error())
+				default:
+					api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("undefined type '%s' for sending a message to NATS, cannot be processed", msg.GetElementType())).Error())
 
-				continue
-			}
+					return
+				}
 
-			if err := api.natsConnection.Publish(subscription, data); err != nil {
-				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
-			}
+				if err := api.natsConnection.Publish(subscription, data); err != nil {
+					api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+				}
 
-			api.natsConnection.Flush()
+				api.natsConnection.Flush()
 
-			api.logger.Send("info", description)
+				api.logger.Send("info", description)
+			}(msg)
 		}
 	}
 }
