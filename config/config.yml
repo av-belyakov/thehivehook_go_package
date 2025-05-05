@@ -24,6 +24,14 @@ LOGGING:
       writingDB: true,
     }
   - {
+      msgTypeName: accepted_objects,
+      writingFile: true,
+      pathDirectory: logs,
+      writingStdout: false,
+      maxFileSize: 100000000,
+      writingDB: false,
+    }
+  - {
       msgTypeName: processed_objects,
       writingFile: true,
       pathDirectory: logs,
