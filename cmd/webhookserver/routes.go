@@ -89,12 +89,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 	switch objectType {
 	case "case":
-		cid, err := GetCaseId(eventElement)
-		if err != nil {
-			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
-		}
-
-		caseId, err := strconv.Atoi(cid)
+		caseId, err := GetCaseId(eventElement)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 		}

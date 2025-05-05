@@ -78,26 +78,26 @@ func GetOperation(elem map[string]any) (string, error) {
 }
 
 // GetCaseId получить из карты значение типа "caseId"
-func GetCaseId(elem map[string]any) (string, error) {
+func GetCaseId(elem map[string]any) (int, error) {
 	value, ok := elem["object"]
 	if !ok {
-		return "", supportingfunctions.CustomError(errors.New("the accepted object does not have the property 'object'"))
+		return 0, supportingfunctions.CustomError(errors.New("the accepted object does not have the property 'object'"))
 	}
 
 	object, ok := value.(map[string]any)
 	if !ok {
-		return "", supportingfunctions.CustomError(errors.New("it is not possible to convert a value"))
+		return 0, supportingfunctions.CustomError(errors.New("it is not possible to convert a value"))
 	}
 
 	value, ok = object["caseId"]
 	if !ok {
-		return "", supportingfunctions.CustomError(errors.New("the accepted object does not have the property 'caseId'"))
+		return 0, supportingfunctions.CustomError(errors.New("the accepted object does not have the property 'caseId'"))
 	}
 
-	caseId, ok := value.(string)
+	caseId, ok := value.(float64)
 	if !ok {
-		return "", supportingfunctions.CustomError(errors.New("it is not possible to convert a value"))
+		return 0, supportingfunctions.CustomError(errors.New("it is not possible to convert a value"))
 	}
 
-	return caseId, nil
+	return int(caseId), nil
 }
