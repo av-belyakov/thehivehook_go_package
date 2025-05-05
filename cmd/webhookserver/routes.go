@@ -50,6 +50,17 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		bodyByte = []byte(nil)
 	}()
 
+	//----------------------------------------------------------------------
+	//----------- запись в файл принятых в обработку объектов --------------
+	//----------------------------------------------------------------------
+	go func(d []byte) {
+		if str, err := supportingfunctions.NewReadReflectJSONSprint(d); err == nil {
+			if str != "" {
+				wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
+			}
+		}
+	}(bodyByte)
+
 	err = json.Unmarshal(bodyByte, &eventElement)
 	if err != nil {
 		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
