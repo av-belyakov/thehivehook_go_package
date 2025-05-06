@@ -9,6 +9,8 @@ import (
 )
 
 // NewReadReflectJSONSprint функция выполняет вывод JSON сообщения в виде текста
+// Для данной функции не требуется описание текст, так как обработка JSON сообщения
+// осуществляется с помощью пакета reflect
 func NewReadReflectJSONSprint(b []byte) (string, error) {
 	errSrc := "error decoding the json file, it may be empty"
 	str := strings.Builder{}
@@ -39,8 +41,9 @@ func NewReadReflectJSONSprint(b []byte) (string, error) {
 	return str.String(), fmt.Errorf("the contents of the file are not Map or Slice")
 }
 
-func readReflectAnyTypeSprint(name any, anyType any, str *strings.Builder, num int) {
+func readReflectAnyTypeSprint(name any, anyType any, num int) string {
 	var (
+		str         string
 		nameStr     string
 		isCleanLine bool
 	)
@@ -59,7 +62,7 @@ func readReflectAnyTypeSprint(name any, anyType any, str *strings.Builder, num i
 	}
 
 	if r == nil {
-		return
+		return str
 	}
 
 	switch r.Kind() {
@@ -71,20 +74,22 @@ func readReflectAnyTypeSprint(name any, anyType any, str *strings.Builder, num i
 			dataStr = strings.ReplaceAll(dataStr, "\n", "")
 		}
 
-		str.WriteString(fmt.Sprintf("%s \"%s\"\n", nameStr, dataStr))
+		str = fmt.Sprintf("%s \"%s\"\n", nameStr, dataStr)
 
 	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
-		str.WriteString(fmt.Sprintf("%s %d\n", nameStr, reflect.ValueOf(anyType).Int()))
+		str = fmt.Sprintf("%s %d\n", nameStr, reflect.ValueOf(anyType).Int())
 
 	case reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		str.WriteString(fmt.Sprintf("%s %d\n", nameStr, reflect.ValueOf(anyType).Uint()))
+		str = fmt.Sprintf("%s %d\n", nameStr, reflect.ValueOf(anyType).Uint())
 
 	case reflect.Float32, reflect.Float64:
-		str.WriteString(fmt.Sprintf("%s %v\n", nameStr, int(reflect.ValueOf(anyType).Float())))
+		str = fmt.Sprintf("%s %v\n", nameStr, int(reflect.ValueOf(anyType).Float()))
 
 	case reflect.Bool:
-		str.WriteString(fmt.Sprintf("%s %v\n", nameStr, reflect.ValueOf(anyType).Bool()))
+		str = fmt.Sprintf("%s %v\n", nameStr, reflect.ValueOf(anyType).Bool())
 	}
+
+	return str
 }
 
 func readReflectMapSprint(list map[string]any, str *strings.Builder, num int) {
@@ -94,7 +99,7 @@ func readReflectMapSprint(list map[string]any, str *strings.Builder, num int) {
 		r := reflect.TypeOf(v)
 
 		if r == nil {
-			continue
+			return
 		}
 
 		switch r.Kind() {
@@ -114,7 +119,7 @@ func readReflectMapSprint(list map[string]any, str *strings.Builder, num int) {
 			str.WriteString(fmt.Sprintf("%s: %s (it is array)\n", k, reflect.ValueOf(v).String()))
 
 		default:
-			readReflectAnyTypeSprint(k, v, str, num)
+			str.WriteString(readReflectAnyTypeSprint(k, v, num))
 		}
 	}
 }
@@ -126,7 +131,7 @@ func readReflectSliceSprint(list []any, str *strings.Builder, num int) {
 		r := reflect.TypeOf(v)
 
 		if r == nil {
-			continue
+			return
 		}
 
 		switch r.Kind() {
@@ -146,8 +151,7 @@ func readReflectSliceSprint(list []any, str *strings.Builder, num int) {
 			str.WriteString(fmt.Sprintf("%d. %s (it is array)\n", k, reflect.ValueOf(v).String()))
 
 		default:
-			readReflectAnyTypeSprint(k, v, str, num)
-
+			str.WriteString(readReflectAnyTypeSprint(k, v, num))
 		}
 	}
 }
