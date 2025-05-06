@@ -11,6 +11,7 @@ import (
 
 	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/constants"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/storage"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
@@ -24,6 +25,17 @@ func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 		//передача запросов из NATS
 		sendingChannel: make(chan cint.ChannelRequester),
 	}
+
+	//----- natsapi storage -----
+	sc, err := storage.NewStorageAcceptedCommands(
+		storage.WithMaxSize(16),
+		storage.WithMaxTtl(180),
+		storage.WithTimeTick(2))
+	if err != nil {
+		return api, err
+	}
+
+	api.storageCache = sc
 
 	for _, opt := range opts {
 		if err := opt(api); err != nil {
@@ -41,6 +53,9 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 	if ctx.Err() != nil {
 		return api.receivingChannel, api.sendingChannel, ctx.Err()
 	}
+
+	//инициализация автоматической очистки хранилища
+	api.storageCache.Start(ctx)
 
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", api.host, api.port),
