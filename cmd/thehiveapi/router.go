@@ -18,84 +18,81 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_observables":
-				go func(command, id string) {
-					so := NewSpecialObjectForCache[any]()
-					so.SetID(command + id)
+				so := NewSpecialObjectForCache[any]()
+				so.SetID(msg.GetCommand() + msg.GetRootId())
 
-					//для того что бы выполнить сравнение объектов нужно передать
-					//этот объект so.SetObject
-					//хотя для thehivehook_go может это не надо, надо обдумать!!!
-					//so.SetObject(msg.GetData())
+				//для того что бы выполнить сравнение объектов нужно передать
+				//этот объект so.SetObject
+				//хотя для thehivehook_go может это не надо, надо обдумать!!!
+				//so.SetObject(msg.GetData())
 
-					so.SetFunc(func(_ int) bool {
-						api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", command, id, msg.GetCaseId()))
+				so.SetFunc(func(_ int) bool {
+					api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
 
-						res, statusCode, err := api.GetObservables(ctx, id)
-						if err != nil {
-							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
+					if err != nil {
+						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
-							return false
-						}
+						return false
+					}
 
-						newRes := NewChannelRespons()
-						newRes.SetRequestId(id)
-						newRes.SetStatusCode(statusCode)
-						newRes.SetData(res)
+					newRes := NewChannelRespons()
+					newRes.SetRequestId(msg.GetRequestId())
+					newRes.SetStatusCode(statusCode)
+					newRes.SetData(res)
 
-						api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", command, id, statusCode))
+					api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", msg.GetCommand(), msg.GetRootId(), statusCode))
 
-						select {
-						case <-msg.GetContext().Done():
-							return false
+					select {
+					case <-msg.GetContext().Done():
+						return false
 
-						default:
-							msg.GetChanOutput() <- newRes
+					default:
+						msg.GetChanOutput() <- newRes
 
-						}
+					}
 
-						return true
-					})
+					return true
+				})
 
-					//добавляем объект в очередь для обработки
-					api.cache.PushObjectToQueue(so)
-				}(msg.GetCommand(), msg.GetRootId())
+				//добавляем объект в очередь для обработки
+				api.cache.PushObjectToQueue(so)
 
 			case "get_ttp":
-				go func(command, id string) {
-					so := NewSpecialObjectForCache[any]()
-					so.SetID(command + id)
-					so.SetFunc(func(_ int) bool {
-						api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", command, id, msg.GetCaseId()))
+				so := NewSpecialObjectForCache[any]()
+				so.SetID(msg.GetCommand() + msg.GetRootId())
 
-						res, statusCode, err := api.GetTTP(ctx, id)
-						if err != nil {
-							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+				so.SetFunc(func(_ int) bool {
+					api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
 
-							return false
-						}
+					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
+					if err != nil {
+						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
-						newRes := NewChannelRespons()
-						newRes.SetRequestId(id)
-						newRes.SetStatusCode(statusCode)
-						newRes.SetData(res)
+						return false
+					}
 
-						api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", command, id, statusCode))
+					newRes := NewChannelRespons()
+					newRes.SetRequestId(msg.GetRequestId())
+					newRes.SetStatusCode(statusCode)
+					newRes.SetData(res)
 
-						select {
-						case <-msg.GetContext().Done():
-							return false
+					api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", msg.GetCommand(), msg.GetRootId(), statusCode))
 
-						default:
-							msg.GetChanOutput() <- newRes
+					select {
+					case <-msg.GetContext().Done():
+						return false
 
-						}
+					default:
+						msg.GetChanOutput() <- newRes
 
-						return true
-					})
+					}
 
-					//добавляем объект в очередь для обработки
-					api.cache.PushObjectToQueue(so)
-				}(msg.GetCommand(), msg.GetRootId())
+					return true
+				})
+
+				//добавляем объект в очередь для обработки
+				api.cache.PushObjectToQueue(so)
 
 			case "send_command":
 				rc, err := getRequestCommandData(msg.GetData())

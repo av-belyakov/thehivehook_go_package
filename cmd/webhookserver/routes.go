@@ -53,13 +53,12 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	//----------------------------------------------------------------------
 	//----------- запись в файл принятых в обработку объектов --------------
 	//----------------------------------------------------------------------
-	go func(d []byte) {
-		if str, err := supportingfunctions.NewReadReflectJSONSprint(d); err == nil {
-			if str != "" {
-				wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
-			}
+	if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
+		if str != "" {
+			wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
 		}
-	}(bodyByte)
+	}
+	//----------------------------------------------------------------------
 
 	err = json.Unmarshal(bodyByte, &eventElement)
 	if err != nil {
