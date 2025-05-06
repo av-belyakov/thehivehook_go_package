@@ -101,11 +101,11 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			//--------------------------------------------------------------
 			//----------- запись в файл обработанных объектов --------------
 			//--------------------------------------------------------------
-			go func(d []byte) {
-				if str, err := supportingfunctions.NewReadReflectJSONSprint(d); err == nil {
+			if str, err := supportingfunctions.NewReadReflectJSONSprint(data); err == nil {
+				if str != "" {
 					api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
 				}
-			}(data)
+			}
 			//--------------------------------------------------------------
 
 			if !isSendCase && !isSendAlert {
