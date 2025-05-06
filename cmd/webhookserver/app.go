@@ -54,7 +54,7 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/heap
 	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/allocs
 	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/goroutine
-	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" {
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" || os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
 		routers["/debug/pprof/"] = pprof.Index
 	}
 
