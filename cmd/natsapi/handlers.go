@@ -95,23 +95,21 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			if !ok {
 				api.logger.Send("error", supportingfunctions.CustomError(errors.New("it is not possible to convert a value")).Error())
 
-				continue
+				return
 			}
 
 			//--------------------------------------------------------------
 			//----------- запись в файл обработанных объектов --------------
 			//--------------------------------------------------------------
-			go func(d []byte) {
-				if str, err := supportingfunctions.NewReadReflectJSONSprint(d); err == nil {
-					if str != "" {
-						api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
-					}
+			if str, err := supportingfunctions.NewReadReflectJSONSprint(data); err == nil {
+				if str != "" {
+					api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
 				}
-			}(data)
+			}
 			//--------------------------------------------------------------
 
 			if !isSendCase && !isSendAlert {
-				continue
+				return
 			}
 
 			var subscription, description string
@@ -127,7 +125,7 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 			default:
 				api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("undefined type '%s' for sending a message to NATS, cannot be processed", msg.GetElementType())).Error())
 
-				continue
+				return
 			}
 
 			if err := api.natsConnection.Publish(subscription, data); err != nil {
