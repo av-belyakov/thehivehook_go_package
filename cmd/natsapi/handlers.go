@@ -108,6 +108,7 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 					}
 				}
 			}(data)
+			//--------------------------------------------------------------
 
 			if !isSendCase && !isSendAlert {
 				continue

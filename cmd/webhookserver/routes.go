@@ -60,6 +60,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}(bodyByte)
+	//----------------------------------------------------------------------
 
 	err = json.Unmarshal(bodyByte, &eventElement)
 	if err != nil {
