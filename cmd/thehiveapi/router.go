@@ -19,46 +19,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 			switch msg.GetCommand() {
 			case "get_observables":
 				go func(command, id string) {
-					keyId := command + id
-
-					newRes := NewChannelRespons()
-					newRes.SetRequestId(id)
-					newRes.SetStatusCode(200)
-
-					//ищем в хранилище объект, который возможно уже запрашивали ранее
-					if obj, ok := api.storageCache.GetObject(keyId); ok {
-						api.logger.Send("info", fmt.Sprintf("the object with id:'%s' was found in the cache", command+id))
-
-						newRes.SetData(obj)
-					} else {
-						api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", command, id, msg.GetCaseId()))
-
-						//делаем запрос к TheHive для получения дополнительной информации по объекту
-						res, statusCode, err := api.GetObservables(ctx, id)
-						if err != nil {
-							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
-						} else {
-							api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", command, id, statusCode))
-
-							// добавляем найденный объект в кеш
-							api.storageCache.SetObject(keyId, res)
-							newRes.SetData(res)
-						}
-
-						newRes.SetStatusCode(statusCode)
-					}
-
-					select {
-					case <-msg.GetContext().Done():
-						return
-
-					default:
-						msg.GetChanOutput() <- newRes
-
-					}
-
-					//---- пока уберем для тестирования использования своего собственого хранилища ----
-					/*so := NewSpecialObjectForCache[any]()
+					so := NewSpecialObjectForCache[any]()
 					so.SetID(command + id)
 
 					//для того что бы выполнить сравнение объектов нужно передать
@@ -96,51 +57,12 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					})
 
 					//добавляем объект в очередь для обработки
-					api.cache.PushObjectToQueue(so)*/
+					api.cache.PushObjectToQueue(so)
 				}(msg.GetCommand(), msg.GetRootId())
 
 			case "get_ttp":
 				go func(command, id string) {
-					keyId := command + id
-
-					newRes := NewChannelRespons()
-					newRes.SetRequestId(id)
-					newRes.SetStatusCode(200)
-
-					//ищем в хранилище объект, который возможно уже запрашивали ранее
-					if obj, ok := api.storageCache.GetObject(keyId); ok {
-						api.logger.Send("info", fmt.Sprintf("the object with id:'%s' was found in the cache", command+id))
-
-						newRes.SetData(obj)
-					} else {
-						api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", command, id, msg.GetCaseId()))
-
-						//делаем запрос к TheHive для получения дополнительной информации по объекту
-						res, statusCode, err := api.GetTTP(ctx, id)
-						if err != nil {
-							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
-						} else {
-							api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", command, id, statusCode))
-
-							// добавляем найденный объект в кеш
-							api.storageCache.SetObject(keyId, res)
-							newRes.SetData(res)
-						}
-
-						newRes.SetStatusCode(statusCode)
-					}
-
-					select {
-					case <-msg.GetContext().Done():
-						return
-
-					default:
-						msg.GetChanOutput() <- newRes
-
-					}
-
-					//---- пока уберем для тестирования использования своего собственого хранилища ----
-					/*so := NewSpecialObjectForCache[any]()
+					so := NewSpecialObjectForCache[any]()
 					so.SetID(command + id)
 					so.SetFunc(func(_ int) bool {
 						api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", command, id, msg.GetCaseId()))
@@ -172,7 +94,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					})
 
 					//добавляем объект в очередь для обработки
-					api.cache.PushObjectToQueue(so)*/
+					api.cache.PushObjectToQueue(so)
 				}(msg.GetCommand(), msg.GetRootId())
 
 			case "send_command":
