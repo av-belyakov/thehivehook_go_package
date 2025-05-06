@@ -99,11 +99,10 @@ func (api *apiNatsModule) receivingChannelHandler(ctx context.Context) {
 					return
 				}
 
-			//--------------------------------------------------------------
-			//----------- запись в файл обработанных объектов --------------
-			//--------------------------------------------------------------
-			go func(d []byte) {
-				if str, err := supportingfunctions.NewReadReflectJSONSprint(d); err == nil {
+				//--------------------------------------------------------------
+				//----------- запись в файл обработанных объектов --------------
+				//--------------------------------------------------------------
+				if str, err := supportingfunctions.NewReadReflectJSONSprint(data); err == nil {
 					api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
 				}
 				//--------------------------------------------------------------
