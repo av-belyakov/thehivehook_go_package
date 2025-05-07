@@ -101,9 +101,9 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			if !errors.Is(err, &CreateCaseError{Type: "context"}) {
 				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-				return
 			}
+
+			return
 		}
 
 		readyMadeEventCase.Source = wh.name
