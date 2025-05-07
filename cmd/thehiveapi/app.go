@@ -21,7 +21,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 	//---- пока уберем для тестирования использования своего собственого хранилища ----
 	l := NewLogWrite(logger)
 	cache, err := cachingstoragewithqueue.NewCacheStorage(
-		cachingstoragewithqueue.WithMaxTtl[any](60),
+		cachingstoragewithqueue.WithMaxTtl[any](180),
 		cachingstoragewithqueue.WithTimeTick[any](1),
 		cachingstoragewithqueue.WithMaxSize[any](15),
 		cachingstoragewithqueue.WithEnableAsyncProcessing[any](1),
@@ -56,7 +56,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 // запросы к модулю выполняются через данный канал
 func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
 	//обработка кэша
-	//pi.cache.StartAutomaticExecution(ctx)
+	api.cache.StartAutomaticExecution(ctx)
 
 	//инициализация автоматической очистки хранилища
 	api.storageCache.Start(ctx)
