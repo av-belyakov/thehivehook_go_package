@@ -22,7 +22,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 	l := NewLogWrite(logger)
 	cache, err := cachingstoragewithqueue.NewCacheStorage(
 		cachingstoragewithqueue.WithMaxTtl[any](180),
-		cachingstoragewithqueue.WithTimeTick[any](1),
+		cachingstoragewithqueue.WithTimeTick[any](2),
 		cachingstoragewithqueue.WithMaxSize[any](15),
 		cachingstoragewithqueue.WithEnableAsyncProcessing[any](1),
 		cachingstoragewithqueue.WithLogging[any](l))

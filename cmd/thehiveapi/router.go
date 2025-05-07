@@ -20,6 +20,8 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 			case "get_observables":
 				keyId := msg.GetCommand() + msg.GetRootId()
 
+				api.logger.Send("info", fmt.Sprintf("--- Search request accepted, command:'%s', root id:'%s' (case:'%s') ketId:'%s'", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId(), keyId))
+
 				so := NewSpecialObjectForCache[any]()
 				so.SetID(keyId)
 
@@ -75,6 +77,8 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 			case "get_ttp":
 				keyId := msg.GetCommand() + msg.GetRootId()
+
+				api.logger.Send("info", fmt.Sprintf("--- Search request accepted, command:'%s', root id:'%s' (case:'%s') ketId:'%s'", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId(), keyId))
 
 				so := NewSpecialObjectForCache[any]()
 				so.SetID(keyId)
