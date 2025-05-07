@@ -29,7 +29,7 @@ func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 	//----- natsapi storage -----
 	sc, err := storage.NewStorageAcceptedCommands(
 		storage.WithMaxSize(16),
-		storage.WithMaxTtl(180),
+		storage.WithMaxTtl(180), //поставим пока время равное 3 минутам
 		storage.WithTimeTick(2))
 	if err != nil {
 		return api, err
@@ -54,7 +54,11 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 		return api.receivingChannel, api.sendingChannel, ctx.Err()
 	}
 
-	//инициализация автоматической очистки хранилища
+	//инициализация автоматической очистки хранилища используемого для хранения
+	//принимаемых, через NATS, команд
+	//сделал для того что бы избежать повторной отправки одной и той же команды
+	//предназначенной для одного и того же объекта передаваемой за короткий
+	//промежуток времени
 	api.storageCache.Start(ctx)
 
 	nc, err := nats.Connect(
