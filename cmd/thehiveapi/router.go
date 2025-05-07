@@ -31,7 +31,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				//so.SetObject(msg.GetData())
 
 				so.SetFunc(func(_ int) bool {
-					api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+					api.logger.Send("info", fmt.Sprintf("start search object, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
 
 					newRes := NewChannelRespons()
 					newRes.SetRequestId(msg.GetRequestId())
@@ -89,7 +89,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				//so.SetObject(msg.GetData())
 
 				so.SetFunc(func(_ int) bool {
-					api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+					api.logger.Send("info", fmt.Sprintf("start search object, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
 
 					newRes := NewChannelRespons()
 					newRes.SetRequestId(msg.GetRequestId())
