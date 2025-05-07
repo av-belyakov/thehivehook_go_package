@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-// NewStorageFoundObjects инициализация кеширующего хранилища объектов
-func NewStorageFoundObjects(opts ...cacheOptions) (*StorageFoundObjects, error) {
-	storage := &StorageFoundObjects{
+// NewStorageAcceptedCommands инициализация хранилища команд
+func NewStorageAcceptedCommands(opts ...cacheOptions) (*StorageAcceptedCommands, error) {
+	storage := &StorageAcceptedCommands{
 		//значение по умолчанию для интервала автоматической обработки
 		timeTick: time.Duration(5 * time.Second),
 		//значение по умолчанию для времени жизни объекта
 		maxTtl: time.Duration(3600 * time.Second),
 		//хранилище объектов
 		storages: storage{
-			foundObjects: map[string]foundObject{},
+			objects: map[string]Object{},
 		},
 	}
 
@@ -28,7 +28,7 @@ func NewStorageFoundObjects(opts ...cacheOptions) (*StorageFoundObjects, error) 
 	return storage, nil
 }
 
-func (s *StorageFoundObjects) Start(ctx context.Context) {
+func (s *StorageAcceptedCommands) Start(ctx context.Context) {
 	go func() {
 		tick := time.NewTicker(s.timeTick)
 		defer tick.Stop()
@@ -51,7 +51,7 @@ func (s *StorageFoundObjects) Start(ctx context.Context) {
 // WithMaxTtl устанавливает максимальное время, по истечении которого запись в cacheStorages будет
 // удалена, допустимый интервал времени хранения записи от 5 до 3600 секунд
 func WithMaxTtl(v int) cacheOptions {
-	return func(s *StorageFoundObjects) error {
+	return func(s *StorageAcceptedCommands) error {
 		if v < 5 || v > 3600 {
 			return errors.New("the maximum time after which an entry in the cache will be deleted should not be less than 300 seconds or more than 24 hours (86400 seconds)")
 		}
@@ -66,7 +66,7 @@ func WithMaxTtl(v int) cacheOptions {
 // запускается новый виток автоматической обработки содержимого кэша, интервал значений должен
 // быть в диапазоне от 1 до 120 секунд
 func WithTimeTick(v int) cacheOptions {
-	return func(s *StorageFoundObjects) error {
+	return func(s *StorageAcceptedCommands) error {
 		if v < 1 || v > 120 {
 			return errors.New("the set clock cycle time should not be less than 3 seconds or more than 120 seconds")
 		}
@@ -79,7 +79,7 @@ func WithTimeTick(v int) cacheOptions {
 
 // WithMaxSize устанавливает максимальный размер кэша, не может быть меньше 3 и больше 1000
 func WithMaxSize(v int) cacheOptions {
-	return func(s *StorageFoundObjects) error {
+	return func(s *StorageAcceptedCommands) error {
 		if v < 3 || v > 1000 {
 			return errors.New("the maximum cache size cannot be less than 3 or more than 1000 objects")
 		}

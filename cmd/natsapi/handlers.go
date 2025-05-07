@@ -40,6 +40,18 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 		close(ch)
 	}(ctxTimeoutCancel, chRes)
 
+	keyId := fmt.Sprintf("%s_%s", rc.RootId, rc.Command)
+
+	// поиск команды для объекта с определенным id поступившей за ближайшее время
+	// это своего рода защитный механизм для предотвращения цикличных запросов
+	if _, ok := api.storageCache.GetObject(keyId); ok {
+		//подобная команда уже есть в хранилище, исключаем её передачу
+		//берём временную паузу, равную времени жизни объекта
+		return
+	}
+
+	api.storageCache.SetObject(keyId, []byte(rc.Command))
+
 	api.sendingChannel <- &RequestFromNats{
 		RequestId:  id,
 		Command:    "send_command",

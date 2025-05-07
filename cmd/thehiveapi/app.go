@@ -35,10 +35,11 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 		storage.WithMaxSize(16),
 		storage.WithMaxTtl(180),
 		storage.WithTimeTick(2))
-	api.storageCache = sc
 	if err != nil {
 		return api, err
 	}
+
+	api.storageCache = sc
 
 	for _, opt := range opts {
 		if err := opt(api); err != nil {

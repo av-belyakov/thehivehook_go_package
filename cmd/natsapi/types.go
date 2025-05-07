@@ -4,15 +4,17 @@ import (
 	"github.com/nats-io/nats.go"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/storage"
 )
 
 // apiNatsSettings настройки для API NATS
 type apiNatsModule struct {
 	natsConnection     *nats.Conn
 	logger             commoninterfaces.Logger
+	storageCache       *storage.StorageAcceptedCommands
+	subscriptions      subscription
 	host               string
 	nameRegionalObject string
-	subscriptions      subscription
 	receivingChannel   chan commoninterfaces.ChannelRequester
 	sendingChannel     chan commoninterfaces.ChannelRequester
 	cachettl           int
