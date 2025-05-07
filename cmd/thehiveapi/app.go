@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/av-belyakov/cachingstoragewithqueue"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/storage"
 )
@@ -18,17 +19,17 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 	}
 
 	//---- пока уберем для тестирования использования своего собственого хранилища ----
-	//l := NewLogWrite(logger)
-	//cache, err := cachingstoragewithqueue.NewCacheStorage(
-	//	cachingstoragewithqueue.WithMaxTtl[any](60),
-	//	cachingstoragewithqueue.WithTimeTick[any](1),
-	//	cachingstoragewithqueue.WithMaxSize[any](15),
-	//	cachingstoragewithqueue.WithEnableAsyncProcessing[any](1),
-	//	cachingstoragewithqueue.WithLogging[any](l))
-	//if err != nil {
-	//	return api, err
-	//}
-	//api.cache = cache
+	l := NewLogWrite(logger)
+	cache, err := cachingstoragewithqueue.NewCacheStorage(
+		cachingstoragewithqueue.WithMaxTtl[any](180),
+		cachingstoragewithqueue.WithTimeTick[any](1),
+		cachingstoragewithqueue.WithMaxSize[any](15),
+		cachingstoragewithqueue.WithEnableAsyncProcessing[any](1),
+		cachingstoragewithqueue.WithLogging[any](l))
+	if err != nil {
+		return api, err
+	}
+	api.cache = cache
 
 	//----- thehiveapi storage -----
 	sc, err := storage.NewStorageFoundObjects(
@@ -55,7 +56,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 // запросы к модулю выполняются через данный канал
 func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
 	//обработка кэша
-	//pi.cache.StartAutomaticExecution(ctx)
+	api.cache.StartAutomaticExecution(ctx)
 
 	//инициализация автоматической очистки хранилища
 	api.storageCache.Start(ctx)
