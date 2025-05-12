@@ -34,17 +34,17 @@ func server(ctx context.Context) {
 	}
 
 	//чтение конфигурационного файла
-	confApp, err := confighandler.NewConfig(rootPath)
+	conf, err := confighandler.NewConfig(rootPath)
 	if err != nil {
 		log.Fatalf("error module 'confighandler': %s", err.Error())
 	}
 
-	confWebHook := confApp.GetApplicationWebHookServer()
+	confWebHook := conf.GetApplicationWebHookServer()
 
 	// ****************************************************************************
 	// ********************* инициализация модуля логирования *********************
-	var listLog []simplelogger.OptionsManager
-	for _, v := range confApp.GetListLogs() {
+	listLog := make([]simplelogger.OptionsManager, 0, len(conf.GetListLogs()))
+	for _, v := range conf.GetListLogs() {
 		listLog = append(listLog, v)
 	}
 	opts := simplelogger.CreateOptions(listLog...)
@@ -55,7 +55,7 @@ func server(ctx context.Context) {
 
 	//*********************************************************************************
 	//********** инициализация модуля взаимодействия с БД для передачи логов **********
-	confDB := confApp.GetApplicationWriteLogDB()
+	confDB := conf.GetApplicationWriteLogDB()
 	if esc, err := elasticsearchapi.NewElasticsearchConnect(elasticsearchapi.Settings{
 		Port:               confDB.Port,
 		Host:               confDB.Host,
@@ -73,9 +73,14 @@ func server(ctx context.Context) {
 	//******************************************************************
 	//********** инициализация модуля взаимодействия с Zabbix **********
 	chZabbix := make(chan commoninterfaces.Messager)
-	eventTypes := []wrappers.EventType(nil)
-	for _, v := range confApp.Zabbix.EventTypes {
-		eventTypes = append(eventTypes, wrappers.EventType{
+	zabbixSettings := wrappers.WrappersZabbixInteractionSettings{
+		NetworkPort: conf.Zabbix.NetworkPort,
+		NetworkHost: conf.Zabbix.NetworkHost,
+		ZabbixHost:  conf.Zabbix.ZabbixHost,
+		EventTypes:  make([]wrappers.EventType, len(conf.Zabbix.EventTypes)),
+	}
+	for _, v := range conf.Zabbix.EventTypes {
+		zabbixSettings.EventTypes = append(zabbixSettings.EventTypes, wrappers.EventType{
 			IsTransmit: v.IsTransmit,
 			EventType:  v.EventType,
 			ZabbixKey:  v.ZabbixKey,
@@ -85,13 +90,7 @@ func server(ctx context.Context) {
 			},
 		})
 	}
-	wzSettings := wrappers.WrappersZabbixInteractionSettings{
-		NetworkPort: confApp.Zabbix.NetworkPort,
-		NetworkHost: confApp.Zabbix.NetworkHost,
-		ZabbixHost:  confApp.Zabbix.ZabbixHost,
-		EventTypes:  eventTypes,
-	}
-	wrappers.WrappersZabbixInteraction(ctx, wzSettings, simpleLogger, chZabbix)
+	wrappers.WrappersZabbixInteraction(ctx, zabbixSettings, simpleLogger, chZabbix)
 
 	//******************************************************************
 	//********** инициализация обработчика логирования данных **********
@@ -100,7 +99,7 @@ func server(ctx context.Context) {
 
 	//******************************************************************
 	//************** инициализация TheHive API модуля ******************
-	confTheHiveAPI := confApp.GetApplicationTheHive()
+	confTheHiveAPI := conf.GetApplicationTheHive()
 	apiTheHive, err := thehiveapi.New(
 		logging,
 		thehiveapi.WithAPIKey(confTheHiveAPI.ApiKey),
@@ -120,7 +119,7 @@ func server(ctx context.Context) {
 
 	//***************************************************
 	//********** инициализация NATS API модуля **********
-	confNatsSAPI := confApp.GetApplicationNATS()
+	confNatsSAPI := conf.GetApplicationNATS()
 	natsOptsAPI := []natsapi.NatsApiOptions{
 		natsapi.WithHost(confNatsSAPI.Host),
 		natsapi.WithPort(confNatsSAPI.Port),
@@ -145,7 +144,7 @@ func server(ctx context.Context) {
 	//********** инициализация WEBHOOKSERVER сервера ************
 	webHook, chForSomebody, err := webhookserver.New(
 		logging,
-		webhookserver.WithTTL(confApp.TTLTmpInfo),
+		webhookserver.WithTTL(conf.TTLTmpInfo),
 		webhookserver.WithPort(confWebHook.Port),
 		webhookserver.WithHost(confWebHook.Host),
 		webhookserver.WithName(confWebHook.Name),
