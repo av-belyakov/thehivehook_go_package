@@ -3,21 +3,21 @@ package wrappers
 import (
 	"context"
 	"fmt"
-	"runtime"
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 	zabbixapicommunicator "github.com/av-belyakov/zabbixapicommunicator/cmd"
 )
 
-// WrappersZabbixInteraction обертка для взаимодействия с модулем zabbixapi
+// WrappersZabbixInteraction обёртка для взаимодействия с модулем zabbixapi
 func WrappersZabbixInteraction(
 	ctx context.Context,
 	settings WrappersZabbixInteractionSettings,
-	writerLoggingData commoninterfaces.WriterLoggingData,
+	logging commoninterfaces.WriterLoggingData,
 	channelZabbix <-chan commoninterfaces.Messager) {
 
-	connTimeout := time.Duration(7 * time.Second)
+	connTimeout := time.Duration(5 * time.Second)
 	zc, err := zabbixapicommunicator.New(zabbixapicommunicator.SettingsZabbixConnection{
 		Port:              settings.NetworkPort,
 		Host:              settings.NetworkHost,
@@ -26,8 +26,7 @@ func WrappersZabbixInteraction(
 		ConnectionTimeout: &connTimeout,
 	})
 	if err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		writerLoggingData.Write("error", fmt.Sprintf("zabbix module: '%s' %s:%d", err.Error(), f, l-1))
+		logging.Write("error", supportingfunctions.CustomError(fmt.Errorf("zabbix module: %w", err)).Error())
 
 		return
 	}
@@ -47,8 +46,7 @@ func WrappersZabbixInteraction(
 
 	recipient := make(chan zabbixapicommunicator.Messager)
 	if err = zc.Start(ctx, et, recipient); err != nil {
-		_, f, l, _ := runtime.Caller(0)
-		writerLoggingData.Write("error", fmt.Sprintf("zabbix module: '%s' %s:%d", err.Error(), f, l-1))
+		logging.Write("error", supportingfunctions.CustomError(fmt.Errorf("zabbix module: %w", err)).Error())
 
 		return
 	}
@@ -67,7 +65,7 @@ func WrappersZabbixInteraction(
 				recipient <- newMessageSettings
 
 			case errMsg := <-zc.GetChanErr():
-				writerLoggingData.Write("error", fmt.Sprintf("zabbix module: '%s'", errMsg.Error()))
+				logging.Write("error", supportingfunctions.CustomError(fmt.Errorf("zabbix module: %W", errMsg)).Error())
 
 			}
 		}
