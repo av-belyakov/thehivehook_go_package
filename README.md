@@ -52,7 +52,7 @@
 - GO_HIVEHOOK_DBWLOGHOST // доменное имя или ip БД
 - GO_HIVEHOOK_DBWLOGPORT // порт БД
 - GO_HIVEHOOK_DBWLOGNAME // наименование БД (при необходимости)
-- GO_HIVEHOOK_DBWLOGSTORAGENAME // наименование объекта хранения логов (таблица, документ, индекс и т.д. зависит от типа БД)
+- GO_HIVEHOOK_DBWLOGSTORAGENAME // наименование объекта хранения логов (таблица, документ, индекс и т.д., зависит от типа БД)
 - GO_HIVEHOOK_DBWLOGUSER // пользователь БД
 - GO_HIVEHOOK_DBWLOGPASSWD // пароль для доступа к БД
 

@@ -53,13 +53,11 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	//----------------------------------------------------------------------
 	//----------- запись в файл принятых в обработку объектов --------------
 	//----------------------------------------------------------------------
-	go func(d []byte) {
-		if str, err := supportingfunctions.NewReadReflectJSONSprint(d); err == nil {
-			if str != "" {
-				wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
-			}
+	if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
+		if str != "" {
+			wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
 		}
-	}(bodyByte)
+	}
 	//----------------------------------------------------------------------
 
 	err = json.Unmarshal(bodyByte, &eventElement)
@@ -151,7 +149,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//ВНИМАНИЕ!!! На данный момент этот модуль еще ничего не обогащает
 		//нужно ли делать модуль обогатитель пока не ясно
 		//пока до решения этого впроса я еще не дошёл
-		readyMadeEventAlert, err := CreateEvenAlert(r.Context(), rootId, wh.chanInput)
+		readyMadeEventAlert, err := CreateEvenAlert(rootId, wh.chanInput)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
