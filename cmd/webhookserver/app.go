@@ -86,10 +86,10 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 			govisual.WithResponseBodyLogging(true),
 			govisual.WithServiceName(appname.GetName()),
 			govisual.WithServiceVersion(version),
-			govisual.WithPostgresStorage(
-				"postgres://postgres:p@ssWD@localhost:5432/postgres?sslmode=disable",
-				"govisual_requests",
-			),
+			//govisual.WithPostgresStorage(
+			//	"postgres://postgres:p@ssWD@localhost:5432/postgres?sslmode=disable",
+			//	"govisual_requests",
+			//),
 		)
 	}
 
