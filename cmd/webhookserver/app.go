@@ -12,6 +12,9 @@ import (
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
+	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
+	"github.com/doganarif/govisual"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -69,6 +72,25 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 		BaseContext: func(_ net.Listener) context.Context {
 			return ctx
 		},
+	}
+
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" {
+		var version string
+		version, _ = appversion.GetAppVersion()
+
+		wh.server.Handler = govisual.Wrap(
+			mux,
+			govisual.WithMaxRequests(150),
+			//govisual.WithDashboardPath("/visual"),
+			govisual.WithRequestBodyLogging(true),
+			govisual.WithResponseBodyLogging(true),
+			govisual.WithServiceName(appname.GetName()),
+			govisual.WithServiceVersion(version),
+			//govisual.WithPostgresStorage(
+			//	"postgres://postgres:p@ssWD@localhost:5432/postgres?sslmode=disable",
+			//	"govisual_requests",
+			//),
+		)
 	}
 
 	g, gCtx := errgroup.WithContext(ctx)
