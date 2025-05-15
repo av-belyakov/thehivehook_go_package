@@ -118,6 +118,8 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		readyMadeEventCase = &ReadyMadeEventCase{}
+
 		//передача в NATS
 		sendData := NewChannelRequest()
 		sendData.SetRootId(rootId)

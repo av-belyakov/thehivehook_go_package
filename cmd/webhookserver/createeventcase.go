@@ -13,8 +13,8 @@ import (
 
 // CreateEvenCase создает новый объект case, содержащий дополнительную информацию типа объектов observables
 // и ttp информацию по которым дополнительно запрашивают из TheHive
-func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput chan<- ChanFromWebHookServer) (ReadyMadeEventCase, error) {
-	rmec := ReadyMadeEventCase{}
+func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput chan<- ChanFromWebHookServer) (*ReadyMadeEventCase, error) {
+	rmec := &ReadyMadeEventCase{}
 	createCaseErr := &CreateCaseError{}
 
 	chanResObservable := make(chan commoninterfaces.ChannelResponser)
