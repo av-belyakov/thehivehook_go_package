@@ -90,6 +90,44 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch objectType {
+	case "alert":
+		wh.logger.Send("info", fmt.Sprintf("received alert rootId:'%s', operation:'%s'", rootId, operation))
+
+		if operation == "delete" {
+			return
+		}
+
+		readyMadeEventAlert, err := CreateEvenAlert(r.Context(), rootId, wh.chanInput)
+		if err != nil {
+			if !errors.Is(err, &datamodels.CustomError{Type: "context"}) {
+				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+			}
+
+			return
+		}
+
+		readyMadeEventAlert.Source = wh.name
+		readyMadeEventAlert.Event = eventElement
+
+		ea, err := json.Marshal(readyMadeEventAlert)
+		if err != nil {
+			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+			return
+		}
+
+		//передача в NATS
+		sendData := NewChannelRequest()
+		sendData.SetRootId(rootId)
+		sendData.SetElementType(objectType)
+		sendData.SetCommand("send alert")
+		sendData.SetData(ea)
+
+		wh.chanInput <- ChanFromWebHookServer{
+			ForSomebody: "to nats",
+			Data:        sendData,
+		}
+
 	case "case":
 		caseId, err := GetCaseId(eventElement)
 		if err != nil {
@@ -141,42 +179,5 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	case "case_artifact":
 	case "case_task":
 	case "case_task_log":
-	case "alert":
-		wh.logger.Send("info", fmt.Sprintf("received alert rootId:'%s', operation:'%s'", rootId, operation))
-
-		if operation == "delete" {
-			return
-		}
-
-		readyMadeEventAlert, err := CreateEvenAlert(r.Context(), rootId, wh.chanInput)
-		if err != nil {
-			if !errors.Is(err, &datamodels.CustomError{Type: "context"}) {
-				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
-			}
-
-			return
-		}
-
-		readyMadeEventAlert.Source = wh.name
-		readyMadeEventAlert.Event = eventElement
-
-		ea, err := json.Marshal(readyMadeEventAlert)
-		if err != nil {
-			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-			return
-		}
-
-		//передача в NATS
-		sendData := NewChannelRequest()
-		sendData.SetRootId(rootId)
-		sendData.SetElementType(objectType)
-		sendData.SetCommand("send alert")
-		sendData.SetData(ea)
-
-		wh.chanInput <- ChanFromWebHookServer{
-			ForSomebody: "to nats",
-			Data:        sendData,
-		}
 	}
 }
