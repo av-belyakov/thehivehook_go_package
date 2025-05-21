@@ -9,13 +9,14 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 )
 
 // CreateEvenCase создает новый объект case, содержащий дополнительную информацию типа объектов observables
 // и ttp информацию по которым дополнительно запрашивают из TheHive
 func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput chan<- ChanFromWebHookServer) (*ReadyMadeEventCase, error) {
 	rmec := &ReadyMadeEventCase{}
-	createCaseErr := &CreateCaseError{}
+	customError := &datamodels.CustomError{}
 
 	chanResObservable := make(chan commoninterfaces.ChannelResponser)
 	defer close(chanResObservable)
@@ -30,18 +31,18 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 	g.Go(func() error {
 		select {
 		case <-ctx.Done():
-			createCaseErr.Type = "context"
-			createCaseErr.Err = ctx.Err()
+			customError.Type = "context"
+			customError.Err = ctx.Err()
 
-			return createCaseErr
+			return customError
 
 		case res := <-chanResObservable:
 			msg := []any{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
-				createCaseErr.Type = "json"
-				createCaseErr.Err = err
+				customError.Type = "json"
+				customError.Err = err
 
-				return createCaseErr
+				return customError
 			}
 
 			rmec.Observables = msg
@@ -52,18 +53,18 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 	g.Go(func() error {
 		select {
 		case <-ctx.Done():
-			createCaseErr.Type = "context"
-			createCaseErr.Err = ctx.Err()
+			customError.Type = "context"
+			customError.Err = ctx.Err()
 
-			return createCaseErr
+			return customError
 
 		case res := <-chanResTTL:
 			msg := []any{}
 			if err := json.Unmarshal(res.GetData(), &msg); err != nil {
-				createCaseErr.Type = "json"
-				createCaseErr.Err = err
+				customError.Type = "json"
+				customError.Err = err
 
-				return createCaseErr
+				return customError
 			}
 
 			rmec.TTPs = msg

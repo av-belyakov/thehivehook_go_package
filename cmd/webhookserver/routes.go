@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
@@ -99,7 +100,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		readyMadeEventCase, err := CreateEvenCase(r.Context(), rootId, caseId, wh.chanInput)
 		if err != nil {
-			if !errors.Is(err, &CreateCaseError{Type: "context"}) {
+			if !errors.Is(err, &datamodels.CustomError{Type: "context"}) {
 				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
 
@@ -145,11 +146,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//*****************************************************************
-		//ВНИМАНИЕ!!! На данный момент этот модуль еще ничего не обогащает
-		//нужно ли делать модуль обогатитель пока не ясно
-		//пока до решения этого впроса я еще не дошёл
-		readyMadeEventAlert, err := CreateEvenAlert(rootId, wh.chanInput)
+		readyMadeEventAlert, err := CreateEvenAlert(r.Context(), rootId, wh.chanInput)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 

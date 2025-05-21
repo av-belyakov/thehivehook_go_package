@@ -4,15 +4,18 @@
 # для удаления временного образа, можно через ci/cd, можно руками 
 # docker image prune -a --force --filter="label=temporary"
 
-FROM golang:1.24.3-alpine AS packages_image
+ARG TAG_NAME=1.24.3-alpine
+ARG IMAGE_NAME=alpine
+
+FROM golang:${TAG_NAME} AS packages_image
 ENV PATH=/usr/local/go/bin:$PATH
 WORKDIR /go/src
 COPY go.mod go.sum ./
-RUN echo 'packages_image' && \
+RUN echo "packages_image" && \
     go mod download
 
-FROM golang:1.24.3-alpine AS build_image
-LABEL temporary=''
+FROM golang:${TAG_NAME} AS build_image
+LABEL temporary=""
 ARG BRANCH
 ARG VERSION
 WORKDIR /go/
@@ -21,15 +24,18 @@ RUN echo -e "build_image" && \
     rm -r ./src && \
     apk update && \
     apk add --no-cache git && \
-    git clone -b ${BRANCH} https://github.com/av-belyakov/thehivehook_go_package.git  ./src/${VERSION}/ && \
+    # брать исходный код с репозитория на gitlab.cloud.gcm 
+    git clone -b ${BRANCH} http://gitlab.cloud.gcm/a.belyakov/thehivehook_go_package.git ./src/${VERSION}/ && \
+    # брать исходный код с репозитория на github.com 
+    #git clone -b ${BRANCH} https://github.com/av-belyakov/thehivehook_go_package.git  ./src/${VERSION}/ && \
     go build -C ./src/${VERSION}/cmd/ -o ../app
 
-FROM alpine
-LABEL author='Artemij Belyakov'
+FROM ${IMAGE_NAME}
+LABEL author="Artemij Belyakov"
 #аргумент STATUS содержит режим запуска приложения prod или development
 #если значение содержит запись development, то в таком режиме и будет
 #работать приложение, во всех остальных случаях режим работы prod
-ARG STATUS=''
+ARG STATUS=""
 ARG VERSION
 ARG USERNAME=dockeruser
 ARG US_DIR=/opt/thehivehook_go_package

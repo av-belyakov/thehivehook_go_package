@@ -25,14 +25,9 @@ stages:
 .docker-login-script: &docker-login
   - echo $CI_JOB_TOKEN | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
 
+# удаляет образ с заданной меткой
 .docker-image-prune: &docker-image-pure
   - docker image prune -a --force --filter="label=temporary"
-
-.change-readme-never-commit: &readme-no-commit
-  - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
-    changes:
-      - README.md
-    when: never
 
 .change-readme-commit: &readme-commit
   - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
@@ -40,6 +35,24 @@ stages:
       - README.md
     when: on_success
 
+# не выполнять если изменился файл README.md
+.change-readme-never-commit: &readme-no-commit
+  - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
+    changes:
+      - README.md
+    when: never
+
+# не выполнять если изменился один из файлов config.yml, config_dev.yml, config_test.yml или config_prod.yml
+.change-configs-never-commit: &configs-no-commit
+  - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
+    changes:
+      - config.yml
+      - config_dev.yml
+      - config_test.yml
+      - config_prod.yml
+    when: never
+
+# не выполнять если изменился один из файлов docker-compose.yml, docker-compose.rcm.yml или docker-compose.test.yml
 .change-docker-compose-never-commit: &docker-compose-no-commit
   - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_BRANCH == $BRANCH_TEST
     changes:
@@ -130,6 +143,7 @@ build-test:
   <<: *build-tags
   rules:
     - *readme-no-commit
+    - *configs-no-commit
     - *docker-compose-no-commit
     - *dev-test-commit
   script:
@@ -153,6 +167,7 @@ build-prod:
   <<: *build-tags
   rules:
     - *readme-no-commit
+    - *configs-no-commit
     - *docker-compose-no-commit
     - *master-commit
   script:
