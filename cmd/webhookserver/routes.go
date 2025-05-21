@@ -150,7 +150,9 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 		readyMadeEventAlert, err := CreateEvenAlert(r.Context(), rootId, wh.chanInput)
 		if err != nil {
-			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+			if !errors.Is(err, &datamodels.CustomError{Type: "context"}) {
+				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+			}
 
 			return
 		}
