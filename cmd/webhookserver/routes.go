@@ -54,9 +54,11 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	//----------------------------------------------------------------------
 	//----------- запись в файл принятых в обработку объектов --------------
 	//----------------------------------------------------------------------
-	if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
-		if str != "" {
-			wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" || os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
+		if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
+			if str != "" {
+				wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
+			}
 		}
 	}
 	//----------------------------------------------------------------------

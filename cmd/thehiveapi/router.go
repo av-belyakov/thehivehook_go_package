@@ -20,8 +20,6 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 			case "get_alert":
 				keyId := msg.GetCommand() + msg.GetRootId()
 
-				api.logger.Send("info", fmt.Sprintf("--- Search alert request accepted, command:'%s', root id:'%s' keyId:'%s'", msg.GetCommand(), msg.GetRootId(), keyId))
-
 				so := NewSpecialObjectForCache[any]()
 				so.SetID(keyId)
 
