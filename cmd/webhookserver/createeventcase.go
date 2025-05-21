@@ -46,9 +46,9 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 			}
 
 			rmec.Observables = msg
-		}
 
-		return nil
+			return nil
+		}
 	})
 	g.Go(func() error {
 		select {
@@ -68,9 +68,9 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 			}
 
 			rmec.TTPs = msg
-		}
 
-		return nil
+			return nil
+		}
 	})
 
 	//запрос на поиск дополнительной информации об Observables
