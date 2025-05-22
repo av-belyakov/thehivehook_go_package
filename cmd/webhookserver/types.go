@@ -52,9 +52,3 @@ type ReadyMadeEventAlert struct {
 	Alert  map[string]any `json:"alert"`
 	Source string         `json:"source"`
 }
-
-// CreateCaseError
-type CreateCaseError struct {
-	Type string
-	Err  error
-}

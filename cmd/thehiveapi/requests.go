@@ -14,6 +14,19 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
+// GetAlert формирует запрос на получения из TheHive объекта типа 'alert'
+func (api *apiTheHiveModule) GetAlert(ctx context.Context, rootId string) ([]byte, int, error) {
+	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 15*time.Second)
+	defer ctxCancel()
+
+	res, statusCode, err := api.query(ctxTimeout, fmt.Sprintf("/api/alert/%s", rootId), []byte{}, "GET")
+	if err != nil {
+		return nil, statusCode, supportingfunctions.CustomError(err)
+	}
+
+	return res, statusCode, err
+}
+
 // GetObservables формирует запрос на получения из TheHive объекта типа 'observables'
 func (api *apiTheHiveModule) GetObservables(ctx context.Context, rootId string) ([]byte, int, error) {
 	req, err := json.Marshal(Querys{

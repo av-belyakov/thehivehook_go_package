@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
@@ -53,9 +54,11 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	//----------------------------------------------------------------------
 	//----------- запись в файл принятых в обработку объектов --------------
 	//----------------------------------------------------------------------
-	if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
-		if str != "" {
-			wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" || os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
+		if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
+			if str != "" {
+				wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
+			}
 		}
 	}
 	//----------------------------------------------------------------------
@@ -87,6 +90,44 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch objectType {
+	case "alert":
+		wh.logger.Send("info", fmt.Sprintf("received alert rootId:'%s', operation:'%s'", rootId, operation))
+
+		if operation == "delete" {
+			return
+		}
+
+		readyMadeEventAlert, err := CreateEvenAlert(r.Context(), rootId, wh.chanInput)
+		if err != nil {
+			if !errors.Is(err, &datamodels.CustomError{Type: "context"}) {
+				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+			}
+
+			return
+		}
+
+		readyMadeEventAlert.Source = wh.name
+		readyMadeEventAlert.Event = eventElement
+
+		ea, err := json.Marshal(readyMadeEventAlert)
+		if err != nil {
+			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+			return
+		}
+
+		//передача в NATS
+		sendData := NewChannelRequest()
+		sendData.SetRootId(rootId)
+		sendData.SetElementType(objectType)
+		sendData.SetCommand("send alert")
+		sendData.SetData(ea)
+
+		wh.chanInput <- ChanFromWebHookServer{
+			ForSomebody: "to nats",
+			Data:        sendData,
+		}
+
 	case "case":
 		caseId, err := GetCaseId(eventElement)
 		if err != nil {
@@ -99,7 +140,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 		//и ttp через модуль взаимодействия с API TheHive в TheHive
 		readyMadeEventCase, err := CreateEvenCase(r.Context(), rootId, caseId, wh.chanInput)
 		if err != nil {
-			if !errors.Is(err, &CreateCaseError{Type: "context"}) {
+			if !errors.Is(err, &datamodels.CustomError{Type: "context"}) {
 				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
 
@@ -138,44 +179,5 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	case "case_artifact":
 	case "case_task":
 	case "case_task_log":
-	case "alert":
-		wh.logger.Send("info", fmt.Sprintf("received alert rootId:'%s', operation:'%s'", rootId, operation))
-
-		if operation == "delete" {
-			return
-		}
-
-		//*****************************************************************
-		//ВНИМАНИЕ!!! На данный момент этот модуль еще ничего не обогащает
-		//нужно ли делать модуль обогатитель пока не ясно
-		//пока до решения этого впроса я еще не дошёл
-		readyMadeEventAlert, err := CreateEvenAlert(rootId, wh.chanInput)
-		if err != nil {
-			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-			return
-		}
-
-		readyMadeEventAlert.Source = wh.name
-		readyMadeEventAlert.Event = eventElement
-
-		ea, err := json.Marshal(readyMadeEventAlert)
-		if err != nil {
-			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-			return
-		}
-
-		//передача в NATS
-		sendData := NewChannelRequest()
-		sendData.SetRootId(rootId)
-		sendData.SetElementType(objectType)
-		sendData.SetCommand("send alert")
-		sendData.SetData(ea)
-
-		wh.chanInput <- ChanFromWebHookServer{
-			ForSomebody: "to nats",
-			Data:        sendData,
-		}
 	}
 }

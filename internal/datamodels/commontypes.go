@@ -15,3 +15,9 @@ type Application struct {
 	logger *slog.Logger
 	wg     sync.WaitGroup
 }
+
+// CustomError настраиваемая ошибка
+type CustomError struct {
+	Type string // тип ошибки
+	Err  error  // объект ошибки
+}
