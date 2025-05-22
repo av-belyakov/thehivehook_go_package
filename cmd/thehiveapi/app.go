@@ -67,6 +67,8 @@ func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces
 	return api.receivingChannel, nil
 }
 
+//--------- опциональные функции -----------
+
 // WithAPIKey устанавливает идентификатор-ключ для API
 func WithAPIKey(v string) theHiveApiOptions {
 	return func(th *apiTheHiveModule) error {
