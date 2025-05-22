@@ -8,7 +8,7 @@ import (
 
 // apiTheHiveModule модуль для взаимодействия с API TheHive
 type apiTheHiveModule struct {
-	cache            *cachingstoragewithqueue.CacheStorageWithQueue[interface{}]
+	cache            *cachingstoragewithqueue.CacheStorageWithQueue[any]
 	storageCache     *storage.StorageFoundObjects
 	logger           commoninterfaces.Logger
 	apiKey           string

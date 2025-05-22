@@ -53,7 +53,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 	//----------------------------------------------------------------------
 	//----------- запись в файл принятых в обработку объектов --------------
-	//----------------------------------------------------------------------
+	//---------------- только для test и development -----------------------
 	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" || os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
 		if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
 			if str != "" {
@@ -91,11 +91,11 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 	switch objectType {
 	case "alert":
-		wh.logger.Send("info", fmt.Sprintf("received alert rootId:'%s', operation:'%s'", rootId, operation))
-
 		if operation == "delete" {
 			return
 		}
+
+		wh.logger.Send("info", fmt.Sprintf("received alert rootId:'%s', operation:'%s'", rootId, operation))
 
 		readyMadeEventAlert, err := CreateEvenAlert(r.Context(), rootId, wh.chanInput)
 		if err != nil {
