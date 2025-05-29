@@ -72,7 +72,7 @@ type AppConfigTheHive struct {
 }
 
 type AppConfigWebHookServer struct {
-	Host       string `validate:"required" yaml:"host"`
+	Host       string `yaml:"host"`
 	Name       string `validate:"required" yaml:"name"`
 	TTLTmpInfo int    `validate:"gt=9,lte=86400" yaml:"ttl_tmp_info"`
 	Port       int    `validate:"gt=0,lte=65535" yaml:"port"`

@@ -14,7 +14,7 @@ THEHIVE:
   cache_ttl: 43200
 WEBHOOKSERVER:
   name: gcm-test
-  host: 192.168.13.3
+  host:
   port: 5000
   ttl_tmp_info: 12
 DATABASEWRITELOG:
