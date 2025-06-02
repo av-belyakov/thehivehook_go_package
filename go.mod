@@ -3,7 +3,7 @@ module github.com/av-belyakov/thehivehook_go_package
 go 1.24.3
 
 require (
-	github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250602075742-b940c84bca98
+	github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250602131241-a674f36b1a5d
 	github.com/av-belyakov/simplelogger v0.0.0-20250221120631-077109604215
 	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20250512120600-9940a6578ff4
 	github.com/elastic/go-elasticsearch/v8 v8.17.1
