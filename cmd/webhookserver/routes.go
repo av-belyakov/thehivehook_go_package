@@ -102,8 +102,6 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 			if !errors.Is(err, &datamodels.CustomError{Type: "context"}) {
 				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
-
-			return
 		}
 
 		readyMadeEventAlert.Source = wh.name
@@ -144,7 +142,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
 
-			return
+			//			return
 		}
 
 		readyMadeEventCase.Source = wh.name
