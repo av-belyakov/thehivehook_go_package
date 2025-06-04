@@ -24,7 +24,7 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 	chanResTTL := make(chan commoninterfaces.ChannelResponser)
 	defer close(chanResTTL)
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
 	var g errgroup.Group
