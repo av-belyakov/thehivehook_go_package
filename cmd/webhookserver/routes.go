@@ -142,7 +142,7 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
 
-			//			return
+			return
 		}
 
 		readyMadeEventCase.Source = wh.name
