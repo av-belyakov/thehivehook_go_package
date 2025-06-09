@@ -1,4 +1,4 @@
-# Пакет thehivehook_go_package
+# Thehivehook_go_package
 
 Пакет 'thehivehook_go_package' раелизует сервис который является посредником между TheHive и NATS, и применяется для передачи событий типа 'case' и 'alert' от TheHive через брокер сообщений NATS сторонним сервисам.
 
