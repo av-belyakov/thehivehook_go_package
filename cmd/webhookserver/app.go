@@ -48,8 +48,9 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 	}()
 
 	routers := map[string]func(http.ResponseWriter, *http.Request){
-		"/":        wh.RouteIndex,
-		"/webhook": wh.RouteWebHook,
+		"/":         wh.RouteIndex,
+		"/webhook":  wh.RouteWebHook,
+		"/webhook/": wh.RouteWebHook,
 	}
 
 	//для отладки через pprof (только для теста)
