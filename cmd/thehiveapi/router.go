@@ -41,7 +41,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 						//делаем запрос к TheHive для получения дополнительной информации по объекту
 						res, statusCode, err := api.GetAlert(ctx, msg.GetRootId())
 						if err != nil {
-							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+							api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("%w, root id:'%s'", err, msg.GetRootId())).Error())
 						} else {
 							api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", msg.GetCommand(), msg.GetRootId(), statusCode))
 
