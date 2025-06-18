@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
@@ -27,13 +29,19 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 		status = os.Getenv("GO_HIVEHOOK_MAIN")
 	}
 
-	numberHours := int(time.Since(wh.timeStart).Hours())
+	unit := "hours"
+	count := int(time.Since(wh.timeStart).Hours())
+	if count >= 48 {
+		count = int(math.Floor(float64(count) / 24))
+		unit = "days"
+	}
 
 	io.WriteString(w,
-		fmt.Sprintf("Hello, WebHookServer version %s, application status:'%s'. %d hours have passed since the launch of the application.\n\n%s\n",
-			wh.version,
+		fmt.Sprintf("Hello, WebHookServer version %s, application status:'%s'. %d %s have passed since the launch of the application.\n\n%s\n",
+			strings.Replace(wh.version, "\n", "", -1),
 			status,
-			numberHours,
+			count,
+			unit,
 			printMemStats()))
 }
 

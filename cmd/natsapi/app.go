@@ -4,13 +4,11 @@ package natsapi
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/nats-io/nats.go"
 
 	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/constants"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/storage"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
@@ -93,8 +91,6 @@ func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequest
 	if err != nil {
 		return api.receivingChannel, api.sendingChannel, supportingfunctions.CustomError(err)
 	}
-
-	log.Printf("%vconnect to NATS with address %v%s:%d%v\n", constants.Ansi_Bright_Green, constants.Ansi_Dark_Gray, api.host, api.port, constants.Ansi_Reset)
 
 	api.natsConnection = nc
 
