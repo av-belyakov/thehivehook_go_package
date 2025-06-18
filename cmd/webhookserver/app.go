@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
@@ -96,10 +95,6 @@ func (wh *WebHookServer) Start(ctx context.Context) error {
 
 	g, gCtx := errgroup.WithContext(ctx)
 	g.Go(func() error {
-		// вывод информационного сообщения при старте приложения
-		infoMsg := getInformationMessage(wh.name, wh.host, wh.port)
-		wh.logger.Send("info", strings.ToLower(infoMsg))
-
 		return wh.server.ListenAndServe()
 	})
 	g.Go(func() error {

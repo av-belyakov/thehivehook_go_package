@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"strings"
 
 	_ "net/http/pprof"
 
@@ -156,6 +157,10 @@ func server(ctx context.Context) {
 
 	//мост между каналами различных модулей
 	router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
+
+	// вывод информационного сообщения при старте приложения
+	infoMsg := getInformationMessage(conf)
+	_ = simpleLogger.Write("info", strings.ToLower(infoMsg))
 
 	//запуск модуля
 	if err = webHook.Start(ctx); err != nil {
