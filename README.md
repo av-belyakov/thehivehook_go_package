@@ -1,6 +1,6 @@
 # Thehivehook_go_package
 
-Пакет 'thehivehook_go_package' реализует сервис, который является посредником между TheHive и NATS. Он передаёт события типа 'case' и 'alert' получаемые от TheHive брокеру сообщений NATS.
+Пакет 'thehivehook_go_package' - это сервис, являющийся посредником между TheHive и брокером сообщений NATS. Он транслирует полученные от TheHive события типа 'case' и 'alert' в подписки NATS.
 
 ## Конфигурационные настройки
 
