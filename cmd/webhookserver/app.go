@@ -10,11 +10,12 @@ import (
 	"os"
 	"time"
 
+	"github.com/doganarif/govisual"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
-	"github.com/doganarif/govisual"
-	"golang.org/x/sync/errgroup"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском

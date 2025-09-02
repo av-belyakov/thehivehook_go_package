@@ -11,11 +11,17 @@ type apiTheHiveModule struct {
 	cache            *cachingstoragewithqueue.CacheStorageWithQueue[any]
 	storageCache     *storage.StorageFoundObjects
 	logger           commoninterfaces.Logger
-	apiKey           string
-	host             string
 	receivingChannel chan commoninterfaces.ChannelRequester
-	cachettl         int
-	port             int
+	settings         theHiveApiSettings
+}
+
+// theHiveApiSettings настройки модуля
+type theHiveApiSettings struct {
+	apiKey             string
+	host               string
+	nameRegionalObject string
+	cachettl           int
+	port               int
 }
 
 // theHiveAPIOptions функциональные опции

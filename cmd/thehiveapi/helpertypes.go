@@ -26,14 +26,15 @@ type ResponseChannelTheHive struct {
 
 // RequestCommand структура с командами для обработки модулем
 type RequestCommand struct {
-	ByteData  json.RawMessage `json:"byte_ data"` //набор данных в бинарном виде которые обрабатываются отдельно
-	Service   string          `json:"service"`    //наименование сервиса
-	Command   string          `json:"command"`    //команда
-	RootId    string          `json:"root_id"`    //основной id, как правило это rootId case или alert
-	CaseId    string          `json:"case_id"`    //id кейса
-	Username  string          `json:"username"`   //имя пользователя, необходим если нужно указать пользователя выполнившего действие
-	FieldName string          `json:"field_name"` //некое ключевое поле
-	Value     string          `json:"value"`      //устанавливаемое значение
+	ByteData       json.RawMessage `json:"byte_data"`           //набор данных в бинарном виде которые обрабатываются отдельно
+	Service        string          `json:"service"`             //наименование сервиса
+	Command        string          `json:"command"`             //команда
+	RootId         string          `json:"root_id"`             //основной id, как правило это rootId case или alert
+	CaseId         string          `json:"case_id"`             //id кейса
+	Value          string          `json:"value"`               //устанавливаемое значение
+	Username       string          `json:"username"`            //имя пользователя, необходим если нужно указать пользователя выполнившего действие
+	FieldName      string          `json:"field_name"`          //некое ключевое поле
+	RegionalObject string          `json:"for_regional_object"` //для кого предназначена команда
 }
 
 // SpecialObjectForCache является вспомогательным типом который реализует интерфейс

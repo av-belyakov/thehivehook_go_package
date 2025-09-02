@@ -175,7 +175,7 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 // AddCaseCustomFields просто добавляет новые customFields в объект Case TheHive без
 // какого либо предварительного поиска и сверки customFields
 func (api *apiTheHiveModule) AddCaseCustomFields(ctx context.Context, rc RequestCommand) ([]byte, int, error) {
-	req := []byte(fmt.Sprintf(`{"customFields.%s": %q}`, rc.FieldName, rc.Value))
+	req := fmt.Appendf(nil, `{"customFields.%s": %q}`, rc.FieldName, rc.Value)
 
 	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 15*time.Second)
 	defer ctxCancel()
@@ -193,9 +193,9 @@ func (api *apiTheHiveModule) AddCaseCustomFields(ctx context.Context, rc Request
 func (api *apiTheHiveModule) AddCaseTask(ctx context.Context, rc RequestCommand) ([]byte, int, error) {
 	var req []byte
 	if rc.Username == "" {
-		req = []byte(fmt.Sprintf(`{"status":"Waiting","group":%q,"title":%q}`, rc.FieldName, rc.Value))
+		req = fmt.Appendf(nil, `{"status":"Waiting","group":%q,"title":%q}`, rc.FieldName, rc.Value)
 	} else {
-		req = []byte(fmt.Sprintf(`{"status":"Waiting","group":%q,"title":%q,"owner":%q}`, rc.FieldName, rc.Value, rc.Username))
+		req = fmt.Appendf(nil, `{"status":"Waiting","group":%q,"title":%q,"owner":%q}`, rc.FieldName, rc.Value, rc.Username)
 	}
 
 	ctxTimeout, ctxCancel := context.WithTimeout(ctx, 15*time.Second)
@@ -216,8 +216,8 @@ func (api *apiTheHiveModule) query(ctx context.Context, reqpath string, query []
 		err error
 	)
 
-	apiKey := "Bearer " + api.apiKey
-	url := fmt.Sprintf("http://%s:%d%s", api.host, api.port, reqpath)
+	apiKey := "Bearer " + api.settings.apiKey
+	url := fmt.Sprintf("http://%s:%d%s", api.settings.host, api.settings.port, reqpath)
 
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(query))
 	if err != nil {

@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"time"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
-	"golang.org/x/sync/errgroup"
 )
 
 // CreateEvenAlert генератор события типа 'alert' содержащего в себе дополнительную информацию
