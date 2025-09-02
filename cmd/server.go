@@ -106,7 +106,8 @@ func server(ctx context.Context) {
 		thehiveapi.WithAPIKey(confTheHiveAPI.ApiKey),
 		thehiveapi.WithHost(confTheHiveAPI.Host),
 		thehiveapi.WithPort(confTheHiveAPI.Port),
-		thehiveapi.WithCacheTTL(confTheHiveAPI.CacheTTL))
+		thehiveapi.WithCacheTTL(confTheHiveAPI.CacheTTL),
+		thehiveapi.WithNameRegionalObject(confWebHook.Name))
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())

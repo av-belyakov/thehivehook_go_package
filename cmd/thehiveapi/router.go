@@ -192,6 +192,14 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					continue
 				}
 
+				//проверяем какому из thehivehook_go_package было предназначена команда
+				// так как данный модуль распространяется по регионам, необходимо отличать
+				// запросы на изменения тегов, добавления задач или специальных полей,
+				// предназначенных для определённого модуля
+				if api.settings.nameRegionalObject != rc.RegionalObject {
+					continue
+				}
+
 				api.logger.Send("info", fmt.Sprintf("the command '%s' has been received, order:'%s', rootId:'%s'", rc.Command, msg.GetOrder(), msg.GetRootId()))
 
 				switch msg.GetOrder() {
@@ -230,7 +238,6 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					}(msg.GetRequestId())
 
 				case "set_case_custom_field":
-
 					go func(id string) {
 						res := NewChannelRespons()
 						res.SetRequestId(id)
@@ -256,7 +263,7 @@ func getRequestCommandData(i any) (RequestCommand, error) {
 	rc := RequestCommand{}
 	data, ok := i.([]byte)
 	if !ok {
-		return rc, errors.New("'it is not possible to convert a value msg.GetData() to a []byte'")
+		return rc, errors.New("'it is not possible to convert a some value to a []byte'")
 	}
 
 	if err := json.Unmarshal(data, &rc); err != nil {
