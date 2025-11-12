@@ -1,5 +1,8 @@
 # Thehivehook_go_package
 
+[![Go Version](https://img.shields.io/badge/Go-1.24.4+-00ADD8?style=flat&logo=go)](https://golang.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker)](https://www.docker.com/)
+
 Пакет 'thehivehook_go_package' раелизует сервис который является посредником между TheHive и NATS, и применяется для передачи событий типа 'case' и 'alert' от TheHive через брокер сообщений NATS сторонним сервисам.
 
 ## Конфигурационные настройки
@@ -153,7 +156,7 @@ go tool pprof http://<ip>:<port>/debug/pprof/... (далее возможны в
   "error": "",
   "command": "",
   "status_code": 0,
-  "data": "дополнительные_данные_возможны_в_любом_типе"
+  "data": "дополнительные данные возможны в любом типе"
 }
 ```
 
