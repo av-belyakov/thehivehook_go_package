@@ -9,6 +9,61 @@
 
 Конфигурационные параметры для сервиса, могут быть заданы как через конфигурационный файл, так и методом установки переменных окружения. Однако, все пароли и ключевые токены, используемые для авторизации, задаются ТОЛЬКО через переменные окружения.
 
+### Развёртывание пакета через CI/CD
+
+У каждого центра мониторинга на _gitlab.cloud.gcm_ есть репозиторий **\_thehivehook_go**
+
+```
+_thehivehook_go/
+├── config
+│   ├── config_dev.yml
+│   ├── config_prod.yml
+│   └── config.yml
+├── docker-compose.yml
+└── README.md
+```
+
+Необходимо выполнить следующие действия:
+
+1. Поверить и при необходимости изменить основной файл настроек _config_prod.yml_.
+
+```yaml
+COMMONINFO:
+  file_name: config_prod
+NATS:
+  prefix: test
+  host: nats.cloud.gcm
+  port: 4222
+  cache_ttl: 3600
+  subscriptions:
+    sender_case: object.casetype
+    sender_alert: object.alerttype
+    listener_command: object.commandstype
+THEHIVE:
+  host: thehive.cloud.gcm #ip или домен своего TheHive
+  port: 9000
+  cache_ttl: 43200
+WEBHOOKSERVER:
+  name: rcmnvs #наименование webhookserver (у каждого своё)
+  host: git-runner.rcm #ip или домен ВМ на которой будет хостится приложение
+  port: 5000
+  ttl_tmp_info: 10
+DATABASEWRITELOG:
+  host: datahook.cloud.gcm #домен сервера БД для логов (не менять, домен ГЦМ)
+  port: 9200
+  namedb:
+  storage_name_db: thehivehook_go_package
+  user: log_writer
+```
+
+Важно проверить актуальность параметров **THEHIVE.host**, **THEHIVE.port**, параметр **WEBHOOKSERVER.host** может быть пустым. Параметр **WEBHOOKSERVER.name** задаётся центром мониторинга. Использовать сокращённое, общепризнанное в ведомстве имя. Остальные параметры файла менять не надо.
+Файл _config_dev.yml_ используется для тестов в рамках ГЦМ, править не надо. Он применяется только когда переменна окружения **GO_HIVEHOOK_MAIN=development**.
+Файл _config.yml_ содержит настройки записи и передачи логов, а так же взаимодействия с Zabbix. Особого смысла править нет, если конечно нет желания отключить логирования некоторых событий и изменить место или размер их хранения.
+
+2. Проверить и при необходимости актулизировать значение **HIVEHOOK_THAPIKEY** содержащее токен доступа к API TheHive. Находится в _Setting->CI/CD->Variables_, если значения там нет - создать. Значение **HIVEHOOK_DBWLOGPASSWD** править не надо.
+
+3. Создать и развернуть gitlab-runner. http://gitlab.cloud.gcm/aguslikov/help в помощь.
+
 #### Типы конфигурационных файлов:
 
 - config.yaml общий конфигурационный файл;
@@ -69,13 +124,13 @@
 Профилирование приложения возможно только в двух режимах "test" или "development". Для того что бы получить доступ к профилировщику нужно выполнить в браузере или GET запросы с помощью wget или curl следующее:
 
 ```bash
-http://<ip>:<port>//debug/pprof/
+http://ip:port/debug/pprof/
 ```
 
 Использование инструмента 'go tool pprof'.
 
 ```bash
-go tool pprof http://<ip>:<port>/debug/pprof/... (далее возможны вариации heap, allocs, goroutine и т.д.)
+go tool pprof http://ip:port/debug/pprof/... (далее возможны вариации heap, allocs, goroutine и т.д.)
 ```
 
 - **goroutine** — следы всех текущих горутин;
@@ -164,6 +219,8 @@ go tool pprof http://<ip>:<port>/debug/pprof/... (далее возможны в
 
 Добавить в конфигурационный файл TheHive (thehive/conf/application.conf) в параметр
 notification.webhook.endpoints значение с новым 'endpoint', по аналогии.
+
+Далее нужно выполнить перезагрузку TheHive что бы применился поправленый конфиг.
 
 Далее, выполнить:
 
