@@ -124,13 +124,13 @@ DATABASEWRITELOG:
 Профилирование приложения возможно только в двух режимах "test" или "development". Для того что бы получить доступ к профилировщику нужно выполнить в браузере или GET запросы с помощью wget или curl следующее:
 
 ```bash
-http://<ip>:<port>//debug/pprof/
+http://ip:port/debug/pprof/
 ```
 
 Использование инструмента 'go tool pprof'.
 
 ```bash
-go tool pprof http://<ip>:<port>/debug/pprof/... (далее возможны вариации heap, allocs, goroutine и т.д.)
+go tool pprof http://ip:port/debug/pprof/... (далее возможны вариации heap, allocs, goroutine и т.д.)
 ```
 
 - **goroutine** — следы всех текущих горутин;
@@ -219,6 +219,8 @@ go tool pprof http://<ip>:<port>/debug/pprof/... (далее возможны в
 
 Добавить в конфигурационный файл TheHive (thehive/conf/application.conf) в параметр
 notification.webhook.endpoints значение с новым 'endpoint', по аналогии.
+
+Далее нужно выполнить перезагрузку TheHive что бы применился поправленый конфиг.
 
 Далее, выполнить:
 
