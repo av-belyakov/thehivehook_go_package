@@ -18,9 +18,10 @@ type RequestChannelTheHive struct {
 
 // ResponseChannelTheHive структура ответа от API TheHive
 type ResponseChannelTheHive struct {
-	Err        error  //объект ошибки
-	RequestId  string //UUID идентификатор ответа (соответствует идентификатору запроса)
+	Error      error  //объект ошибки
 	Data       []byte //набор данных
+	Source     string //источник данных
+	RequestId  string //UUID идентификатор ответа (соответствует идентификатору запроса)
 	StatusCode int    //статус кода ответа
 }
 

@@ -2,7 +2,6 @@ package thehiveapi
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -185,9 +184,17 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				api.cache.PushObjectToQueue(so)
 
 			case "send_command":
+				response := NewChannelRespons()
+				response.SetRequestId(msg.GetRequestId())
+				response.SetSource(api.settings.nameRegionalObject)
+
 				rc, err := getRequestCommandData(msg.GetData())
 				if err != nil {
 					api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+					response.SetStatusCode(400)
+					response.SetError(fmt.Errorf("the request contains an invalid json object (%s)", err.Error()))
+					response.SendToChan(msg.GetChanOutput())
 
 					continue
 				}
@@ -197,6 +204,18 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				// запросы на изменения тегов, добавления задач или специальных полей,
 				// предназначенных для определённого модуля
 				if api.settings.nameRegionalObject != rc.RegionalObject {
+					errMsg := fmt.Sprintf(
+						"the command '%s' cannot be executed because the name of the regional object '%s' does not match what is expected",
+						msg.GetOrder(),
+						rc.RegionalObject,
+					)
+
+					api.logger.Send("error", errMsg)
+
+					response.SetStatusCode(400)
+					response.SetError(errors.New(errMsg))
+					response.SendToChan(msg.GetChanOutput())
+
 					continue
 				}
 
@@ -204,10 +223,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 				switch msg.GetOrder() {
 				case "add_case_tag":
-					go func(id string) {
-						res := NewChannelRespons()
-						res.SetRequestId(id)
-
+					go func(res *ResponseChannelTheHive) {
 						_, statusCode, err := api.AddCaseTags(ctx, rc)
 						res.SetStatusCode(statusCode)
 						if err != nil {
@@ -218,13 +234,10 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 						}
 
 						res.SendToChan(msg.GetChanOutput())
-					}(msg.GetRequestId())
+					}(response)
 
 				case "add_case_task":
-					go func(id string) {
-						res := NewChannelRespons()
-						res.SetRequestId(id)
-
+					go func(res *ResponseChannelTheHive) {
 						_, statusCode, err := api.AddCaseTask(ctx, rc)
 						res.SetStatusCode(statusCode)
 						if err != nil {
@@ -235,13 +248,10 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 						}
 
 						res.SendToChan(msg.GetChanOutput())
-					}(msg.GetRequestId())
+					}(response)
 
 				case "set_case_custom_field":
-					go func(id string) {
-						res := NewChannelRespons()
-						res.SetRequestId(id)
-
+					go func(res *ResponseChannelTheHive) {
 						_, statusCode, err := api.AddCaseCustomFields(ctx, rc)
 						res.SetStatusCode(statusCode)
 						if err != nil {
@@ -252,23 +262,9 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 						}
 
 						res.SendToChan(msg.GetChanOutput())
-					}(msg.GetRequestId())
+					}(response)
 				}
 			}
 		}
 	}
-}
-
-func getRequestCommandData(i any) (RequestCommand, error) {
-	rc := RequestCommand{}
-	data, ok := i.([]byte)
-	if !ok {
-		return rc, errors.New("'it is not possible to convert a some value to a []byte'")
-	}
-
-	if err := json.Unmarshal(data, &rc); err != nil {
-		return rc, err
-	}
-
-	return rc, nil
 }

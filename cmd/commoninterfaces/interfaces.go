@@ -12,6 +12,8 @@ type ChannelResponser interface {
 	SetStatusCode(int)
 	GetError() error
 	SetError(error)
+	GetSource() string
+	SetSource(string)
 	GetData() []byte
 	SetData([]byte)
 }
