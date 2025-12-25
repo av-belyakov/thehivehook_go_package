@@ -219,6 +219,8 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 }
 ```
 
+Ответ отправляется на любую команду, в том числе и на неверно сформированный JSON запрос.
+
 ## Настройка 'endpoints' для TheHive
 
 Добавить в конфигурационный файл TheHive (thehive/conf/application.conf) в параметр notification.webhook.endpoints значение с новым 'endpoint', по аналогии.
