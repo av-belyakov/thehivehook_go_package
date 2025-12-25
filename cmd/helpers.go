@@ -53,8 +53,8 @@ func getInformationMessage(conf *confighandler.ConfigApp /*wh.name, host string,
 		constants.Ansi_Reset,
 	)
 	fmt.Printf("%vWebhook server settings:%v\n", constants.Ansi_Bright_Green, constants.Ansi_Reset)
-	fmt.Printf("%v  IP:%v%s%v\n", constants.Ansi_Bright_Green, constants.Ansi_Bright_Blue, host, constants.Ansi_Reset)
-	fmt.Printf("%v  Port:%v%d%v\n", constants.Ansi_Bright_Green, constants.Ansi_Bright_Magenta, port, constants.Ansi_Reset)
+	fmt.Printf("  %vIP:%v%s%v\n", constants.Ansi_Bright_Green, constants.Ansi_Bright_Blue, host, constants.Ansi_Reset)
+	fmt.Printf("  %vPort:%v%d%v\n", constants.Ansi_Bright_Green, constants.Ansi_Bright_Magenta, port, constants.Ansi_Reset)
 	fmt.Printf(
 		"%vConnect to NATS with address %v%s:%d%v%v, subscriptions: %v%s, %s%v\n",
 		constants.Ansi_Bright_Green,
