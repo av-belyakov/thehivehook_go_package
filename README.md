@@ -181,6 +181,7 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 {
   "service": "MISP",
   "command": "add_case_task",
+  "for_regional_object": "имя регионального thehivehook",
   "root_id": "~74395656",
   "username": "architector@33c.rcm",
   "field_name": "Developers",
@@ -194,11 +195,14 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 {
   "service": "MISP",
   "command": "set_case_custom_field",
+  "for_regional_object": "имя регионального thehivehook",
   "root_id": "~74395656",
   "field_name": "misp-event-id.string",
   "value": "3221"
 }
 ```
+
+По полю **for_regional_object** JSON объекта модуль определяет ему ли предназначена полученная команда. Если имя в поле **for_regional_object** не соответсвует имени **WEBHOOKSERVER.name** в конфигурационных файлах _config_test_, _config_dev_ или _config_prod_, использование одного из этих файлов зависит от значения переменной окружения **GO_HIVEHOOK_MAIN**, то модуль записывает в лог файл _error.log_ соответствующее сообщение. Поле **error** JSON ответа будет содержать сообщение об ошибке, а поле **status_code** код ответа '400'.
 
 #### Структура ответа на любую из переданных команд
 
@@ -208,10 +212,10 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 {
   "id": "",
   "source": "gcm",
-  "error": "",
+  "error": "no error",
   "command": "",
   "status_code": 0,
-  "data": "дополнительные данные возможны в любом типе"
+  "data": "дополнительные данные, возможны в любом типе"
 }
 ```
 
