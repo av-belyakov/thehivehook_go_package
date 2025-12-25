@@ -9,44 +9,54 @@ func NewChannelRespons() *ResponseChannelTheHive {
 	return &ResponseChannelTheHive{}
 }
 
-// GetStatusCode метод возвращает статус кода ответа
+// GetStatusCode статус кода ответа
 func (r *ResponseChannelTheHive) GetStatusCode() int {
 	return r.StatusCode
 }
 
-// SetStatusCode метод устанавливает статус кода ответа
+// SetStatusCode статус кода ответа
 func (r *ResponseChannelTheHive) SetStatusCode(v int) {
 	r.StatusCode = v
 }
 
-// GetRequestId метод возвращает уникальный идентификатор запроса
+// GetRequestId уникальный идентификатор запроса
 func (r *ResponseChannelTheHive) GetRequestId() string {
 	return r.RequestId
 }
 
-// SetRequestId метод устанавливает уникальный идентификатор запроса
+// SetRequestId уникальный идентификатор запроса
 func (r *ResponseChannelTheHive) SetRequestId(v string) {
 	r.RequestId = v
 }
 
-// GetError метод возвращает объект ошибки
+// GetError объект ошибки
 func (r *ResponseChannelTheHive) GetError() error {
-	return r.Err
+	return r.Error
 }
 
-// SetError метод устанавливает объект ошибки
+// SetError объект ошибки
 func (r *ResponseChannelTheHive) SetError(e error) {
-	r.Err = e
+	r.Error = e
 }
 
-// GetData метод возвращает данные
+// GetData любые дополнительные данные
 func (r *ResponseChannelTheHive) GetData() []byte {
 	return r.Data
 }
 
-// SetData метод устанавливает определенные данные
+// SetData любые дополнительные данные
 func (r *ResponseChannelTheHive) SetData(v []byte) {
 	r.Data = v
+}
+
+// GetSource региональное имя модуля
+func (r *ResponseChannelTheHive) GetSource() string {
+	return r.Source
+}
+
+// SetData региональное имя модуля
+func (r *ResponseChannelTheHive) SetSource(v string) {
+	r.Source = v
 }
 
 // SendToChan отправляет ответ через полученый канал соответвтующий интерфейсу ChannelResponser

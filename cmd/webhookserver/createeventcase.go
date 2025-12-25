@@ -14,7 +14,13 @@ import (
 
 // CreateEvenCase создает новый объект case, содержащий дополнительную информацию типа объектов observables
 // и ttp информацию по которым дополнительно запрашивают из TheHive
-func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput chan<- ChanFromWebHookServer) (*ReadyMadeEventCase, error) {
+func CreateEvenCase(
+	ctx context.Context,
+	rootId string,
+	caseId int,
+	logger commoninterfaces.Logger,
+	chanInput chan<- ChanFromWebHookServer,
+) (*ReadyMadeEventCase, error) {
 	rmec := &ReadyMadeEventCase{}
 	customError := &datamodels.CustomError{}
 
@@ -45,6 +51,7 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 				return customError
 			}
 
+			logger.Send("info", "the result of the search for information on the object was obtained 'observables'")
 			rmec.Observables = msg
 
 			return nil
@@ -67,6 +74,7 @@ func CreateEvenCase(ctx context.Context, rootId string, caseId int, chanInput ch
 				return customError
 			}
 
+			logger.Send("info", "the result of the search for information on the object was obtained 'ttp'")
 			rmec.TTPs = msg
 
 			return nil

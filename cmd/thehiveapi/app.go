@@ -2,7 +2,6 @@
 package thehiveapi
 
 import (
-	"context"
 	"errors"
 
 	"github.com/av-belyakov/cachingstoragewithqueue"
@@ -52,24 +51,6 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 
 	return api, nil
 }
-
-// Start инициализирует новый модуль взаимодействия с API TheHive
-// при инициализации возращается канал для взаимодействия с модулем, все
-// запросы к модулю выполняются через данный канал
-func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
-	//обработка кэша
-	api.cache.StartAutomaticExecution(ctx)
-
-	//инициализация автоматической очистки хранилища
-	api.storageCache.Start(ctx)
-
-	//обработка маршрутов
-	go api.router(ctx)
-
-	return api.receivingChannel, nil
-}
-
-//--------- опциональные функции -----------
 
 // WithAPIKey идентификатор-ключ для API
 func WithAPIKey(v string) theHiveApiOptions {

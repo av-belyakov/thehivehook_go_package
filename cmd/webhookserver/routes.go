@@ -142,9 +142,9 @@ func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 
 		wh.logger.Send("info", fmt.Sprintf("received caseId:'%d', rootId:'%s', operation:'%s', a request is being sent for additional information about 'observable' and 'ttl' objects", caseId, rootId, operation))
 
-		//формируем запрос на поиск дополнительной информации о кейсе, такой как observables
-		//и ttp через модуль взаимодействия с API TheHive в TheHive
-		readyMadeEventCase, err := CreateEvenCase(r.Context(), rootId, caseId, wh.chanInput)
+		// формируем запрос на поиск дополнительной информации о кейсе, такой как
+		// observables и ttp через модуль взаимодействия с API TheHive
+		readyMadeEventCase, err := CreateEvenCase(r.Context(), rootId, caseId, wh.logger, wh.chanInput)
 		if err != nil {
 			if !errors.Is(err, &datamodels.CustomError{Type: "context"}) {
 				wh.logger.Send("error", supportingfunctions.CustomError(err).Error())

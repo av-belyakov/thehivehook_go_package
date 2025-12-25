@@ -28,7 +28,7 @@ func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 	})
 }
 
-// handlerIncomingCommands обработчик входящих, через NATS, команд
+// handlerIncomingCommands обработчик входящих команд
 func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc RequestCommand, m *nats.Msg) {
 	id := uuid.New().String()
 	chRes := make(chan cint.ChannelResponser)
@@ -66,26 +66,33 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 			return
 
 		case msg := <-chRes:
-			api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
+			errMsg := "no error"
+			if err := msg.GetError(); err == nil {
+				api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
+			} else {
+				errMsg = err.Error()
+			}
 
-			//наверное не стоит отправлять ответ на команду, хотя надо подумать
-			//
-			/*res := fmt.Appendf(nil, `{
+			//ответ на команду
+			res := fmt.Appendf(nil, `{
 					"id": \"%s\",
+					"source": \"%s\",
 					"command": \"%s\",
 					"status_code": \"%d\",
 					"data": %v
-					"error": \"%v\",
+					"error": \"%s\",
 					}`,
 				msg.GetRequestId(),
+				msg.GetSource(),
 				rc.Command,
 				msg.GetStatusCode(),
 				msg.GetData(),
-				msg.GetError())
+				errMsg,
+			)
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
-			api.natsConnection.Flush()*/
+			api.natsConnection.Flush()
 
 			return
 		}
