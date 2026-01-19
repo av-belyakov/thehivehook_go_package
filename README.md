@@ -183,7 +183,7 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 {
   "service": "MISP",
   "command": "add_case_task",
-  "for_regional_object": "имя регионального thehivehook",
+  "for_regional_object": "gcm",
   "root_id": "~74395656",
   "username": "architector@33c.rcm",
   "field_name": "Developers",
@@ -197,7 +197,7 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 {
   "service": "MISP",
   "command": "set_case_custom_field",
-  "for_regional_object": "имя регионального thehivehook",
+  "for_regional_object": "gcm",
   "root_id": "~74395656",
   "field_name": "misp-event-id.string",
   "value": "3221"
