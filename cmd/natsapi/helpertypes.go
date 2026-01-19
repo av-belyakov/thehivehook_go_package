@@ -9,6 +9,7 @@ import (
 // RequestFromNats структура запроса из модуля
 type RequestFromNats struct {
 	Data        any    //набор данных
+	Service     string //наименование сервиса
 	RequestId   string //id запроса
 	ElementType string //тип элемента
 	RootId      string //идентификатор по которому в TheHive будет выполнятся поиск
