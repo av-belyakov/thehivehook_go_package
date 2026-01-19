@@ -55,6 +55,7 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 	api.sendingChannel <- &RequestFromNats{
 		RequestId:  id,
 		RootId:     rc.RootId,
+		Service:    rc.Service,
 		Command:    "send_command",
 		Order:      rc.Command,
 		Data:       m.Data,

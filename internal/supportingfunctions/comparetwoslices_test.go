@@ -28,4 +28,25 @@ func TestCompareTwoSlice(t *testing.T) {
 	result = supportingfunctions.CompareTwoSlices([]string{}, compareList)
 	fmt.Println("4. result:", result)
 	assert.Equal(t, len(result), 5)
+
+	result = supportingfunctions.CompareTwoSlices(
+		[]string{"Webhook: send=\"Elasticsearch\"", "Webhook: send=\"MISP\"", "Webhook: send=\"ElasticsearchDB\""},
+		[]string{"Webhook: send=\"MISP\""},
+	)
+	fmt.Println("5. result:", result)
+	assert.Equal(t, len(result), 0)
+
+	result = supportingfunctions.CompareTwoSlices(
+		[]string{"Webhook: send=\"Elasticsearch\"", "Webhook: send=\"ElasticsearchDB\""},
+		[]string{"Webhook: send=\"MISP\""},
+	)
+	fmt.Println("6. result:", result)
+	assert.Equal(t, len(result), 3)
+
+	result = supportingfunctions.CompareTwoSlices(
+		[]string{},
+		[]string{"Webhook: send=\"MISP\""},
+	)
+	fmt.Println("7. result:", result)
+	assert.Equal(t, len(result), 1)
 }

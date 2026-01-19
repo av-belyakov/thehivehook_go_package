@@ -1,5 +1,7 @@
 package supportingfunctions
 
+import "slices"
+
 type mainList[T comparable] []T
 
 // GetUniq возвращает список уникальных элементов которые не встречаются в mainList
@@ -8,12 +10,8 @@ func (ml mainList[T]) GetUniq(l []T) []T {
 
 	for _, v := range l {
 		var isExist bool
-		for _, vml := range ml {
-			if vml == v {
-				isExist = true
-
-				break
-			}
+		if slices.Contains(ml, v) {
+			isExist = true
 		}
 
 		if !isExist {

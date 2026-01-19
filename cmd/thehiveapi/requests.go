@@ -119,7 +119,7 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 	if statusCode != http.StatusOK {
-		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("'when executing the Get Case Event request, the response status is received %d'", statusCode))
+		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("when executing the get case event request for root id '%s', case id '%s', the response status is received '%d'", rc.RootId, rc.CaseId, statusCode))
 	}
 
 	bcee := []datamodels.BaseCaseEventElement{}
@@ -129,7 +129,7 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 	}
 
 	if len(bcee) == 0 {
-		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("'no events were found in TheHive by rootId %s'", rc.RootId))
+		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("no events were found in TheHive by root id '%s', case id '%s'", rc.RootId, rc.CaseId))
 	}
 
 	//получаем список тегов которых нет bcee[0].Tags, но есть в tags
@@ -139,7 +139,7 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 	//значения из tags
 
 	if len(listUniqTags) == 0 {
-		api.logger.Send("info", fmt.Sprintf("the command to add the tag '%s' to TheHive for rootId '%s' was not executed", rc.Value, rc.RootId))
+		api.logger.Send("info", fmt.Sprintf("the command to add the tag '%s' to TheHive for rootId '%s', case id '%s' was not executed (regional object name '%s')", rc.Value, rc.RootId, rc.CaseId, rc.RegionalObject))
 
 		return nil, statusCode, nil
 	}
