@@ -40,8 +40,6 @@ func server(ctx context.Context) {
 		log.Fatalf("error module 'confighandler': %s", err.Error())
 	}
 
-	confWebHook := conf.GetApplicationWebHookServer()
-
 	// ****************************************************************************
 	// ********************* инициализация модуля логирования *********************
 	listLog := make([]simplelogger.OptionsManager, 0, len(conf.GetListLogs()))
@@ -56,14 +54,13 @@ func server(ctx context.Context) {
 
 	//*********************************************************************************
 	//********** инициализация модуля взаимодействия с БД для передачи логов **********
-	confDB := conf.GetApplicationWriteLogDB()
 	if esc, err := elasticsearchapi.NewElasticsearchConnect(elasticsearchapi.Settings{
-		Port:               confDB.Port,
-		Host:               confDB.Host,
-		User:               confDB.User,
-		Passwd:             confDB.Passwd,
-		IndexDB:            confDB.StorageNameDB,
-		NameRegionalObject: confWebHook.Name,
+		Port:               conf.GetApplicationWriteLogDB().Port,
+		Host:               conf.GetApplicationWriteLogDB().Host,
+		User:               conf.GetApplicationWriteLogDB().User,
+		Passwd:             conf.GetApplicationWriteLogDB().Passwd,
+		IndexDB:            conf.GetApplicationWriteLogDB().StorageNameDB,
+		NameRegionalObject: conf.GetApplicationWebHookServer().Name,
 	}); err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 	} else {
@@ -100,14 +97,13 @@ func server(ctx context.Context) {
 
 	//******************************************************************
 	//************** инициализация TheHive API модуля ******************
-	confTheHiveAPI := conf.GetApplicationTheHive()
 	apiTheHive, err := thehiveapi.New(
 		logging,
-		thehiveapi.WithAPIKey(confTheHiveAPI.ApiKey),
-		thehiveapi.WithHost(confTheHiveAPI.Host),
-		thehiveapi.WithPort(confTheHiveAPI.Port),
-		thehiveapi.WithCacheTTL(confTheHiveAPI.CacheTTL),
-		thehiveapi.WithNameRegionalObject(confWebHook.Name))
+		thehiveapi.WithAPIKey(conf.GetApplicationTheHive().ApiKey),
+		thehiveapi.WithHost(conf.GetApplicationTheHive().Host),
+		thehiveapi.WithPort(conf.GetApplicationTheHive().Port),
+		thehiveapi.WithCacheTTL(conf.GetApplicationTheHive().CacheTTL),
+		thehiveapi.WithNameRegionalObject(conf.GetApplicationWebHookServer().Name))
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
@@ -126,7 +122,7 @@ func server(ctx context.Context) {
 		natsapi.WithHost(confNatsSAPI.Host),
 		natsapi.WithPort(confNatsSAPI.Port),
 		natsapi.WithCacheTTL(confNatsSAPI.CacheTTL),
-		natsapi.WithNameRegionalObject(confWebHook.Name),
+		natsapi.WithNameRegionalObject(conf.GetApplicationWebHookServer().Name),
 		natsapi.WithSubSenderCase(confNatsSAPI.Subscriptions.SenderCase),
 		natsapi.WithSubSenderAlert(confNatsSAPI.Subscriptions.SenderAlert),
 		natsapi.WithSubListenerCommand(confNatsSAPI.Subscriptions.ListenerCommand)}
@@ -147,9 +143,9 @@ func server(ctx context.Context) {
 	webHook, chForSomebody, err := webhookserver.New(
 		logging,
 		webhookserver.WithTTL(conf.TTLTmpInfo),
-		webhookserver.WithPort(confWebHook.Port),
-		webhookserver.WithHost(confWebHook.Host),
-		webhookserver.WithName(confWebHook.Name),
+		webhookserver.WithPort(conf.GetApplicationWebHookServer().Port),
+		webhookserver.WithHost(conf.GetApplicationWebHookServer().Host),
+		webhookserver.WithName(conf.GetApplicationWebHookServer().Name),
 		webhookserver.WithVersion(version))
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())

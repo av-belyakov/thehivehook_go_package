@@ -121,12 +121,12 @@ func (r *RequestFromNats) SetOrder(v string) {
 }
 
 // GetData метод возвращает некий набор данных
-func (r *RequestFromNats) GetData() interface{} {
+func (r *RequestFromNats) GetData() any {
 	return r.Data
 }
 
 // SetData метод устанавливает некий набор данных
-func (r *RequestFromNats) SetData(i interface{}) {
+func (r *RequestFromNats) SetData(i any) {
 	r.Data = i
 }
 
