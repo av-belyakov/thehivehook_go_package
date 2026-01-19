@@ -219,17 +219,18 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 	}
 
 	var fn string
-	if envList["GO_HIVEHOOK_MAIN"] == "development" {
+	switch envList["GO_HIVEHOOK_MAIN"] {
+	case "development":
 		fn, err = getFileName("config_dev.yml", confPath, list)
 		if err != nil {
 			return &conf, err
 		}
-	} else if envList["GO_HIVEHOOK_MAIN"] == "test" {
+	case "test":
 		fn, err = getFileName("config_test.yml", confPath, list)
 		if err != nil {
 			return &conf, err
 		}
-	} else {
+	default:
 		fn, err = getFileName("config_prod.yml", confPath, list)
 		if err != nil {
 			return &conf, err

@@ -205,9 +205,10 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				// предназначенных для определённого модуля
 				if api.settings.nameRegionalObject != rc.RegionalObject {
 					errMsg := fmt.Sprintf(
-						"the command '%s' cannot be executed because the name of the regional object '%s' does not match what is expected",
+						"the command '%s' cannot be executed because the name of the regional object '%s' does not match with name '%s'",
 						msg.GetOrder(),
 						rc.RegionalObject,
+						api.settings.nameRegionalObject,
 					)
 
 					api.logger.Send("error", errMsg)
@@ -219,7 +220,15 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 					continue
 				}
 
-				api.logger.Send("info", fmt.Sprintf("the command '%s' has been received, order:'%s', rootId:'%s'", rc.Command, msg.GetOrder(), msg.GetRootId()))
+				api.logger.Send(
+					"info",
+					fmt.Sprintf("the command '%s' has been received, order:'%s', rootId:'%s', for regional object:'%s', currnet regional object:'%s'",
+						rc.Command,
+						msg.GetOrder(),
+						msg.GetRootId(),
+						rc.RegionalObject,
+						api.settings.nameRegionalObject,
+					))
 
 				switch msg.GetOrder() {
 				case "add_case_tag":
