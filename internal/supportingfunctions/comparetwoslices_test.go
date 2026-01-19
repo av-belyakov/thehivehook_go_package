@@ -44,9 +44,41 @@ func TestCompareTwoSlice(t *testing.T) {
 	assert.Equal(t, len(result), 3)
 
 	result = supportingfunctions.CompareTwoSlices(
+<<<<<<< HEAD
 		[]string{},
 		[]string{"Webhook: send=\"MISP\""},
 	)
 	fmt.Println("7. result:", result)
+=======
+		[]string{
+			"Webhook: send=\"Elasticsearch\"",
+			"Sensor:id=\"8015632\"",
+			"Webhook: send=\"ElasticsearchDB\"",
+			"TheHivehook: send=\"MongoDB\"",
+		},
+		[]string{"Webhook: send=\"MISP\""},
+	)
+	fmt.Println("7. result:", result)
+	assert.Equal(t, len(result), 5)
+
+	result = supportingfunctions.CompareTwoSlices(
+		[]string{
+			"Webhook: send=\"Elasticsearch\"",
+			"Sensor:id=\"8015632\"",
+			"Webhook: send=\"MISP\"",
+			"Webhook: send=\"ElasticsearchDB\"",
+			"TheHivehook: send=\"MongoDB\"",
+		},
+		[]string{"Webhook: send=\"MISP\""},
+	)
+	fmt.Println("8. result:", result)
+	assert.Equal(t, len(result), 5)
+
+	result = supportingfunctions.CompareTwoSlices(
+		[]string{},
+		[]string{"Webhook: send=\"MISP\""},
+	)
+	fmt.Println("9. result:", result)
+>>>>>>> test/DEV-19.01.2026-new_test_add_tag
 	assert.Equal(t, len(result), 1)
 }
