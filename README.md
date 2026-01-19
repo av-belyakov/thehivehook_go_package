@@ -148,6 +148,7 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 {
   "service": "наименование сервиса", //обязательный параметр
   "command": "команда",
+  "for_regional_object": "имя регионального thehivehook",
   "root_id": "основной id, как правило это rootId case или alert", //обязательный параметр только для некоторых действий выполняемых с конкретным кейсом или алертом
   "case_id": "id кейса, если есть",
   "username": "имя пользователя", //необходим если нужно указать пользователя выполнившего действие
@@ -169,6 +170,7 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 {
   "service": "MISP",
   "command": "add_case_tag",
+  "for_regional_object": "gcm",
   "root_id": "~74395656",
   "case_id": "13435",
   "value": "Webhook: send=\"MISP\""
@@ -181,7 +183,7 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 {
   "service": "MISP",
   "command": "add_case_task",
-  "for_regional_object": "имя регионального thehivehook",
+  "for_regional_object": "gcm",
   "root_id": "~74395656",
   "username": "architector@33c.rcm",
   "field_name": "Developers",
@@ -195,7 +197,7 @@ go tool pprof http://ip:port/debug/pprof/... (далее возможны вар
 {
   "service": "MISP",
   "command": "set_case_custom_field",
-  "for_regional_object": "имя регионального thehivehook",
+  "for_regional_object": "gcm",
   "root_id": "~74395656",
   "field_name": "misp-event-id.string",
   "value": "3221"
