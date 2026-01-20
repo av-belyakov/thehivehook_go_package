@@ -30,7 +30,6 @@ func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 
 // handlerIncomingCommands обработчик входящих команд
 func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc RequestCommand, m *nats.Msg) {
-	id := uuid.New().String()
 	chRes := make(chan cint.ChannelResponser)
 
 	ttlTime := (time.Duration(api.cachettl) * time.Second)
@@ -59,7 +58,7 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 	api.storageCache.SetObject(keyId, []byte(rc.Command))
 
 	api.sendingChannel <- &RequestFromNats{
-		RequestId:  id,
+		RequestId:  uuid.New().String(),
 		RootId:     rc.RootId,
 		Service:    rc.Service,
 		Command:    "send_command",

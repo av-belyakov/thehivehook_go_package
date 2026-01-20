@@ -109,10 +109,6 @@ func (api *apiTheHiveModule) GetCaseEvent(ctx context.Context, rootId string) ([
 // существующие теги и объединяет их с новыми, если добавляемые теги уже существуют
 // то ничего не делает
 func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand) ([]byte, int, error) {
-	type tagsQuery struct {
-		Tags []string `json:"tags"`
-	}
-
 	//получаем информацию по кейсу
 	bodyByte, statusCode, err := api.GetCaseEvent(ctx, rc.RootId)
 	if err != nil {
@@ -129,19 +125,23 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 	}
 
 	if len(bcee) == 0 {
-		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("no events were found in TheHive by root id '%s', case id '%s', service '%s'", rc.RootId, rc.CaseId, rc.Service))
+		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("no events were found in TheHive by root id '%s' (case id '%s', service '%s')", rc.RootId, rc.CaseId, rc.Service))
 	}
 
 	//получаем список уникальных тегов
 	listUniqTags := supportingfunctions.JoinTwoSlicesUniqValues(bcee[0].Tags, []string{rc.Value})
-
+	//новых тегов нет, если размер уникальных тегов соответсвует размеру тегов кейса
 	if len(listUniqTags) == len(bcee[0].Tags) {
 		api.logger.Send("info", fmt.Sprintf("the command to add the tag '%s' to TheHive for rootId '%s', case id '%s', service '%s' was not executed. The tags intended for adding are already included in the list.", rc.Value, rc.RootId, rc.CaseId, rc.Service))
 
 		return nil, statusCode, nil
 	}
 
-	req, err := json.Marshal(tagsQuery{Tags: listUniqTags})
+	req, err := json.Marshal(struct {
+		Tags []string `json:"tags"`
+	}{
+		Tags: listUniqTags,
+	})
 	if err != nil {
 		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
