@@ -70,8 +70,6 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 			case "get_observables":
 				keyId := msg.GetCommand() + msg.GetRootId()
 
-				//api.logger.Send("info", fmt.Sprintf("--- Search request accepted, command:'%s', root id:'%s' (case:'%s') keyId:'%s'", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId(), keyId))
-
 				so := NewSpecialObjectForCache[any]()
 				so.SetID(keyId)
 
@@ -127,8 +125,6 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 			case "get_ttp":
 				keyId := msg.GetCommand() + msg.GetRootId()
-
-				//api.logger.Send("info", fmt.Sprintf("--- Search request accepted, command:'%s', root id:'%s' (case:'%s') keyId:'%s'", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId(), keyId))
 
 				so := NewSpecialObjectForCache[any]()
 				so.SetID(keyId)
@@ -222,7 +218,7 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 
 				api.logger.Send(
 					"info",
-					fmt.Sprintf("the command '%s' has been received, order:'%s', rootId:'%s', for regional object:'%s', currnet regional object:'%s'",
+					fmt.Sprintf("the command '%s' has been received, order '%s', rootId '%s', for regional object '%s', currnet regional object '%s'",
 						rc.Command,
 						msg.GetOrder(),
 						msg.GetRootId(),
@@ -239,7 +235,15 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 							res.SetError(err)
 							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 						} else {
-							api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
+							api.logger.Send(
+								"info",
+								fmt.Sprintf("when making a request to add a new tag '%s' for the service '%s' rootId '%s', caseId '%s', the following is received status code '%d'",
+									rc.Value,
+									rc.Service,
+									rc.RootId,
+									rc.CaseId,
+									statusCode,
+								))
 						}
 
 						res.SendToChan(msg.GetChanOutput())
@@ -253,7 +257,15 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 							res.SetError(err)
 							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 						} else {
-							api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
+							api.logger.Send(
+								"info",
+								fmt.Sprintf("when making a request to add a new case task '%s' for the service '%s' rootId '%s', caseId '%s', the following is received status code '%d'",
+									rc.Value,
+									rc.Service,
+									rc.RootId,
+									rc.CaseId,
+									statusCode,
+								))
 						}
 
 						res.SendToChan(msg.GetChanOutput())
@@ -267,7 +279,15 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 							res.SetError(err)
 							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 						} else {
-							api.logger.Send("info", fmt.Sprintf("when making a request to add a new tag for the rootId '%s', caseId '%s', the following is received status code '%d'", rc.RootId, rc.CaseId, statusCode))
+							api.logger.Send(
+								"info",
+								fmt.Sprintf("when making a request to add a new custom field '%s' for the service '%s' rootId '%s', caseId '%s', the following is received status code '%d'",
+									rc.Value,
+									rc.Service,
+									rc.RootId,
+									rc.CaseId,
+									statusCode,
+								))
 						}
 
 						res.SendToChan(msg.GetChanOutput())

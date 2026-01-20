@@ -109,17 +109,13 @@ func (api *apiTheHiveModule) GetCaseEvent(ctx context.Context, rootId string) ([
 // существующие теги и объединяет их с новыми, если добавляемые теги уже существуют
 // то ничего не делает
 func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand) ([]byte, int, error) {
-	type tagsQuery struct {
-		Tags []string `json:"tags"`
-	}
-
 	//получаем информацию по кейсу
 	bodyByte, statusCode, err := api.GetCaseEvent(ctx, rc.RootId)
 	if err != nil {
 		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
 	if statusCode != http.StatusOK {
-		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("'when executing the Get Case Event request, the response status is received %d'", statusCode))
+		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("when executing the get case event request for root id '%s', case id '%s', the response status is received '%d'", rc.RootId, rc.CaseId, statusCode))
 	}
 
 	bcee := []datamodels.BaseCaseEventElement{}
@@ -129,26 +125,23 @@ func (api *apiTheHiveModule) AddCaseTags(ctx context.Context, rc RequestCommand)
 	}
 
 	if len(bcee) == 0 {
-		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("'no events were found in TheHive by rootId %s'", rc.RootId))
+		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("no events were found in TheHive by root id '%s' (case id '%s', service '%s')", rc.RootId, rc.CaseId, rc.Service))
 	}
 
-	//получаем список тегов которых нет bcee[0].Tags, но есть в tags
-	listUniqTags := supportingfunctions.CompareTwoSlices(bcee[0].Tags, []string{rc.Value})
-	//если listUniqTags пустой то команда на добавление в TheHive дополнительных
-	//тегов бессмыслена, так как либо список tags пустой, либо в bcee[0].Tags есть все
-	//значения из tags
-
-	if len(listUniqTags) == 0 {
-		api.logger.Send("info", fmt.Sprintf("the command to add the tag '%s' to TheHive for rootId '%s' was not executed", rc.Value, rc.RootId))
+	//получаем список уникальных тегов
+	listUniqTags := supportingfunctions.JoinTwoSlicesUniqValues(bcee[0].Tags, []string{rc.Value})
+	//новых тегов нет, если размер уникальных тегов соответсвует размеру тегов кейса
+	if len(listUniqTags) == len(bcee[0].Tags) {
+		api.logger.Send("info", fmt.Sprintf("the command to add the tag '%s' to TheHive for rootId '%s', case id '%s', service '%s' was not executed. The tags intended for adding are already included in the list.", rc.Value, rc.RootId, rc.CaseId, rc.Service))
 
 		return nil, statusCode, nil
 	}
 
-	//формируем тело запроса из новых тегов и уже существующих
-	newTagsQuery := tagsQuery{Tags: bcee[0].Tags}
-	newTagsQuery.Tags = append(newTagsQuery.Tags, listUniqTags...)
-
-	req, err := json.Marshal(newTagsQuery)
+	req, err := json.Marshal(struct {
+		Tags []string `json:"tags"`
+	}{
+		Tags: listUniqTags,
+	})
 	if err != nil {
 		return nil, statusCode, supportingfunctions.CustomError(err)
 	}

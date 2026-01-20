@@ -117,15 +117,14 @@ func server(ctx context.Context) {
 
 	//***************************************************
 	//********** инициализация NATS API модуля **********
-	confNatsSAPI := conf.GetApplicationNATS()
 	natsOptsAPI := []natsapi.NatsApiOptions{
-		natsapi.WithHost(confNatsSAPI.Host),
-		natsapi.WithPort(confNatsSAPI.Port),
-		natsapi.WithCacheTTL(confNatsSAPI.CacheTTL),
+		natsapi.WithHost(conf.GetApplicationNATS().Host),
+		natsapi.WithPort(conf.GetApplicationNATS().Port),
+		natsapi.WithCacheTTL(conf.GetApplicationNATS().CacheTTL),
 		natsapi.WithNameRegionalObject(conf.GetApplicationWebHookServer().Name),
-		natsapi.WithSubSenderCase(confNatsSAPI.Subscriptions.SenderCase),
-		natsapi.WithSubSenderAlert(confNatsSAPI.Subscriptions.SenderAlert),
-		natsapi.WithSubListenerCommand(confNatsSAPI.Subscriptions.ListenerCommand)}
+		natsapi.WithSubSenderCase(conf.GetApplicationNATS().Subscriptions.SenderCase),
+		natsapi.WithSubSenderAlert(conf.GetApplicationNATS().Subscriptions.SenderAlert),
+		natsapi.WithSubListenerCommand(conf.GetApplicationNATS().Subscriptions.ListenerCommand)}
 	apiNats, err := natsapi.New(logging, natsOptsAPI...)
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
@@ -142,7 +141,7 @@ func server(ctx context.Context) {
 	//********** инициализация WEBHOOKSERVER сервера ************
 	webHook, chForSomebody, err := webhookserver.New(
 		logging,
-		webhookserver.WithTTL(conf.TTLTmpInfo),
+		webhookserver.WithTTL(conf.GetApplicationWebHookServer().TTLTmpInfo),
 		webhookserver.WithPort(conf.GetApplicationWebHookServer().Port),
 		webhookserver.WithHost(conf.GetApplicationWebHookServer().Host),
 		webhookserver.WithName(conf.GetApplicationWebHookServer().Name),
