@@ -42,13 +42,19 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 
 	keyId := fmt.Sprintf("%s_%s", rc.RootId, rc.Command)
 
+	// !!!!!!
+	// Вот это прерывание цикла может серьезно мешать добавлению тегов и custom fields
+	// тем более что от placeholder_misp сразу приходит две команды, одна на добавление
+	// тега. вторая на добавление custom field. В итоге может быть выполнена только одна команда.
+	// !!!!!!
+
 	// поиск команды для объекта с определенным id поступившей за ближайшее время
 	// это своего рода защитный механизм для предотвращения цикличных запросов
-	if _, ok := api.storageCache.GetObject(keyId); ok {
-		//подобная команда уже есть в хранилище, исключаем её передачу
-		//берём временную паузу, равную времени жизни объекта
-		return
-	}
+	//if _, ok := api.storageCache.GetObject(keyId); ok {
+	//подобная команда уже есть в хранилище, исключаем её передачу
+	//берём временную паузу, равную времени жизни объекта
+	//	return
+	//}
 
 	api.storageCache.SetObject(keyId, []byte(rc.Command))
 
