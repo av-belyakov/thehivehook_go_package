@@ -80,8 +80,7 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 				errMsg = err.Error()
 			}
 
-			//ответ на команду
-			res, err := json.Marshal(struct {
+			data := struct {
 				id          string
 				source      string
 				command     string
@@ -95,12 +94,19 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 				status_code: msg.GetStatusCode(),
 				data:        msg.GetData(),
 				error:       errMsg,
-			})
+			}
+
+			fmt.Printf("handlerIncomingCommands, Before marshaler: '%+v'\n", data)
+
+			//ответ на команду
+			res, err := json.Marshal(data)
 			if err != nil {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 				return
 			}
+
+			fmt.Printf("handlerIncomingCommands, After marshaler: '%+v'\n", res)
 
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
