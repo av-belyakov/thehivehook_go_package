@@ -81,21 +81,27 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 			}
 
 			//ответ на команду
-			res := fmt.Appendf(nil, `{
-					"id": \"%s\",
-					"source": \"%s\",
-					"command": \"%s\",
-					"status_code": \"%d\",
-					"data": %v
-					"error": \"%s\",
-					}`,
-				msg.GetRequestId(),
-				msg.GetSource(),
-				rc.Command,
-				msg.GetStatusCode(),
-				msg.GetData(),
-				errMsg,
-			)
+			res, err := json.Marshal(struct {
+				id          string
+				source      string
+				command     string
+				status_code int
+				data        any
+				error       string
+			}{
+				id:          msg.GetRequestId(),
+				source:      msg.GetSource(),
+				command:     rc.Command,
+				status_code: msg.GetStatusCode(),
+				data:        msg.GetData(),
+				error:       errMsg,
+			})
+			if err != nil {
+				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+				return
+			}
+
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
