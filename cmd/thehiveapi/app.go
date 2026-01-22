@@ -24,8 +24,8 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 	cache, err := cachingstoragewithqueue.NewCacheStorage(
 		cachingstoragewithqueue.WithMaxTtl[any](60),
 		cachingstoragewithqueue.WithTimeTick[any](2),
-		cachingstoragewithqueue.WithMaxSize[any](60),
-		cachingstoragewithqueue.WithEnableAsyncProcessing[any](1),
+		cachingstoragewithqueue.WithMaxSize[any](360),
+		cachingstoragewithqueue.WithEnableAsyncProcessing[any](3),
 		cachingstoragewithqueue.WithLogging[any](l))
 	if err != nil {
 		return api, err
@@ -34,7 +34,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 
 	//----- thehiveapi storage -----
 	sc, err := storage.NewStorageFoundObjects(
-		storage.WithMaxSize(60),
+		storage.WithMaxSize(360),
 		storage.WithMaxTtl(60),
 		storage.WithTimeTick(2))
 	if err != nil {
