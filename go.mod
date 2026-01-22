@@ -1,6 +1,6 @@
 module github.com/av-belyakov/thehivehook_go_package
 
-go 1.24.3
+go 1.25.6
 
 require (
 	github.com/av-belyakov/cachingstoragewithqueue v0.0.0-20250602131241-a674f36b1a5d
