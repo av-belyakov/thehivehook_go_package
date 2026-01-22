@@ -99,15 +99,12 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 			if err != nil {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
-				return
+				continue
 			}
 
 			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
 				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 			}
-			api.natsConnection.Flush()
-
-			return
 		}
 	}
 }
