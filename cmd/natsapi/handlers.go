@@ -32,15 +32,15 @@ func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc RequestCommand, m *nats.Msg) {
 	chRes := make(chan cint.ChannelResponser)
 
-	ttlTime := (time.Duration(api.cachettl) * time.Second)
+	//ttlTime := (time.Duration(api.cachettl) * time.Second)
+	ttlTime := (15 * time.Second)
 	ctxTimeout, ctxTimeoutCancel := context.WithTimeout(ctx, ttlTime)
 	defer func(cancel context.CancelFunc, ch chan cint.ChannelResponser) {
 		cancel()
 		close(ch)
 	}(ctxTimeoutCancel, chRes)
 
-	keyId := fmt.Sprintf("%s_%s", rc.RootId, rc.Command)
-
+	//keyId := fmt.Sprintf("%s_%s", rc.RootId, rc.Command)
 	// !!!!!!
 	// Вот это прерывание цикла может серьезно мешать добавлению тегов и custom fields
 	// тем более что от placeholder_misp сразу приходит две команды, одна на добавление
@@ -54,8 +54,7 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 	//берём временную паузу, равную времени жизни объекта
 	//	return
 	//}
-
-	api.storageCache.SetObject(keyId, []byte(rc.Command))
+	//api.storageCache.SetObject(keyId, []byte(rc.Command))
 
 	api.sendingChannel <- &RequestFromNats{
 		RequestId:  uuid.New().String(),
@@ -67,47 +66,42 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 		ChanOutput: chRes,
 	}
 
-	for {
-		select {
-		case <-ctxTimeout.Done():
-			return
+	select {
+	case <-ctxTimeout.Done():
+		return
 
-		case msg := <-chRes:
-			errMsg := "no error"
-			if err := msg.GetError(); err == nil {
-				api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
-			} else {
-				errMsg = err.Error()
-			}
+	case msg := <-chRes:
+		errMsg := "no error"
+		if err := msg.GetError(); err == nil {
+			api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
+		} else {
+			errMsg = err.Error()
+		}
 
-			//ответ на команду
-			res, err := json.Marshal(struct {
-				Id         string `json:"id"`
-				Source     string `json:"source"`
-				Command    string `json:"command"`
-				StatusCode int    `json:"status_code"`
-				Data       any    `json:"data"`
-				Error      string `json:"error"`
-			}{
-				Id:         msg.GetRequestId(),
-				Source:     msg.GetSource(),
-				Command:    rc.Command,
-				StatusCode: msg.GetStatusCode(),
-				Data:       msg.GetData(),
-				Error:      errMsg,
-			})
-			if err != nil {
-				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-				return
-			}
-
-			if err := api.natsConnection.Publish(m.Reply, res); err != nil {
-				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
-			}
-			api.natsConnection.Flush()
+		//ответ на команду
+		res, err := json.Marshal(struct {
+			Id         string `json:"id"`
+			Source     string `json:"source"`
+			Command    string `json:"command"`
+			StatusCode int    `json:"status_code"`
+			Data       any    `json:"data"`
+			Error      string `json:"error"`
+		}{
+			Id:         msg.GetRequestId(),
+			Source:     msg.GetSource(),
+			Command:    rc.Command,
+			StatusCode: msg.GetStatusCode(),
+			Data:       msg.GetData(),
+			Error:      errMsg,
+		})
+		if err != nil {
+			api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 			return
+		}
+
+		if err := api.natsConnection.Publish(m.Reply, res); err != nil {
+			api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 		}
 	}
 }
