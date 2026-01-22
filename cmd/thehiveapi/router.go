@@ -15,6 +15,11 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 			return
 
 		case msg := <-api.receivingChannel:
+			api.logger.Send(
+				"info",
+				fmt.Sprintf(
+					"apiTheHiveModule.router received caseId:'%s', rootId:'%s', command:'%s'", msg.GetCaseId(), msg.GetRootId(), msg.GetCommand()))
+
 			switch msg.GetCommand() {
 			case "get_alert":
 				keyId := msg.GetCommand() + msg.GetRootId()
