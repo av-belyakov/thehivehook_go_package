@@ -25,7 +25,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 		cachingstoragewithqueue.WithMaxTtl[any](60),
 		cachingstoragewithqueue.WithTimeTick[any](2),
 		cachingstoragewithqueue.WithMaxSize[any](360),
-		cachingstoragewithqueue.WithEnableAsyncProcessing[any](1),
+		cachingstoragewithqueue.WithEnableAsyncProcessing[any](3),
 		cachingstoragewithqueue.WithLogging[any](l))
 	if err != nil {
 		return api, err
