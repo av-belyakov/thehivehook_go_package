@@ -38,6 +38,7 @@ func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc Reques
 	defer func(cancel context.CancelFunc, ch chan cint.ChannelResponser) {
 		cancel()
 		close(ch)
+		ch = nil
 	}(ctxTimeoutCancel, chRes)
 
 	//keyId := fmt.Sprintf("%s_%s", rc.RootId, rc.Command)

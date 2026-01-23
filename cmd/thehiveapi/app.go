@@ -16,7 +16,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 			cachettl: 10,
 		},
 		logger:           logger,
-		receivingChannel: make(chan commoninterfaces.ChannelRequester),
+		receivingChannel: make(chan commoninterfaces.ChannelRequester, 4),
 	}
 
 	//---- пока уберем для тестирования использования своего собственого хранилища ----
