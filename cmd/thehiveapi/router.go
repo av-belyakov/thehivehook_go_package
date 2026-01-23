@@ -73,13 +73,15 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				so := NewSpecialObjectForCache[any]()
 				so.SetID(keyId)
 
+				api.logger.Send("info", fmt.Sprintf("apiTheHiveModule.router the command has been accepted, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+
 				//для того что бы выполнить сравнение объектов нужно передать
 				//этот объект so.SetObject
 				//хотя для thehivehook_go может это не надо, надо обдумать!!!
 				//so.SetObject(msg.GetData())
 
 				so.SetFunc(func(_ int) bool {
-					api.logger.Send("info", fmt.Sprintf("start search object, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+					api.logger.Send("info", fmt.Sprintf("start function execution, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
 
 					newRes := NewChannelRespons()
 					newRes.SetRequestId(msg.GetRequestId())
@@ -129,13 +131,15 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 				so := NewSpecialObjectForCache[any]()
 				so.SetID(keyId)
 
+				api.logger.Send("info", fmt.Sprintf("apiTheHiveModule.router the command has been accepted, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+
 				//для того что бы выполнить сравнение объектов нужно передать
 				//этот объект so.SetObject
 				//хотя для thehivehook_go может это не надо, надо обдумать!!!
 				//so.SetObject(msg.GetData())
 
 				so.SetFunc(func(_ int) bool {
-					api.logger.Send("info", fmt.Sprintf("start search object, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+					api.logger.Send("info", fmt.Sprintf("start function execution, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
 
 					newRes := NewChannelRespons()
 					newRes.SetRequestId(msg.GetRequestId())
