@@ -38,7 +38,7 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 
 	io.WriteString(w,
 		fmt.Sprintf("Hello, WebHookServer version %s, application status:'%s'. %d %s have passed since the launch of the application.\n\n%s\n",
-			strings.Replace(wh.version, "\n", "", -1),
+			strings.ReplaceAll(wh.version, "\n", ""),
 			status,
 			count,
 			unit,
