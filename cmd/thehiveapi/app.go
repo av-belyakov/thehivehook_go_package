@@ -23,7 +23,7 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 	//---- пока уберем для тестирования использования своего собственого хранилища ----
 	l := NewLogWrite(logger)
 	cache, err := cachingstoragewithqueue.NewCacheStorage(
-		cachingstoragewithqueue.WithMaxTtl[any](30),
+		cachingstoragewithqueue.WithMaxTtl[any](60),
 		cachingstoragewithqueue.WithTimeTick[any](1),
 		cachingstoragewithqueue.WithMaxSize[any](360),
 		cachingstoragewithqueue.WithEnableAsyncProcessing[any](runtime.NumCPU()),
