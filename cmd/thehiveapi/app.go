@@ -3,6 +3,7 @@ package thehiveapi
 
 import (
 	"errors"
+	"runtime"
 
 	"github.com/av-belyakov/cachingstoragewithqueue"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
@@ -22,10 +23,10 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 	//---- пока уберем для тестирования использования своего собственого хранилища ----
 	l := NewLogWrite(logger)
 	cache, err := cachingstoragewithqueue.NewCacheStorage(
-		cachingstoragewithqueue.WithMaxTtl[any](60),
-		cachingstoragewithqueue.WithTimeTick[any](2),
+		cachingstoragewithqueue.WithMaxTtl[any](10),
+		cachingstoragewithqueue.WithTimeTick[any](1),
 		cachingstoragewithqueue.WithMaxSize[any](360),
-		cachingstoragewithqueue.WithEnableAsyncProcessing[any](3),
+		cachingstoragewithqueue.WithEnableAsyncProcessing[any](runtime.NumCPU()),
 		cachingstoragewithqueue.WithLogging[any](l))
 	if err != nil {
 		return api, err
@@ -35,8 +36,8 @@ func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHive
 	//----- thehiveapi storage -----
 	sc, err := storage.NewStorageFoundObjects(
 		storage.WithMaxSize(360),
-		storage.WithMaxTtl(60),
-		storage.WithTimeTick(2))
+		storage.WithMaxTtl(300),
+		storage.WithTimeTick(1))
 	if err != nil {
 		return api, err
 	}
