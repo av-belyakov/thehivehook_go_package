@@ -3,7 +3,7 @@ package natsapi
 import (
 	"context"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 //********************* Response ********************
@@ -132,12 +132,12 @@ func (r *RequestFromNats) SetData(i any) {
 
 // GetChanOutput метод возвращает канал через который ответ от модуля apithehive передается
 // источнику запроса
-func (r *RequestFromNats) GetChanOutput() chan commoninterfaces.ChannelResponser {
+func (r *RequestFromNats) GetChanOutput() chan interfaces.ChannelResponser {
 	return r.ChanOutput
 }
 
 // SetChanOutput метод устанавливает канал через который ответ от модуля apithehive передается
 // источнику запроса
-func (r *RequestFromNats) SetChanOutput(v chan commoninterfaces.ChannelResponser) {
+func (r *RequestFromNats) SetChanOutput(v chan interfaces.ChannelResponser) {
 	r.ChanOutput = v
 }

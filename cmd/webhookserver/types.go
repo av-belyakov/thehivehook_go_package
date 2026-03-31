@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // WebHookServer непосредственно сам сервер
 type WebHookServer struct {
-	server    *http.Server
-	logger    commoninterfaces.Logger
+	server *http.Server
+	//storage *
+	logger    interfaces.Logger
 	timeStart time.Time
 	host      string
 	name      string //gcm, rcmmsk и т.д.
@@ -34,7 +35,7 @@ type WebHookServerOptions struct {
 
 // ChanFromWebHookServer структура канала для взаимодействия сторонних сервисов с webhookserver
 type ChanFromWebHookServer struct {
-	Data        commoninterfaces.ChannelRequester
+	Data        interfaces.ChannelRequester
 	ForSomebody string //для кого данные
 }
 

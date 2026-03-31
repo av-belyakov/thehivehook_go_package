@@ -6,18 +6,18 @@ import (
 	"runtime"
 
 	"github.com/av-belyakov/cachingstoragewithqueue"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/storage"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // New настраивает модуль взаимодействия с API TheHive
-func New(logger commoninterfaces.Logger, opts ...theHiveApiOptions) (*apiTheHiveModule, error) {
+func New(logger interfaces.Logger, opts ...theHiveApiOptions) (*apiTheHiveModule, error) {
 	api := &apiTheHiveModule{
 		settings: theHiveApiSettings{
 			cachettl: 10,
 		},
 		logger:           logger,
-		receivingChannel: make(chan commoninterfaces.ChannelRequester, 4),
+		receivingChannel: make(chan interfaces.ChannelRequester, 4),
 	}
 
 	//---- пока уберем для тестирования использования своего собственого хранилища ----

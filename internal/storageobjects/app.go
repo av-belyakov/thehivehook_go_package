@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-// NewStorageObjects инициализация хранилища объектов
-func NewStorageObjects[T any](opts ...cacheOptions[T]) (*storageObjects[T], error) {
+// New инициализация хранилища объектов
+func New[T any](opts ...cacheOptions[T]) (*storageObjects[T], error) {
 	storageObjects := &storageObjects[T]{
 		timeTick:          time.Duration(1 * time.Second),    // 1 секунда
 		timeToLive:        time.Duration(3600 * time.Second), // 1 час

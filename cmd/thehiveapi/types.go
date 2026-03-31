@@ -2,16 +2,16 @@ package thehiveapi
 
 import (
 	"github.com/av-belyakov/cachingstoragewithqueue"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/storage"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // apiTheHiveModule модуль для взаимодействия с API TheHive
 type apiTheHiveModule struct {
 	cache            *cachingstoragewithqueue.CacheStorageWithQueue[any]
 	storageCache     *storage.StorageFoundObjects
-	logger           commoninterfaces.Logger
-	receivingChannel chan commoninterfaces.ChannelRequester
+	logger           interfaces.Logger
+	receivingChannel chan interfaces.ChannelRequester
 	settings         theHiveApiSettings
 }
 

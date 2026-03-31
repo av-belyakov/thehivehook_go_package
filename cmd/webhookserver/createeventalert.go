@@ -7,8 +7,8 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // CreateEvenAlert генератор события типа 'alert' содержащего в себе дополнительную информацию
@@ -16,7 +16,7 @@ func CreateEvenAlert(ctx context.Context, rootId string, chanInput chan<- ChanFr
 	rmea := &ReadyMadeEventAlert{}
 	customError := &datamodels.CustomError{}
 
-	chanResAlert := make(chan commoninterfaces.ChannelResponser)
+	chanResAlert := make(chan interfaces.ChannelResponser)
 	defer close(chanResAlert)
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)

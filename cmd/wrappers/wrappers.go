@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 	zabbixapicommunicator "github.com/av-belyakov/zabbixapicommunicator/cmd"
 )
@@ -14,8 +14,8 @@ import (
 func WrappersZabbixInteraction(
 	ctx context.Context,
 	settings WrappersZabbixInteractionSettings,
-	logging commoninterfaces.WriterLoggingData,
-	channelZabbix <-chan commoninterfaces.Messager) {
+	logging interfaces.WriterLoggingData,
+	channelZabbix <-chan interfaces.Messager) {
 
 	connTimeout := time.Duration(5 * time.Second)
 	zc, err := zabbixapicommunicator.New(zabbixapicommunicator.SettingsZabbixConnection{

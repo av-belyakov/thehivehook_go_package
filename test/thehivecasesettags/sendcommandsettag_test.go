@@ -11,10 +11,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/constants"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/constants"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 	helperfunc "github.com/av-belyakov/thehivehook_go_package/test/helpfunc"
 )

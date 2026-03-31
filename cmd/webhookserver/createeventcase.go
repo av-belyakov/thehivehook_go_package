@@ -8,8 +8,8 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // CreateEvenCase создает новый объект case, содержащий дополнительную информацию типа объектов observables
@@ -18,16 +18,16 @@ func CreateEvenCase(
 	ctx context.Context,
 	rootId string,
 	caseId int,
-	logger commoninterfaces.Logger,
+	logger interfaces.Logger,
 	chanInput chan<- ChanFromWebHookServer,
 ) (*ReadyMadeEventCase, error) {
 	rmec := &ReadyMadeEventCase{}
 	customError := &datamodels.CustomError{}
 
-	chanResObservable := make(chan commoninterfaces.ChannelResponser)
+	chanResObservable := make(chan interfaces.ChannelResponser)
 	defer close(chanResObservable)
 
-	chanResTTL := make(chan commoninterfaces.ChannelResponser)
+	chanResTTL := make(chan interfaces.ChannelResponser)
 	defer close(chanResTTL)
 
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)

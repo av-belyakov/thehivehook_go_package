@@ -22,7 +22,7 @@ func TestStorageObjects(t *testing.T) {
 		stop()
 	}()
 
-	s, err := storageobjects.NewStorageObjects(
+	s, err := storageobjects.New(
 		storageobjects.WithChannelSize[Element](5),
 		storageobjects.WithTimeTick[Element](1),
 		storageobjects.WithTimeToLive[Element](10),

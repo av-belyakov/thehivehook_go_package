@@ -3,13 +3,13 @@ package thehiveapi
 import (
 	"context"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // Start инициализирует новый модуль взаимодействия с API TheHive
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- commoninterfaces.ChannelRequester, error) {
+func (api *apiTheHiveModule) Start(ctx context.Context) (chan<- interfaces.ChannelRequester, error) {
 	//обработка кэша
 	api.cache.StartAutomaticExecution(ctx)
 

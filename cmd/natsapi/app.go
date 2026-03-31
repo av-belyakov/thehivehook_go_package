@@ -8,20 +8,20 @@ import (
 
 	"github.com/nats-io/nats.go"
 
-	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/storage"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 // New настраивает новый модуль взаимодействия с API NATS
-func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
+func New(logger interfaces.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 	api := &apiNatsModule{
 		cachettl: 10,
 		logger:   logger,
 		//прием запросов в NATS
-		receivingChannel: make(chan cint.ChannelRequester),
+		receivingChannel: make(chan interfaces.ChannelRequester),
 		//передача запросов из NATS
-		sendingChannel: make(chan cint.ChannelRequester),
+		sendingChannel: make(chan interfaces.ChannelRequester),
 	}
 
 	//----- natsapi storage -----
@@ -47,7 +47,7 @@ func New(logger cint.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
 // Start инициализирует новый модуль взаимодействия с API NATS
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func (api *apiNatsModule) Start(ctx context.Context) (chan<- cint.ChannelRequester, <-chan cint.ChannelRequester, error) {
+func (api *apiNatsModule) Start(ctx context.Context) (chan<- interfaces.ChannelRequester, <-chan interfaces.ChannelRequester, error) {
 	if ctx.Err() != nil {
 		return api.receivingChannel, api.sendingChannel, ctx.Err()
 	}

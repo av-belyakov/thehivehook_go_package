@@ -9,8 +9,6 @@ import (
 
 	"github.com/av-belyakov/simplelogger"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/constants"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/elasticsearchapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
@@ -18,6 +16,8 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/wrappers"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/constants"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
@@ -70,7 +70,7 @@ func server(ctx context.Context) {
 
 	//******************************************************************
 	//********** инициализация модуля взаимодействия с Zabbix **********
-	chZabbix := make(chan commoninterfaces.Messager)
+	chZabbix := make(chan interfaces.Messager)
 	zabbixSettings := wrappers.WrappersZabbixInteractionSettings{
 		NetworkPort: conf.Zabbix.NetworkPort,
 		NetworkHost: conf.Zabbix.NetworkHost,

@@ -13,13 +13,13 @@ import (
 	"github.com/doganarif/govisual"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
-func New(logger commoninterfaces.Logger, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFromWebHookServer, error) {
+func New(logger interfaces.Logger, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFromWebHookServer, error) {
 	chanOutput := make(chan ChanFromWebHookServer)
 	whs := &WebHookServer{
 		name:      "nobody",

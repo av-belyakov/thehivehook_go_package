@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // New конструктор обработчиа логов (это просто мост соединяющий несколько сервисов логирования)
-func New(writer commoninterfaces.WriterLoggingData, chSysMonit chan<- commoninterfaces.Messager) *LoggingChan {
+func New(writer interfaces.WriterLoggingData, chSysMonit chan<- interfaces.Messager) *LoggingChan {
 	return &LoggingChan{
 		dataWriter:           writer,
 		chanSystemMonitoring: chSysMonit,
-		chanLogging:          make(chan commoninterfaces.Messager),
+		chanLogging:          make(chan interfaces.Messager),
 	}
 }
 

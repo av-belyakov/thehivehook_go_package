@@ -14,10 +14,10 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	helperfunc "github.com/av-belyakov/thehivehook_go_package/test/helpfunc"
 )
 
@@ -26,7 +26,7 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 		rootDir string = "thehivehook_go_package"
 
 		conf           *confighandler.ConfigApp
-		chanTheHiveAPI chan<- commoninterfaces.ChannelRequester
+		chanTheHiveAPI chan<- interfaces.ChannelRequester
 
 		chanDone chan struct{}
 
@@ -107,8 +107,8 @@ var _ = Describe("Testthehiverequest", Ordered, func() {
 
 				wg sync.WaitGroup
 
-				chanResObservable chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
-				chanResTTL        chan commoninterfaces.ChannelResponser = make(chan commoninterfaces.ChannelResponser)
+				chanResObservable chan interfaces.ChannelResponser = make(chan interfaces.ChannelResponser)
+				chanResTTL        chan interfaces.ChannelResponser = make(chan interfaces.ChannelResponser)
 			)
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)

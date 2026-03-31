@@ -12,10 +12,10 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/av-belyakov/simplelogger"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
@@ -66,7 +66,7 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			cancel context.CancelFunc
 
 			chanForSomebody       <-chan webhookserver.ChanFromWebHookServer
-			chanRequestTheHiveAPI chan<- commoninterfaces.ChannelRequester
+			chanRequestTheHiveAPI chan<- interfaces.ChannelRequester
 
 			errTheHiveApi error
 		)
@@ -94,7 +94,7 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 				log.Fatalf("error module 'simplelogger': %v", err)
 			}
 
-			chZabbix := make(chan commoninterfaces.Messager)
+			chZabbix := make(chan interfaces.Messager)
 			go func() {
 				for msg := range chZabbix {
 					fmt.Println("INFO for Zabbix:", msg)

@@ -3,7 +3,7 @@ package natsapi
 import (
 	"context"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // RequestFromNats структура запроса из модуля
@@ -17,7 +17,7 @@ type RequestFromNats struct {
 	Command     string //команда
 	Order       string //распоряжение
 	ctx         context.Context
-	ChanOutput  chan commoninterfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
+	ChanOutput  chan interfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
 }
 
 // ResponsToNats структура ответа в модуля

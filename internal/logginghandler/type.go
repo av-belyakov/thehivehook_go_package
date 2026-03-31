@@ -1,13 +1,13 @@
 package logginghandler
 
-import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+import "github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 
 type LoggingChan struct {
-	dataWriter commoninterfaces.WriterLoggingData
+	dataWriter interfaces.WriterLoggingData
 	//запись в систему логирования
-	chanSystemMonitoring chan<- commoninterfaces.Messager
+	chanSystemMonitoring chan<- interfaces.Messager
 	//канал отправки в систему мониторинга, например, Zabbix
-	chanLogging chan commoninterfaces.Messager
+	chanLogging chan interfaces.Messager
 	//основной канал приёма логов
 }
 

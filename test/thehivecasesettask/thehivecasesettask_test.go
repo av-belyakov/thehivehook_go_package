@@ -10,10 +10,10 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	helperfunc "github.com/av-belyakov/thehivehook_go_package/test/helpfunc"
 )
 
@@ -37,7 +37,7 @@ func (tp TaskParameters) GetUsername() string {
 
 var _ = Describe("Testthehivecasesettask", Ordered, func() {
 	var (
-		chApiTheHive chan<- commoninterfaces.ChannelRequester
+		chApiTheHive chan<- interfaces.ChannelRequester
 		requestId    string = uuid.New().String()
 		//caseId       string = "39100"
 		//rootId       string = "~88678416456" //это мой тестовый кейс с id 39100

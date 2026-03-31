@@ -3,17 +3,17 @@ package thehiveapi
 import (
 	"encoding/json"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // RequestChannelTheHive тип применяется для передачи запроса в модуль thehiveapi от сторонних модулей
 type RequestChannelTheHive struct {
-	Data       interface{}                            //какие то данные
-	RequestId  string                                 //UUID идентификатор запроса
-	RootId     string                                 //идентификатор по которому в TheHive будет выполнятся поиск
-	CaseId     string                                 //идентификатор кейса в TheHive
-	Command    string                                 //команда
-	ChanOutput chan commoninterfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
+	Data       interface{}                      //какие то данные
+	RequestId  string                           //UUID идентификатор запроса
+	RootId     string                           //идентификатор по которому в TheHive будет выполнятся поиск
+	CaseId     string                           //идентификатор кейса в TheHive
+	Command    string                           //команда
+	ChanOutput chan interfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
 }
 
 // ResponseChannelTheHive структура ответа от API TheHive
@@ -50,5 +50,5 @@ type SpecialObjectForCache[T any] struct {
 
 // LogWrite вспомогательный тип применяемый для логирования
 type LogWrite struct {
-	logger commoninterfaces.Logger
+	logger interfaces.Logger
 }

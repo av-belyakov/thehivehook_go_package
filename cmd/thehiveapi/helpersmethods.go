@@ -1,6 +1,6 @@
 package thehiveapi
 
-import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+import "github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 
 //********************* Response ********************
 
@@ -60,7 +60,7 @@ func (r *ResponseChannelTheHive) SetSource(v string) {
 }
 
 // SendToChan отправляет ответ через полученый канал соответвтующий интерфейсу ChannelResponser
-func (r *ResponseChannelTheHive) SendToChan(ch chan<- commoninterfaces.ChannelResponser) {
+func (r *ResponseChannelTheHive) SendToChan(ch chan<- interfaces.ChannelResponser) {
 	if ch != nil {
 		ch <- r
 	}
@@ -125,20 +125,20 @@ func (r *RequestChannelTheHive) SetData(i interface{}) {
 
 // GetChanOutput метод возвращает канал через который ответ от модуля apithehive передается
 // источнику запроса
-func (r *RequestChannelTheHive) GetChanOutput() chan commoninterfaces.ChannelResponser {
+func (r *RequestChannelTheHive) GetChanOutput() chan interfaces.ChannelResponser {
 	return r.ChanOutput
 }
 
 // SetChanOutput метод устанавливает канал через который ответ от модуля apithehive передается
 // источнику запроса
-func (r *RequestChannelTheHive) SetChanOutput(v chan commoninterfaces.ChannelResponser) {
+func (r *RequestChannelTheHive) SetChanOutput(v chan interfaces.ChannelResponser) {
 	r.ChanOutput = v
 }
 
 //******************* Различные вспомогательные методы *********************
 
 // NewLogWrite создаёт вспомогательный тип для логирования
-func NewLogWrite(l commoninterfaces.Logger) *LogWrite {
+func NewLogWrite(l interfaces.Logger) *LogWrite {
 	return &LogWrite{logger: l}
 }
 

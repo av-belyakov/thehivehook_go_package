@@ -1,21 +1,21 @@
 package helperfunc
 
 import (
-	"github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
 )
 
 type LoggingForTest struct {
-	ch chan commoninterfaces.Messager
+	ch chan interfaces.Messager
 }
 
 func NewLoggingForTest() *LoggingForTest {
 	return &LoggingForTest{
-		ch: make(chan commoninterfaces.Messager),
+		ch: make(chan interfaces.Messager),
 	}
 }
 
-func (l *LoggingForTest) GetChan() <-chan commoninterfaces.Messager {
+func (l *LoggingForTest) GetChan() <-chan interfaces.Messager {
 	return l.ch
 }
 

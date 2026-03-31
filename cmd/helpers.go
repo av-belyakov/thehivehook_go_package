@@ -5,10 +5,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/constants"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/constants"
 )
 
 func getInformationMessage(conf *confighandler.ConfigApp /*wh.name, host string, port int*/) string {

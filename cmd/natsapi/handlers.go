@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 
-	cint "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
@@ -30,12 +30,12 @@ func (api *apiNatsModule) subscriptionHandler(ctx context.Context) {
 
 // handlerIncomingCommands обработчик входящих команд
 func (api *apiNatsModule) handlerIncomingCommands(ctx context.Context, rc RequestCommand, m *nats.Msg) {
-	chRes := make(chan cint.ChannelResponser)
+	chRes := make(chan interfaces.ChannelResponser)
 
 	//ttlTime := (time.Duration(api.cachettl) * time.Second)
 	ttlTime := (15 * time.Second)
 	ctxTimeout, ctxTimeoutCancel := context.WithTimeout(ctx, ttlTime)
-	defer func(cancel context.CancelFunc, ch chan cint.ChannelResponser) {
+	defer func(cancel context.CancelFunc, ch chan interfaces.ChannelResponser) {
 		cancel()
 		close(ch)
 		ch = nil

@@ -1,8 +1,8 @@
 package logginghandler
 
-import "github.com/av-belyakov/thehivehook_go_package/cmd/commoninterfaces"
+import "github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 
-func (l *LoggingChan) GetChan() <-chan commoninterfaces.Messager {
+func (l *LoggingChan) GetChan() <-chan interfaces.Messager {
 	return l.chanLogging
 }
 
