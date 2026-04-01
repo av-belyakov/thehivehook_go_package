@@ -47,7 +47,8 @@ WEBHOOKSERVER:
   name: rcmnvs #наименование webhookserver (у каждого своё)
   host: git-runner.rcm #ip или домен ВМ на которой будет хостится приложение
   port: 5000
-  ttl_tmp_info: 10
+  storage_ttl: 180
+  storage_delay_to_send: 30
 DATABASEWRITELOG:
   host: datahook.cloud.gcm #домен сервера БД для логов (не менять, домен ГЦМ)
   port: 9200
@@ -101,19 +102,20 @@ DATABASEWRITELOG:
 
 #### Переменные окружения отвечающие за настройки WebHook сервера
 
-- **GO_HIVEHOOK_WEBHNAME** //наименование сервера (gcm, rcmnvs и т.д.)
+- **GO_HIVEHOOK_WEBHNAME** - наименование сервера (gcm, rcmnvs и т.д.)
 - **GO_HIVEHOOK_WEBHHOST**
 - **GO_HIVEHOOK_WEBHPORT**
-- **GO_HIVEHOOK_WEBHTTLTMPINFO** //время жизни временной информации, в секундах от 10 до 86400
+- **GO_HIVEHOOK_WEBHSTORAGETTL** - время жизни объектов в хранилище, в секундах 10 до 43200 секунд (12 часов)
+- **GO_HIVEHOOK_WEBHSTORAGDS** - время по истечении которого объект из записи будет передан в канал, а сама запись будет удалена, допустимый интервал от 1 до 600 секунд (от 1 секунды до 10 минут)
 
 #### Переменные окружения отвечающие за настройки доступа к БД в которую будут записыватся логи
 
-- **GO_HIVEHOOK_DBWLOGHOST** // доменное имя или ip БД
-- **GO_HIVEHOOK_DBWLOGPORT** // порт БД
-- **GO_HIVEHOOK_DBWLOGNAME** // наименование БД (при необходимости)
-- **GO_HIVEHOOK_DBWLOGSTORAGENAME** // наименование объекта хранения логов (таблица, документ, индекс и т.д., зависит от типа БД)
-- **GO_HIVEHOOK_DBWLOGUSER** // пользователь БД
-- **GO_HIVEHOOK_DBWLOGPASSWD** // пароль для доступа к БД
+- **GO_HIVEHOOK_DBWLOGHOST** - доменное имя или ip БД
+- **GO_HIVEHOOK_DBWLOGPORT** - порт БД
+- **GO_HIVEHOOK_DBWLOGNAME** - наименование БД (при необходимости)
+- **GO_HIVEHOOK_DBWLOGSTORAGENAME** - наименование объекта хранения логов (таблица, документ, индекс и т.д., зависит от типа БД)
+- **GO_HIVEHOOK_DBWLOGUSER** - пользователь БД
+- **GO_HIVEHOOK_DBWLOGPASSWD** - пароль для доступа к БД
 
 Настройки логирования данных в БД не являются обязательными и необходимы только если пользователь приложения желает хранить логи в базе данных
 

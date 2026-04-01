@@ -23,7 +23,7 @@ const Root_Dir = "thehivehook_go_package"
 
 var _ = Describe("Testwebhookserver", Ordered, func() {
 	var (
-		webHookServer *webhookserver.WebHookServer
+		webHookServer *webhookserver.WebHookServer[webhookserver.EventElements]
 
 		conf              *confighandler.ConfigApp
 		confTheHiveAPI    *confighandler.AppConfigTheHive
@@ -121,11 +121,11 @@ var _ = Describe("Testwebhookserver", Ordered, func() {
 			//инициализация webhookserver
 			webHookServer, chanForSomebody, errServer = webhookserver.New(
 				logging,
-				webhookserver.WithTTL(confWebHookServer.TTLTmpInfo),
-				webhookserver.WithPort(confWebHookServer.Port),
-				webhookserver.WithHost(confWebHookServer.Host),
-				webhookserver.WithName(confWebHookServer.Name),
-				webhookserver.WithVersion("1.1.0"))
+				webhookserver.WithTTL[webhookserver.EventElements](confWebHookServer.StorageTTL),
+				webhookserver.WithPort[webhookserver.EventElements](confWebHookServer.Port),
+				webhookserver.WithHost[webhookserver.EventElements](confWebHookServer.Host),
+				webhookserver.WithName[webhookserver.EventElements](confWebHookServer.Name),
+				webhookserver.WithVersion[webhookserver.EventElements]("1.1.0"))
 
 			go func() {
 				for msg := range chanForSomebody {

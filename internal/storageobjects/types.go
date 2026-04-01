@@ -6,10 +6,10 @@ import (
 )
 
 // storageObjects хранилище объектов
-type storageObjects[T any] struct {
-	timeTick          time.Duration //интервал, в секундах, с которым будут выполнятся автоматические действия
-	timeToLive        time.Duration //время, в секундах, по истечении которого запись в storages будет удалена
-	timeWaitingToSend time.Duration //время, в секундах, по истечении которого объект из записи будет передан в канал,
+type StorageObjects[T any] struct {
+	timeTick        time.Duration //интервал, в секундах, с которым будут выполнятся автоматические действия
+	timeToLive      time.Duration //время, в секундах, по истечении которого запись в storages будет удалена
+	timeDelayToSend time.Duration //время, в секундах, по истечении которого объект из записи будет передан в канал,
 	// а сама запись будет удалена
 	storage     objects[T]                //хранилище объектов
 	chanOutSize int                       //размер канала для передачи данных
@@ -29,7 +29,7 @@ type object[T any] struct {
 	id          string
 }
 
-type cacheOptions[T any] func(*storageObjects[T]) error
+type cacheOptions[T any] func(*StorageObjects[T]) error
 
 type StorageObjectData[T any] struct {
 	TimeCreated time.Time
