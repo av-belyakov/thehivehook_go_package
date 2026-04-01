@@ -39,7 +39,8 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			"GO_HIVEHOOK_WEBHNAME":       "",
 			"GO_HIVEHOOK_WEBHHOST":       "",
 			"GO_HIVEHOOK_WEBHPORT":       "",
-			"GO_HIVEHOOK_WEBHTTLTMPINFO": "",
+			"GO_HIVEHOOK_WEBHSTORAGDS":   "",
+			"GO_HIVEHOOK_WEBHSTORAGETTL": "",
 
 			//Настройки доступа к БД в которую будут записыватся логи
 			"GO_HIVEHOOK_DBWLOGHOST":        "",
@@ -165,8 +166,11 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if viper.IsSet("WEBHOOKSERVER.port") {
 			conf.AppConfigWebHookServer.Port = viper.GetInt("WEBHOOKSERVER.port")
 		}
-		if viper.IsSet("WEBHOOKSERVER.ttl_tmp_info") {
-			conf.AppConfigWebHookServer.TTLTmpInfo = viper.GetInt("WEBHOOKSERVER.ttl_tmp_info")
+		if viper.IsSet("WEBHOOKSERVER.storage_ttl") {
+			conf.AppConfigWebHookServer.StorageTTL = viper.GetInt("WEBHOOKSERVER.storage_ttl")
+		}
+		if viper.IsSet("WEBHOOKSERVER.storage_delay_to_send") {
+			conf.AppConfigWebHookServer.StorageDelayToSend = viper.GetInt("WEBHOOKSERVER.storage_delay_to_send")
 		}
 
 		//Настройки доступа к БД в которую будут записыватся логи
@@ -316,9 +320,14 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			conf.AppConfigWebHookServer.Port = p
 		}
 	}
-	if envList["GO_HIVEHOOK_WEBHTTLTMPINFO"] != "" {
-		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHTTLTMPINFO"]); err == nil {
-			conf.AppConfigWebHookServer.TTLTmpInfo = p
+	if envList["GO_HIVEHOOK_WEBHSTORAGETTL"] != "" {
+		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHSTORAGETTL"]); err == nil {
+			conf.AppConfigWebHookServer.StorageTTL = p
+		}
+	}
+	if envList["GO_HIVEHOOK_WEBHSTORAGDS"] != "" {
+		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHSTORAGDS"]); err == nil {
+			conf.AppConfigWebHookServer.StorageDelayToSend = p
 		}
 	}
 

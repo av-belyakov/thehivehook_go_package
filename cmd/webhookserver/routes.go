@@ -17,7 +17,7 @@ import (
 )
 
 // RouteIndex маршрут при обращении к '/'
-func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
+func (wh *WebHookServer[T]) RouteIndex(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 
@@ -46,7 +46,7 @@ func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 // RouteWebHook маршрут при обращении к '/webhook'
-func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
+func (wh *WebHookServer[T]) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	eventElement := map[string]any{}
 	bodyByte, err := io.ReadAll(r.Body)
 	if err != nil {

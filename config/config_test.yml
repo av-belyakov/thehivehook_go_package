@@ -16,7 +16,8 @@ WEBHOOKSERVER:
   name: gcm-test
   host:
   port: 5000
-  ttl_tmp_info: 12
+  storage_ttl: 180
+  storage_delay_to_send: 30
 DATABASEWRITELOG:
   host: datahook.cloud.gcm
   port: 9200

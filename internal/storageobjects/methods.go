@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (s *storageObjects[T]) Start(ctx context.Context) {
+func (s *StorageObjects[T]) Start(ctx context.Context) {
 	go func() {
 		tick := time.NewTicker(s.timeTick)
 		tickerDel := time.NewTicker(1 * time.Second)
@@ -60,12 +60,12 @@ func (s *storageObjects[T]) Start(ctx context.Context) {
 }
 
 // AddObject добавляет объект или обновляет его (если есть объект с таким индексом)
-func (s *storageObjects[T]) AddObject(id string, element T) {
+func (s *StorageObjects[T]) AddObject(id string, element T) {
 	s.addObject(id, element)
 }
 
 // addObject добавляет объект или обновляет его (если есть объект с таким индексом)
-func (s *storageObjects[T]) addObject(id string, element T) {
+func (s *StorageObjects[T]) addObject(id string, element T) {
 	s.storage.mtx.Lock()
 	defer s.storage.mtx.Unlock()
 
@@ -87,18 +87,18 @@ func (s *storageObjects[T]) addObject(id string, element T) {
 		id:          id,
 		element:     element,
 		timeExpiry:  time.Now().Add(s.timeToLive),
-		timeSending: time.Now().Add(s.timeWaitingToSend),
+		timeSending: time.Now().Add(s.timeDelayToSend),
 		timeCreated: time.Now(),
 	})
 }
 
 // Len объем хранилища
-func (s *storageObjects[T]) Len() int {
+func (s *StorageObjects[T]) Len() int {
 	return s.len()
 }
 
 // len объем хранилища
-func (s *storageObjects[T]) len() int {
+func (s *StorageObjects[T]) len() int {
 	s.storage.mtx.RLock()
 	defer s.storage.mtx.RUnlock()
 
@@ -106,12 +106,12 @@ func (s *storageObjects[T]) len() int {
 }
 
 // GetObjects канал через который можно получать самые старые объекты
-func (s *storageObjects[T]) GetObjects() <-chan StorageObjectData[T] {
+func (s *StorageObjects[T]) GetObjects() <-chan StorageObjectData[T] {
 	return s.chanOut
 }
 
 // getObject возвращает объект по индексу и удаляет его из хранилища
-func (s *storageObjects[T]) getObject(index int) object[T] {
+func (s *StorageObjects[T]) getObject(index int) object[T] {
 	s.storage.mtx.Lock()
 	defer s.storage.mtx.Unlock()
 
@@ -124,7 +124,7 @@ func (s *storageObjects[T]) getObject(index int) object[T] {
 }
 
 // getOldestObject возвращает индекс самого старого объекта
-func (s *storageObjects[T]) getOldestIndexObject() int {
+func (s *StorageObjects[T]) getOldestIndexObject() int {
 	var timeCreated time.Time
 	index := -1
 
@@ -149,7 +149,7 @@ func (s *storageObjects[T]) getOldestIndexObject() int {
 }
 
 // deleteObjectAfterLifetimeExpired удаляет все объекты у которых истекло время жизни
-func (s *storageObjects[T]) deleteObjectsAfterLifetimeExpired() {
+func (s *StorageObjects[T]) deleteObjectsAfterLifetimeExpired() {
 	s.storage.mtx.Lock()
 	defer s.storage.mtx.Unlock()
 

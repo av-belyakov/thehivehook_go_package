@@ -41,7 +41,8 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 		os.Unsetenv("GO_HIVEHOOK_WEBHNAME")
 		os.Unsetenv("GO_HIVEHOOK_WEBHHOST")
 		os.Unsetenv("GO_HIVEHOOK_WEBHPORT")
-		os.Unsetenv("GO_HIVEHOOK_WEBHTTLTMPINFO")
+		os.Unsetenv("GO_HIVEHOOK_WEBHSTORAGDS")
+		os.Unsetenv("GO_HIVEHOOK_WEBHSTORAGETTL")
 
 		//настройки доступа к БД в которую будут записыватся логи
 		os.Unsetenv("GO_HIVEHOOK_DBWLOGHOST")
@@ -106,7 +107,8 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			chs := conf.GetApplicationWebHookServer()
 			Expect(chs.Host).Should(Equal("192.168.13.3"))
 			Expect(chs.Port).Should(Equal(5000))
-			Expect(chs.TTLTmpInfo).Should(Equal(10))
+			Expect(chs.StorageTTL).Should(Equal(180))
+			Expect(chs.StorageDelayToSend).Should(Equal(30))
 			Expect(chs.Name).Should(Equal("gcm"))
 		})
 
@@ -156,7 +158,8 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			chs := conf.GetApplicationWebHookServer()
 			Expect(chs.Host).Should(Equal("127.0.0.1"))
 			Expect(chs.Port).Should(Equal(5000))
-			Expect(chs.TTLTmpInfo).Should(Equal(12))
+			Expect(chs.StorageTTL).Should(Equal(180))
+			Expect(chs.StorageDelayToSend).Should(Equal(30))
 			Expect(chs.Name).Should(Equal("rcmsml"))
 		})
 
@@ -237,6 +240,7 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			HIVEHOOK_WEBHHOST = "11.0.11.10"
 			HIVEHOOK_WEBHPORT = 7822
 			HIVEHOOK_WEBTTL   = 13
+			HIVEHOOK_WEBDS    = 55
 			HIVEHOOK_WEBHNAME = "gcm-rcm"
 		)
 
@@ -244,7 +248,8 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			os.Setenv("GO_HIVEHOOK_WEBHNAME", HIVEHOOK_WEBHNAME)
 			os.Setenv("GO_HIVEHOOK_WEBHHOST", HIVEHOOK_WEBHHOST)
 			os.Setenv("GO_HIVEHOOK_WEBHPORT", strconv.Itoa(HIVEHOOK_WEBHPORT))
-			os.Setenv("GO_HIVEHOOK_WEBHTTLTMPINFO", strconv.Itoa(HIVEHOOK_WEBTTL))
+			os.Setenv("GO_HIVEHOOK_WEBHSTORAGETTL", strconv.Itoa(HIVEHOOK_WEBTTL))
+			os.Setenv("GO_HIVEHOOK_WEBHSTORAGDS", strconv.Itoa(HIVEHOOK_WEBDS))
 
 			conf, err = confighandler.NewConfig(rootDir)
 			Expect(err).ShouldNot(HaveOccurred())
@@ -256,7 +261,9 @@ var _ = Describe("Testconfighandler", Ordered, func() {
 			Expect(whookserver.Name).Should(Equal(HIVEHOOK_WEBHNAME))
 			Expect(whookserver.Host).Should(Equal(HIVEHOOK_WEBHHOST))
 			Expect(whookserver.Port).Should(Equal(HIVEHOOK_WEBHPORT))
-			Expect(whookserver.TTLTmpInfo).Should(Equal(HIVEHOOK_WEBTTL))
+			Expect(whookserver.StorageTTL).Should(Equal(HIVEHOOK_WEBTTL))
+			os.Unsetenv("GO_HIVEHOOK_WEBHSTORAGDS")
+			os.Unsetenv("GO_HIVEHOOK_WEBHSTORAGETTL")
 		})
 	})
 

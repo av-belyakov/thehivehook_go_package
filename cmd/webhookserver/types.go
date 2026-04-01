@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/storageobjects"
 )
 
 // WebHookServer непосредственно сам сервер
-type WebHookServer struct {
-	server *http.Server
-	//storage *
+type WebHookServer[T any] struct {
+	server    *http.Server
+	storage   *storageobjects.StorageObjects[T]
 	logger    interfaces.Logger
 	timeStart time.Time
 	host      string
@@ -22,7 +23,7 @@ type WebHookServer struct {
 }
 
 // webHookServerOptions функциональные параметры
-type webHookServerOptions func(*WebHookServer) error
+type webHookServerOptions[T any] func(*WebHookServer[T]) error
 
 // WebHookServerOptions основные опции
 type WebHookServerOptions struct {
@@ -53,3 +54,5 @@ type ReadyMadeEventAlert struct {
 	Alert  map[string]any `json:"alert"`
 	Source string         `json:"source"`
 }
+
+type EventElements map[string]any

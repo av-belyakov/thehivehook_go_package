@@ -26,7 +26,7 @@ func TestStorageObjects(t *testing.T) {
 		storageobjects.WithChannelSize[Element](5),
 		storageobjects.WithTimeTick[Element](1),
 		storageobjects.WithTimeToLive[Element](10),
-		storageobjects.WithTimeWaitingToSend[Element](3),
+		storageobjects.WithTimeDelayToSend[Element](3),
 	)
 	if err != nil {
 		t.Fatal(err)

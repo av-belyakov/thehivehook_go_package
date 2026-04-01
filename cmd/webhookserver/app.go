@@ -2,26 +2,16 @@
 package webhookserver
 
 import (
-	"context"
-	"fmt"
-	"net"
-	"net/http"
-	"net/http/pprof"
-	"os"
 	"time"
 
-	"github.com/doganarif/govisual"
-	"golang.org/x/sync/errgroup"
-
-	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
-	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
-func New(logger interfaces.Logger, opts ...webHookServerOptions) (*WebHookServer, <-chan ChanFromWebHookServer, error) {
+func New[T any](logger interfaces.Logger, opts ...webHookServerOptions[T]) (*WebHookServer[T], <-chan ChanFromWebHookServer, error) {
 	chanOutput := make(chan ChanFromWebHookServer)
-	whs := &WebHookServer{
+
+	whs := &WebHookServer[T]{
 		name:      "nobody",
 		version:   "0.1.1",
 		timeStart: time.Now(),
@@ -41,77 +31,9 @@ func New(logger interfaces.Logger, opts ...webHookServerOptions) (*WebHookServer
 	return whs, chanOutput, nil
 }
 
-// Start выполняет запуск модуля
-func (wh *WebHookServer) Start(ctx context.Context) error {
-	defer func() {
-		close(wh.chanInput)
-	}()
-
-	routers := map[string]func(http.ResponseWriter, *http.Request){
-		"/":         wh.RouteIndex,
-		"/webhook":  wh.RouteWebHook,
-		"/webhook/": wh.RouteWebHook,
-	}
-
-	//для отладки через pprof (только для теста)
-	//http://confWebHook.Host:confWebHook.Port/debug/pprof/
-	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/heap
-	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/allocs
-	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/goroutine
-	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" || os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
-		routers["/debug/pprof/"] = pprof.Index
-	}
-
-	mux := http.NewServeMux()
-	for k, v := range routers {
-		mux.HandleFunc(k, v)
-	}
-
-	wh.server = &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", wh.host, wh.port),
-		Handler: mux,
-		BaseContext: func(_ net.Listener) context.Context {
-			return ctx
-		},
-	}
-
-	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" {
-		var version string
-		version, _ = appversion.GetAppVersion()
-
-		wh.server.Handler = govisual.Wrap(
-			mux,
-			govisual.WithMaxRequests(150),
-			//govisual.WithDashboardPath("/visual"),
-			govisual.WithRequestBodyLogging(true),
-			govisual.WithResponseBodyLogging(true),
-			govisual.WithServiceName(appname.GetName()),
-			govisual.WithServiceVersion(version),
-			//govisual.WithPostgresStorage(
-			//	"postgres://postgres:p@ssWD@localhost:5432/postgres?sslmode=disable",
-			//	"govisual_requests",
-			//),
-		)
-	}
-
-	g, gCtx := errgroup.WithContext(ctx)
-	g.Go(func() error {
-		return wh.server.ListenAndServe()
-	})
-	g.Go(func() error {
-		<-gCtx.Done()
-
-		return wh.server.Shutdown(context.Background())
-	})
-
-	return g.Wait()
-}
-
-//******************** функциональные настройки webhookserver ***********************
-
 // WithTTL устанавливает время TimeToLive для временного хранилища информации в модуле
-func WithTTL(v int) webHookServerOptions {
-	return func(whs *WebHookServer) error {
+func WithTTL[T any](v int) webHookServerOptions[T] {
+	return func(whs *WebHookServer[T]) error {
 		whs.ttl = v
 
 		return nil
@@ -119,8 +41,8 @@ func WithTTL(v int) webHookServerOptions {
 }
 
 // WithPort устанавливает порт для взаимодействия с модулем
-func WithPort(v int) webHookServerOptions {
-	return func(whs *WebHookServer) error {
+func WithPort[T any](v int) webHookServerOptions[T] {
+	return func(whs *WebHookServer[T]) error {
 		whs.port = v
 
 		return nil
@@ -128,8 +50,8 @@ func WithPort(v int) webHookServerOptions {
 }
 
 // WithHost устанавливает хост для взаимодействия с модулем
-func WithHost(v string) webHookServerOptions {
-	return func(whs *WebHookServer) error {
+func WithHost[T any](v string) webHookServerOptions[T] {
+	return func(whs *WebHookServer[T]) error {
 		whs.host = v
 
 		return nil
@@ -138,8 +60,8 @@ func WithHost(v string) webHookServerOptions {
 
 // WithName устанавливает наименование модуля (обязательно). Наименование основывается
 // на имени организации или подразделения эксплуатирующем модуль. Например, gcm, rcmslx и т.д.
-func WithName(v string) webHookServerOptions {
-	return func(whs *WebHookServer) error {
+func WithName[T any](v string) webHookServerOptions[T] {
+	return func(whs *WebHookServer[T]) error {
 		whs.name = v
 
 		return nil
@@ -147,8 +69,8 @@ func WithName(v string) webHookServerOptions {
 }
 
 // WithVersion устанавливает версию модуля (опционально)
-func WithVersion(v string) webHookServerOptions {
-	return func(whs *WebHookServer) error {
+func WithVersion[T any](v string) webHookServerOptions[T] {
+	return func(whs *WebHookServer[T]) error {
 		whs.version = v
 
 		return nil
