@@ -10,7 +10,7 @@ func router(
 	ctx context.Context,
 	fromWebHook <-chan []byte,
 	fromNatsAPI <-chan interfaces.ChannelRequester,
-	toTheHiveAPI chan<- interfaces.ChannelRequester,
+	toTheHiveAPI chan<- interfaces.Requester,
 	toNatsAPI chan<- interfaces.ChannelRequester) {
 
 	go func() {

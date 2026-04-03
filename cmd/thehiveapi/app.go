@@ -18,6 +18,7 @@ func New(logger interfaces.Logger, opts ...theHiveApiOptions) (*apiTheHiveModule
 		},
 		logger:           logger,
 		receivingChannel: make(chan interfaces.ChannelRequester, 4),
+		channelInput:     make(chan interfaces.Requester, 4),
 	}
 
 	//---- пока уберем для тестирования использования своего собственого хранилища ----

@@ -12,6 +12,7 @@ type apiTheHiveModule struct {
 	storageCache     *storage.StorageFoundObjects
 	logger           interfaces.Logger
 	receivingChannel chan interfaces.ChannelRequester
+	channelInput     chan interfaces.Requester
 	settings         theHiveApiSettings
 }
 

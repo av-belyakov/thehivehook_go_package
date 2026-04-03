@@ -14,6 +14,12 @@ func (api *apiTheHiveModule) router(ctx context.Context) {
 		case <-ctx.Done():
 			return
 
+		case msg := <-api.channelInput:
+			/*
+				от роутера приходят сообщения от нескольких модулей webhookserver, natsapi
+				что бы разобрать надо в роутере отметить от кого пришёл запрос
+			*/
+
 		case msg := <-api.receivingChannel:
 			switch msg.GetCommand() {
 			case "get_alert":

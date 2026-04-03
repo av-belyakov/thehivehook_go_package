@@ -4,6 +4,11 @@ import (
 	"context"
 )
 
+type Requester interface {
+	GetQuestioner() string
+	GetData() []byte
+}
+
 //************ каналы *************
 
 type ChannelResponser interface {
