@@ -6,33 +6,35 @@ import (
 )
 
 // storageObjects хранилище объектов
-type StorageObjects[T any] struct {
+type StorageObjects struct {
 	timeTick        time.Duration //интервал, в секундах, с которым будут выполнятся автоматические действия
 	timeToLive      time.Duration //время, в секундах, по истечении которого запись в storages будет удалена
 	timeDelayToSend time.Duration //время, в секундах, по истечении которого объект из записи будет передан в канал,
 	// а сама запись будет удалена
-	storage     objects[T]                //хранилище объектов
-	chanOutSize int                       //размер канала для передачи данных
-	chanOut     chan StorageObjectData[T] //канал для передачи данных
+	storage     objects                //хранилище объектов
+	chanOutSize int                    //размер канала для передачи данных
+	chanOut     chan StorageObjectData //канал для передачи данных
 }
 
-type objects[T any] struct {
+type objects struct {
 	mtx     sync.RWMutex
-	objects []object[T]
+	objects []object
 }
 
-type object[T any] struct {
+type object struct {
 	timeSending time.Time //время отправки объекта
 	timeCreated time.Time //время добавления объекта
 	timeExpiry  time.Time //общее время истечения жизни, время по истечению которого объект удаляется
-	element     T
+	data        []byte
+	objectType  string
 	id          string
 }
 
-type cacheOptions[T any] func(*StorageObjects[T]) error
+type cacheOptions func(*StorageObjects) error
 
-type StorageObjectData[T any] struct {
+type StorageObjectData struct {
 	TimeCreated time.Time
-	Data        T
+	Data        []byte
+	ObjectType  string
 	Id          string
 }

@@ -6,13 +6,13 @@ import (
 )
 
 // New инициализация хранилища объектов
-func New[T any](opts ...cacheOptions[T]) (*StorageObjects[T], error) {
-	storageObjects := &StorageObjects[T]{
+func New(opts ...cacheOptions) (*StorageObjects, error) {
+	storageObjects := &StorageObjects{
 		timeTick:        time.Duration(1 * time.Second),    // 1 секунда
 		timeToLive:      time.Duration(3600 * time.Second), // 1 час
 		timeDelayToSend: time.Duration(10 * time.Second),   // 10 секунд
-		storage: objects[T]{
-			objects: []object[T]{},
+		storage: objects{
+			objects: []object{},
 		},
 		chanOutSize: 10,
 	}
@@ -23,7 +23,7 @@ func New[T any](opts ...cacheOptions[T]) (*StorageObjects[T], error) {
 		}
 	}
 
-	storageObjects.chanOut = make(chan StorageObjectData[T], storageObjects.chanOutSize)
+	storageObjects.chanOut = make(chan StorageObjectData, storageObjects.chanOutSize)
 
 	return storageObjects, nil
 }
@@ -31,8 +31,8 @@ func New[T any](opts ...cacheOptions[T]) (*StorageObjects[T], error) {
 // WithTimeTick устанавливает интервал времени, заданное время такта, по истечении которого
 // запускается новый виток автоматической обработки содержимого хранилища,
 // интервал значений должен быть в диапазоне от 1 до 180 секунд
-func WithTimeTick[T any](v int) cacheOptions[T] {
-	return func(s *StorageObjects[T]) error {
+func WithTimeTick(v int) cacheOptions {
+	return func(s *StorageObjects) error {
 		if v < 1 || v > 180 {
 			return errors.New("the set clock cycle time should not be less than 1 seconds or more than 180 seconds")
 		}
@@ -45,8 +45,8 @@ func WithTimeTick[T any](v int) cacheOptions[T] {
 
 // WithTimeToLive устанавливает максимальное время жизни объекта, по истечении которого он будет удален,
 // допустимый интервал от 10 до 43200 секунд (12 часов)
-func WithTimeToLive[T any](v int) cacheOptions[T] {
-	return func(s *StorageObjects[T]) error {
+func WithTimeToLive(v int) cacheOptions {
+	return func(s *StorageObjects) error {
 		if v < 10 || v > 43200 {
 			return errors.New("the maximum time after which an entry in the storage will be deleted should not be less than 10 seconds or more than 12 hours (43200 seconds)")
 		}
@@ -59,8 +59,8 @@ func WithTimeToLive[T any](v int) cacheOptions[T] {
 
 // WithTimeDelayToSend устанавливает время по истечении которого объект из записи будет передан в канал,
 // а сама запись будет удалена, допустимый интервал от 1 до 600 секунд (от 1 секунды до 10 минут)
-func WithTimeDelayToSend[T any](v int) cacheOptions[T] {
-	return func(s *StorageObjects[T]) error {
+func WithTimeDelayToSend(v int) cacheOptions {
+	return func(s *StorageObjects) error {
 		if v < 1 || v > 600 {
 			return errors.New("the time after which the object will be sent to the channel should not be less than 1 second or more than 180 seconds")
 		}
@@ -73,8 +73,8 @@ func WithTimeDelayToSend[T any](v int) cacheOptions[T] {
 
 // WithChannelSize устанавливает размер буферизованного канала,
 // допустимый интервал от 1 до 1000 элементов
-func WithChannelSize[T any](v int) cacheOptions[T] {
-	return func(s *StorageObjects[T]) error {
+func WithChannelSize(v int) cacheOptions {
+	return func(s *StorageObjects) error {
 		if v < 1 || v > 1_000 {
 			return errors.New("the channel size cannot be less than 1 element or more than 1000 elements")
 		}

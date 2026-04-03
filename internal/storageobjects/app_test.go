@@ -15,6 +15,8 @@ import (
 )
 
 func TestStorageObjects(t *testing.T) {
+	const objectType = "test object"
+
 	size := 15
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill, syscall.SIGINT)
 	go func() {
@@ -23,10 +25,10 @@ func TestStorageObjects(t *testing.T) {
 	}()
 
 	s, err := storageobjects.New(
-		storageobjects.WithChannelSize[Element](5),
-		storageobjects.WithTimeTick[Element](1),
-		storageobjects.WithTimeToLive[Element](10),
-		storageobjects.WithTimeDelayToSend[Element](3),
+		storageobjects.WithChannelSize(5),
+		storageobjects.WithTimeTick(1),
+		storageobjects.WithTimeToLive(10),
+		storageobjects.WithTimeDelayToSend(3),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -37,30 +39,30 @@ func TestStorageObjects(t *testing.T) {
 
 	for range size {
 		id := gofakeit.UUID()
-		s.AddObject(id, Element{
-			ID:   id,
-			Type: gofakeit.AnimalType(),
-			Name: gofakeit.Animal(),
-		})
+		s.AddObject(id, objectType, fmt.Appendf(nil, `{
+			"ID":   %s,
+			"Type": %s,
+			"Name": %s,
+		}`, id, gofakeit.AnimalType(), gofakeit.Animal()))
 	}
 
 	objId := gofakeit.UUID()
-	s.AddObject(objId, Element{
-		ID:   objId,
-		Type: gofakeit.AnimalType(),
-		Name: gofakeit.Animal(),
-	})
+	s.AddObject(objId, objectType, fmt.Appendf(nil, `{
+			"ID":   %s,
+			"Type": %s,
+			"Name": %s,
+		}`, objId, gofakeit.AnimalType(), gofakeit.Animal()))
 
 	assert.Equal(t, s.Len(), size+1)
 
+	updatedObject := fmt.Appendf(nil, `{
+			"ID":   %s,
+			"Type": %s,
+			"Name": %s,
+		}`, objId, gofakeit.AnimalType(), gofakeit.Animal())
+
 	//модифицируем объект
-	objType := gofakeit.AnimalType()
-	objName := gofakeit.Animal()
-	s.AddObject(objId, Element{
-		ID:   objId,
-		Type: objType,
-		Name: objName,
-	})
+	s.AddObject(objId, objectType, updatedObject)
 
 	assert.Equal(t, s.Len(), size+1)
 
@@ -70,11 +72,10 @@ func TestStorageObjects(t *testing.T) {
 
 		//проверяем, что объект был модифицирован
 		if objId == obj.Id {
-			assert.Equal(t, obj.Data.Type, objType)
-			assert.Equal(t, obj.Data.Name, objName)
+			assert.Equal(t, obj.Data, updatedObject)
 		}
 
-		fmt.Printf("%d. time: '%s', index: '%s', object: '%+v'\n", num, obj.TimeCreated, obj.Id, obj.Data)
+		fmt.Printf("%d. time: '%s', index: '%s', object type: '%s', object: '%s'\n", num, obj.TimeCreated, obj.Id, obj.ObjectType, string(obj.Data))
 
 		if num == size+1-4 {
 			break
