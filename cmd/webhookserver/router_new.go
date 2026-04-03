@@ -1,0 +1,133 @@
+package webhookserver
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"math"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+)
+
+// RouteIndex_New маршрут при обращении к '/'
+func (wh *WebHookServer_New) RouteIndex_New(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+
+		return
+	}
+
+	status := "production"
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
+		status = os.Getenv("GO_HIVEHOOK_MAIN")
+	}
+
+	unit := "hours"
+	count := int(time.Since(wh.timeStart).Hours())
+	if count >= 48 {
+		count = int(math.Floor(float64(count) / 24))
+		unit = "days"
+	}
+
+	io.WriteString(w,
+		fmt.Sprintf("Hello, WebHookServer version %s, application status:'%s'. %d %s have passed since the launch of the application.\n\n%s\n",
+			strings.ReplaceAll(wh.version, "\n", ""),
+			status,
+			count,
+			unit,
+			printMemStats()))
+}
+
+// RouteWebHook_New маршрут при обращении к '/webhook'
+func (wh *WebHookServer_New) RouteWebHook_New(w http.ResponseWriter, r *http.Request) {
+	eventElement := map[string]any{}
+
+	bodyByte, err := io.ReadAll(r.Body)
+	if err != nil {
+		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+		return
+	}
+	defer func() {
+		r.Body.Close()
+		bodyByte = []byte(nil)
+	}()
+
+	//----------------------------------------------------------------------
+	//----------- запись в файл принятых в обработку объектов --------------
+	//---------------- только для test и development -----------------------
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" || os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
+		if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
+			if str != "" {
+				wh.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
+			}
+		}
+	}
+	//----------------------------------------------------------------------
+
+	err = json.Unmarshal(bodyByte, &eventElement)
+	if err != nil {
+		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+		return
+	}
+
+	objectType, err := GetObjectType(eventElement)
+	if err != nil {
+		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+		return
+	}
+
+	rootId, err := GetRootId(eventElement)
+	if err != nil {
+		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+		return
+	}
+
+	operation, err := GetOperation(eventElement)
+	if err != nil {
+		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+	}
+
+	switch objectType {
+	case "alert":
+		if operation == "delete" {
+			return
+		}
+
+		wh.logger.Send("info", fmt.Sprintf("received alert rootId:'%s', operation:'%s'", rootId, operation))
+
+		wh.chanOutput <- OutputData{
+			ObjectType: objectType,
+			RootId:     rootId,
+			Data:       eventElement,
+		}
+
+	case "case":
+		caseId, err := GetCaseId(eventElement)
+		if err != nil {
+			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
+		}
+
+		wh.logger.Send("info", fmt.Sprintf("received caseId:'%d', rootId:'%s', operation:'%s', a request is being sent for additional information about 'observable' and 'ttl' objects", caseId, rootId, operation))
+
+		wh.chanOutput <- OutputData{
+			ObjectType: objectType,
+			RootId:     rootId,
+			Data:       eventElement,
+		}
+
+	case "case_artifact":
+	case "case_task":
+	case "case_task_log":
+	default:
+		wh.logger.Send("error", fmt.Sprintf("unknown object type '%s'", objectType))
+
+	}
+}

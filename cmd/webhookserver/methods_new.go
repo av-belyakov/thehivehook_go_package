@@ -1,0 +1,79 @@
+package webhookserver
+
+import (
+	"context"
+	"fmt"
+	"net"
+	"net/http"
+	"net/http/pprof"
+	"os"
+
+	"github.com/doganarif/govisual"
+	"golang.org/x/sync/errgroup"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
+	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
+)
+
+// Start_New выполняет запуск модуля
+func (wh *WebHookServer_New) Start_New(ctx context.Context) error {
+	routers := map[string]func(http.ResponseWriter, *http.Request){
+		"/":         wh.RouteIndex_New,
+		"/webhook":  wh.RouteWebHook_New,
+		"/webhook/": wh.RouteWebHook_New,
+	}
+
+	//для отладки через pprof (только для теста)
+	//http://confWebHook.Host:confWebHook.Port/debug/pprof/
+	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/heap
+	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/allocs
+	//go tool pprof http://confWebHook.Host:confWebHook.Port/debug/pprof/goroutine
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" || os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
+		routers["/debug/pprof/"] = pprof.Index
+	}
+
+	mux := http.NewServeMux()
+	for k, v := range routers {
+		mux.HandleFunc(k, v)
+	}
+
+	wh.server = &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", wh.host, wh.port),
+		Handler: mux,
+		BaseContext: func(_ net.Listener) context.Context {
+			return ctx
+		},
+	}
+
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" {
+		var version string
+		version, _ = appversion.GetAppVersion()
+
+		wh.server.Handler = govisual.Wrap(
+			mux,
+			govisual.WithMaxRequests(150),
+			//govisual.WithDashboardPath("/visual"),
+			govisual.WithRequestBodyLogging(true),
+			govisual.WithResponseBodyLogging(true),
+			govisual.WithServiceName(appname.GetName()),
+			govisual.WithServiceVersion(version),
+			//govisual.WithPostgresStorage(
+			//	"postgres://postgres:p@ssWD@localhost:5432/postgres?sslmode=disable",
+			//	"govisual_requests",
+			//),
+		)
+	}
+
+	g, gCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		return wh.server.ListenAndServe()
+	})
+	g.Go(func() error {
+		<-gCtx.Done()
+		close(wh.chanOutput)
+
+		return wh.server.Shutdown(context.Background())
+	})
+
+	return g.Wait()
+}
