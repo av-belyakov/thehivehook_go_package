@@ -8,6 +8,35 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/storageobjects"
 )
 
+// WebHookServer_New
+type WebHookServer_New struct {
+	server     *http.Server
+	logger     interfaces.Logger
+	timeStart  time.Time
+	version    string
+	name       string //gcm, rcmmsk и т.д.
+	host       string
+	port       int
+	chanOutput chan<- OutputData
+}
+
+// webHookServerOptions_New функциональные параметры
+type webHookServerOptions_New func(*WebHookServer_New) error
+
+// WebHookServerOptions_New основные опции
+type WebHookServerOptions_New struct {
+	Version string //версия сервера (не обязательный параметр)
+	Name    string //наименование Webhook сервера (не обязательный параметр)
+	Host    string //сетевой хост, доменное имя или ip адрес, по умолчанию 127.0.0.1
+	Port    int    //сетевой порт, по умолчанию 7575 (не обязательный параметр)
+}
+
+type OutputData struct {
+	ObjectType string
+	RootId     string
+	Data       map[string]any
+}
+
 // WebHookServer непосредственно сам сервер
 type WebHookServer[T any] struct {
 	server       *http.Server

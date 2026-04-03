@@ -6,6 +6,12 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
+type TheHiveApi_New struct {
+	logger           interfaces.Logger
+	receivingChannel chan interfaces.ChannelRequester
+	settings         theHiveApiSettings
+}
+
 // apiTheHiveModule модуль для взаимодействия с API TheHive
 type apiTheHiveModule struct {
 	cache            *cachingstoragewithqueue.CacheStorageWithQueue[any]
@@ -26,6 +32,9 @@ type theHiveApiSettings struct {
 
 // theHiveAPIOptions функциональные опции
 type theHiveApiOptions func(*apiTheHiveModule) error
+
+// theHiveAPIOptions_New функциональные опции
+type theHiveApiOptions_New func(*TheHiveApi_New) error
 
 // Querys перечень запросов к TheHive
 type Querys struct {

@@ -1,0 +1,303 @@
+package thehiveapi
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+)
+
+func (api *TheHiveApi_New) router_New(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+
+		case msg := <-api.receivingChannel:
+			switch msg.GetCommand() {
+			case "get_alert":
+				keyId := msg.GetCommand() + msg.GetRootId()
+
+				so := NewSpecialObjectForCache[any]()
+				so.SetID(keyId)
+
+				so.SetFunc(func(_ int) bool {
+					api.logger.Send("info", fmt.Sprintf("start search object for alert, command:'%s', root id:'%s'", msg.GetCommand(), msg.GetRootId()))
+
+					newRes := NewChannelRespons()
+					newRes.SetRequestId(msg.GetRequestId())
+					newRes.SetStatusCode(200)
+
+					//ищем в хранилище объект, который возможно уже запрашивали ранее
+					if obj, ok := api.storageCache.GetObject(keyId); ok {
+						api.logger.Send("info", fmt.Sprintf("the object with id:'%s' was found in the cache", keyId))
+
+						newRes.SetData(obj)
+					} else {
+						api.logger.Send("info", fmt.Sprintf("request object for alert to TheHive, command:'%s', root id:'%s'", msg.GetCommand(), msg.GetRootId()))
+
+						//делаем запрос к TheHive для получения дополнительной информации по объекту
+						res, statusCode, err := api.GetAlert(ctx, msg.GetRootId())
+						if err != nil {
+							api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("%w, root id:'%s'", err, msg.GetRootId())).Error())
+						} else {
+							api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", msg.GetCommand(), msg.GetRootId(), statusCode))
+
+							// добавляем найденный объект в кеш
+							api.storageCache.SetObject(keyId, res)
+							newRes.SetData(res)
+						}
+
+						newRes.SetStatusCode(statusCode)
+					}
+
+					select {
+					case <-msg.GetContext().Done():
+						return false
+
+					default:
+						msg.GetChanOutput() <- newRes
+
+					}
+
+					return true
+				})
+
+				//добавляем объект в очередь для обработки
+				api.cache.PushObjectToQueue(so)
+
+			case "get_observables":
+				keyId := msg.GetCommand() + msg.GetRootId()
+
+				so := NewSpecialObjectForCache[any]()
+				so.SetID(keyId)
+
+				api.logger.Send("info", fmt.Sprintf("apiTheHiveModule.router the command has been accepted, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+
+				//для того что бы выполнить сравнение объектов нужно передать
+				//этот объект so.SetObject
+				//хотя для thehivehook_go может это не надо, надо обдумать!!!
+				//so.SetObject(msg.GetData())
+
+				so.SetFunc(func(_ int) bool {
+					api.logger.Send("info", fmt.Sprintf("start function execution, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+
+					newRes := NewChannelRespons()
+					newRes.SetRequestId(msg.GetRequestId())
+					newRes.SetStatusCode(200)
+
+					//ищем в хранилище объект, который возможно уже запрашивали ранее
+					//if obj, ok := api.storageCache.GetObject(keyId); ok {
+					//	api.logger.Send("info", fmt.Sprintf("the object with id:'%s' was found in the cache", keyId))
+					//
+					//	newRes.SetData(obj)
+					//} else {
+					api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+
+					//делаем запрос к TheHive для получения дополнительной информации по объекту
+					res, statusCode, err := api.GetObservables(ctx, msg.GetRootId())
+					if err != nil {
+						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+					} else {
+						api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", msg.GetCommand(), msg.GetRootId(), statusCode))
+
+						// добавляем найденный объект в кеш
+						//		api.storageCache.SetObject(keyId, res)
+						newRes.SetData(res)
+					}
+
+					newRes.SetStatusCode(statusCode)
+					//}
+
+					select {
+					case <-msg.GetContext().Done():
+						return false
+
+					default:
+						msg.GetChanOutput() <- newRes
+
+					}
+
+					return true
+				})
+
+				//добавляем объект в очередь для обработки
+				api.cache.PushObjectToQueue(so)
+
+			case "get_ttp":
+				keyId := msg.GetCommand() + msg.GetRootId()
+
+				so := NewSpecialObjectForCache[any]()
+				so.SetID(keyId)
+
+				api.logger.Send("info", fmt.Sprintf("apiTheHiveModule.router the command has been accepted, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+
+				//для того что бы выполнить сравнение объектов нужно передать
+				//этот объект so.SetObject
+				//хотя для thehivehook_go может это не надо, надо обдумать!!!
+				//so.SetObject(msg.GetData())
+
+				so.SetFunc(func(_ int) bool {
+					api.logger.Send("info", fmt.Sprintf("start function execution, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+
+					newRes := NewChannelRespons()
+					newRes.SetRequestId(msg.GetRequestId())
+					newRes.SetStatusCode(200)
+
+					//ищем в хранилище объект, который возможно уже запрашивали ранее
+					//if obj, ok := api.storageCache.GetObject(keyId); ok {
+					//	api.logger.Send("info", fmt.Sprintf("the object with id:'%s' was found in the cache", keyId))
+					//
+					//	newRes.SetData(obj)
+					//} else {
+					api.logger.Send("info", fmt.Sprintf("request to TheHive, command:'%s', root id:'%s' (case:'%s')", msg.GetCommand(), msg.GetRootId(), msg.GetCaseId()))
+
+					//делаем запрос к TheHive для получения дополнительной информации по объекту
+					res, statusCode, err := api.GetTTP(ctx, msg.GetRootId())
+					if err != nil {
+						api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+					} else {
+						api.logger.Send("info", fmt.Sprintf("successful response to TheHive request, command:'%s', root id:'%s', status code:'%d'", msg.GetCommand(), msg.GetRootId(), statusCode))
+
+						// добавляем найденный объект в кеш
+						//		api.storageCache.SetObject(keyId, res)
+						newRes.SetData(res)
+						//	}
+
+						newRes.SetStatusCode(statusCode)
+					}
+
+					select {
+					case <-msg.GetContext().Done():
+						return false
+
+					default:
+						msg.GetChanOutput() <- newRes
+
+					}
+
+					return true
+				})
+
+				//добавляем объект в очередь для обработки
+				api.cache.PushObjectToQueue(so)
+
+			case "send_command":
+				response := NewChannelRespons()
+				response.SetRequestId(msg.GetRequestId())
+				response.SetSource(api.settings.nameRegionalObject)
+
+				rc, err := getRequestCommandData(msg.GetData())
+				if err != nil {
+					api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+					response.SetStatusCode(400)
+					response.SetError(fmt.Errorf("the request contains an invalid json object (%s)", err.Error()))
+					response.SendToChan(msg.GetChanOutput())
+
+					continue
+				}
+
+				//проверяем какому из thehivehook_go_package было предназначена команда
+				// так как данный модуль распространяется по регионам, необходимо отличать
+				// запросы на изменения тегов, добавления задач или специальных полей,
+				// предназначенных для определённого модуля
+				if api.settings.nameRegionalObject != rc.RegionalObject {
+					errMsg := fmt.Sprintf(
+						"the command '%s' cannot be executed because the name of the regional object '%s' does not match with name '%s'",
+						msg.GetOrder(),
+						rc.RegionalObject,
+						api.settings.nameRegionalObject,
+					)
+
+					api.logger.Send("error", errMsg)
+
+					response.SetStatusCode(400)
+					response.SetError(errors.New(errMsg))
+					response.SendToChan(msg.GetChanOutput())
+
+					continue
+				}
+
+				api.logger.Send(
+					"info",
+					fmt.Sprintf("the command '%s' has been received, order '%s', rootId '%s', for regional object '%s', currnet regional object '%s'",
+						rc.Command,
+						msg.GetOrder(),
+						msg.GetRootId(),
+						rc.RegionalObject,
+						api.settings.nameRegionalObject,
+					))
+
+				switch msg.GetOrder() {
+				case "add_case_tag":
+					go func(res *ResponseChannelTheHive) {
+						_, statusCode, err := api.AddCaseTags(ctx, rc)
+						res.SetStatusCode(statusCode)
+						if err != nil {
+							res.SetError(err)
+							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						} else {
+							api.logger.Send(
+								"info",
+								fmt.Sprintf("when making a request to add a new tag '%s' for the service '%s' rootId '%s', caseId '%s', the following is received status code '%d'",
+									rc.Value,
+									rc.Service,
+									rc.RootId,
+									rc.CaseId,
+									statusCode,
+								))
+						}
+
+						res.SendToChan(msg.GetChanOutput())
+					}(response)
+
+				case "add_case_task":
+					go func(res *ResponseChannelTheHive) {
+						_, statusCode, err := api.AddCaseTask(ctx, rc)
+						res.SetStatusCode(statusCode)
+						if err != nil {
+							res.SetError(err)
+							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						} else {
+							api.logger.Send(
+								"info",
+								fmt.Sprintf("when making a request to add a new case task '%s' for the service '%s' rootId '%s', caseId '%s', the following is received status code '%d'",
+									rc.Value,
+									rc.Service,
+									rc.RootId,
+									rc.CaseId,
+									statusCode,
+								))
+						}
+
+						res.SendToChan(msg.GetChanOutput())
+					}(response)
+
+				case "set_case_custom_field":
+					go func(res *ResponseChannelTheHive) {
+						_, statusCode, err := api.AddCaseCustomFields(ctx, rc)
+						res.SetStatusCode(statusCode)
+						if err != nil {
+							res.SetError(err)
+							api.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						} else {
+							api.logger.Send(
+								"info",
+								fmt.Sprintf("when making a request to add a new custom field '%s' for the service '%s' rootId '%s', caseId '%s', the following is received status code '%d'",
+									rc.Value,
+									rc.Service,
+									rc.RootId,
+									rc.CaseId,
+									statusCode,
+								))
+						}
+
+						res.SendToChan(msg.GetChanOutput())
+					}(response)
+				}
+			}
+		}
+	}
+}
