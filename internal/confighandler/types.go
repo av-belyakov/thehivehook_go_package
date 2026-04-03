@@ -75,8 +75,8 @@ type AppConfigWebHookServer struct {
 	Host               string `yaml:"host"`
 	Name               string `validate:"required" yaml:"name"`
 	Port               int    `validate:"gt=0,lte=65535" yaml:"port"`
-	StorageTTL         int    `validate:"gt=9,lte=43201" yaml:"ttl_tmp_info"`
-	StorageDelayToSend int    `validate:"gt=1,lte=601" yaml:"ttl_tmp_info"`
+	StorageTTL         int    `validate:"gte=10,lte=43200" yaml:"ttl_tmp_info"`
+	StorageDelayToSend int    `validate:"gte=1,lte=600" yaml:"ttl_tmp_info"`
 }
 
 type SubscriptionsNATS struct {

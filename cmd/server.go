@@ -141,11 +141,12 @@ func server(ctx context.Context) {
 	//********** инициализация WEBHOOKSERVER сервера ************
 	webHook, chForSomebody, err := webhookserver.New(
 		logging,
-		webhookserver.WithTTL[webhookserver.EventElements](conf.GetApplicationWebHookServer().TTLTmpInfo),
-		webhookserver.WithPort[webhookserver.EventElements](conf.GetApplicationWebHookServer().Port),
-		webhookserver.WithHost[webhookserver.EventElements](conf.GetApplicationWebHookServer().Host),
+		webhookserver.WithVersion[webhookserver.EventElements](version),
 		webhookserver.WithName[webhookserver.EventElements](conf.GetApplicationWebHookServer().Name),
-		webhookserver.WithVersion[webhookserver.EventElements](version))
+		webhookserver.WithHost[webhookserver.EventElements](conf.GetApplicationWebHookServer().Host),
+		webhookserver.WithPort[webhookserver.EventElements](conf.GetApplicationWebHookServer().Port),
+		webhookserver.WithTTL[webhookserver.EventElements](conf.GetApplicationWebHookServer().StorageTTL),
+		webhookserver.WithStorageDelayToSend[webhookserver.EventElements](conf.GetApplicationWebHookServer().StorageDelayToSend))
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'webhookserver': %s\n", err.Error())

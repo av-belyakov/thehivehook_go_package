@@ -10,16 +10,17 @@ import (
 
 // WebHookServer непосредственно сам сервер
 type WebHookServer[T any] struct {
-	server    *http.Server
-	storage   *storageobjects.StorageObjects[T]
-	logger    interfaces.Logger
-	timeStart time.Time
-	host      string
-	name      string //gcm, rcmmsk и т.д.
-	version   string
-	ttl       int
-	port      int
-	chanInput chan<- ChanFromWebHookServer
+	server       *http.Server
+	storage      *storageobjects.StorageObjects[T]
+	logger       interfaces.Logger
+	timeStart    time.Time
+	host         string
+	name         string //gcm, rcmmsk и т.д.
+	version      string
+	port         int
+	ttl          int
+	delaySending int
+	chanInput    chan<- ChanFromWebHookServer
 }
 
 // webHookServerOptions функциональные параметры

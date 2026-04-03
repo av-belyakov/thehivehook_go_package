@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
+	"github.com/av-belyakov/thehivehook_go_package/internal/storageobjects"
 )
 
 // New конструктор webhookserver принимает функциональные опции для настройки модуля перед запуском
@@ -12,14 +13,15 @@ func New[T any](logger interfaces.Logger, opts ...webHookServerOptions[T]) (*Web
 	chanOutput := make(chan ChanFromWebHookServer)
 
 	whs := &WebHookServer[T]{
-		name:      "nobody",
-		version:   "0.1.1",
-		timeStart: time.Now(),
-		host:      "127.0.0.1",
-		port:      7575,
-		ttl:       10,
-		logger:    logger,
-		chanInput: chanOutput,
+		name:         "nobody",
+		version:      "0.1.1",
+		timeStart:    time.Now(),
+		host:         "127.0.0.1",
+		port:         7575,
+		ttl:          30,
+		delaySending: 10,
+		logger:       logger,
+		chanInput:    chanOutput,
 	}
 
 	for _, opt := range opts {
@@ -28,7 +30,28 @@ func New[T any](logger interfaces.Logger, opts ...webHookServerOptions[T]) (*Web
 		}
 	}
 
+	storage, err := storageobjects.New(
+		storageobjects.WithTimeTick[T](1),
+		storageobjects.WithChannelSize[T](10),
+		storageobjects.WithTimeToLive[T](whs.ttl),
+		storageobjects.WithTimeDelayToSend[T](whs.delaySending),
+	)
+	if err != nil {
+		return whs, chanOutput, err
+	}
+
+	whs.storage = storage
+
 	return whs, chanOutput, nil
+}
+
+// WithStorageDelayToSend устанавливает время задержки отправки данных из хранилища
+func WithStorageDelayToSend[T any](v int) webHookServerOptions[T] {
+	return func(whs *WebHookServer[T]) error {
+		whs.delaySending = v
+
+		return nil
+	}
 }
 
 // WithTTL устанавливает время TimeToLive для временного хранилища информации в модуле
