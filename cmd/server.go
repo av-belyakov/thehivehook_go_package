@@ -139,21 +139,19 @@ func server(ctx context.Context) {
 
 	//***********************************************************
 	//********** инициализация WEBHOOKSERVER сервера ************
-	webHook, chForSomebody, err := webhookserver.New(
+	webHook, chOut, err := webhookserver.New(
 		logging,
-		webhookserver.WithVersion[webhookserver.EventElements](version),
-		webhookserver.WithName[webhookserver.EventElements](conf.GetApplicationWebHookServer().Name),
-		webhookserver.WithHost[webhookserver.EventElements](conf.GetApplicationWebHookServer().Host),
-		webhookserver.WithPort[webhookserver.EventElements](conf.GetApplicationWebHookServer().Port),
-		webhookserver.WithTTL[webhookserver.EventElements](conf.GetApplicationWebHookServer().StorageTTL),
-		webhookserver.WithStorageDelayToSend[webhookserver.EventElements](conf.GetApplicationWebHookServer().StorageDelayToSend))
+		webhookserver.WithVersion(version),
+		webhookserver.WithName(conf.GetApplicationWebHookServer().Name),
+		webhookserver.WithHost(conf.GetApplicationWebHookServer().Host),
+		webhookserver.WithPort(conf.GetApplicationWebHookServer().Port))
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'webhookserver': %s\n", err.Error())
 	}
 
 	//мост между каналами различных модулей
-	router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
+	router(ctx, chOut, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
 
 	// вывод информационного сообщения при старте приложения
 	infoMsg := getInformationMessage(conf)

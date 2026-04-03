@@ -16,11 +16,7 @@ import (
 )
 
 // Start выполняет запуск модуля
-func (wh *WebHookServer[T]) Start(ctx context.Context) error {
-	defer func() {
-		close(wh.chanInput)
-	}()
-
+func (wh *WebHookServer) Start(ctx context.Context) error {
 	routers := map[string]func(http.ResponseWriter, *http.Request){
 		"/":         wh.RouteIndex,
 		"/webhook":  wh.RouteWebHook,
@@ -74,6 +70,7 @@ func (wh *WebHookServer[T]) Start(ctx context.Context) error {
 	})
 	g.Go(func() error {
 		<-gCtx.Done()
+		close(wh.chanOut)
 
 		return wh.server.Shutdown(context.Background())
 	})

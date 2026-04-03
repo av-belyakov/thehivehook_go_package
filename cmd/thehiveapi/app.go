@@ -33,6 +33,20 @@ func New(logger interfaces.Logger, opts ...theHiveApiOptions) (*apiTheHiveModule
 	}
 	api.cache = cache
 
+	/*
+		storage, err := storageobjects.New(
+			storageobjects.WithTimeTick[T](1),
+			storageobjects.WithChannelSize[T](10),
+			storageobjects.WithTimeToLive[T](whs.ttl),
+			storageobjects.WithTimeDelayToSend[T](whs.delaySending),
+		)
+		if err != nil {
+			return whs, chanOutput, err
+		}
+
+		whs.storage = storage
+	*/
+
 	//----- thehiveapi storage -----
 	sc, err := storage.NewStorageFoundObjects(
 		storage.WithMaxSize(360),
@@ -52,6 +66,26 @@ func New(logger interfaces.Logger, opts ...theHiveApiOptions) (*apiTheHiveModule
 
 	return api, nil
 }
+
+/*
+// WithStorageDelayToSend устанавливает время задержки отправки данных из хранилища
+func WithStorageDelayToSend(v int) webHookServerOptions {
+	return func(whs *WebHookServer) error {
+		whs.delaySending = v
+
+		return nil
+	}
+}
+
+// WithTTL устанавливает время TimeToLive для временного хранилища информации в модуле
+func WithTTL(v int) webHookServerOptions {
+	return func(whs *WebHookServer) error {
+		whs.ttl = v
+
+		return nil
+	}
+}
+*/
 
 // WithAPIKey идентификатор-ключ для API
 func WithAPIKey(v string) theHiveApiOptions {

@@ -5,26 +5,22 @@ import (
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/storageobjects"
 )
 
 // WebHookServer непосредственно сам сервер
-type WebHookServer[T any] struct {
-	server       *http.Server
-	storage      *storageobjects.StorageObjects[T]
-	logger       interfaces.Logger
-	timeStart    time.Time
-	host         string
-	name         string //gcm, rcmmsk и т.д.
-	version      string
-	port         int
-	ttl          int
-	delaySending int
-	chanInput    chan<- ChanFromWebHookServer
+type WebHookServer struct {
+	server    *http.Server
+	logger    interfaces.Logger
+	timeStart time.Time
+	version   string
+	name      string //gcm, rcmmsk и т.д.
+	host      string
+	port      int
+	chanOut   chan []byte
 }
 
 // webHookServerOptions функциональные параметры
-type webHookServerOptions[T any] func(*WebHookServer[T]) error
+type webHookServerOptions func(*WebHookServer) error
 
 // WebHookServerOptions основные опции
 type WebHookServerOptions struct {

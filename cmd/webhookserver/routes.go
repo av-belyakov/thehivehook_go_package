@@ -1,23 +1,19 @@
 package webhookserver
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"math"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 // RouteIndex маршрут при обращении к '/'
-func (wh *WebHookServer[T]) RouteIndex(w http.ResponseWriter, r *http.Request) {
+func (whs *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 
@@ -30,7 +26,7 @@ func (wh *WebHookServer[T]) RouteIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	unit := "hours"
-	count := int(time.Since(wh.timeStart).Hours())
+	count := int(time.Since(whs.timeStart).Hours())
 	if count >= 48 {
 		count = int(math.Floor(float64(count) / 24))
 		unit = "days"
@@ -38,7 +34,7 @@ func (wh *WebHookServer[T]) RouteIndex(w http.ResponseWriter, r *http.Request) {
 
 	io.WriteString(w,
 		fmt.Sprintf("Hello, WebHookServer version %s, application status:'%s'. %d %s have passed since the launch of the application.\n\n%s\n",
-			strings.ReplaceAll(wh.version, "\n", ""),
+			strings.ReplaceAll(whs.version, "\n", ""),
 			status,
 			count,
 			unit,
@@ -46,7 +42,33 @@ func (wh *WebHookServer[T]) RouteIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 // RouteWebHook маршрут при обращении к '/webhook'
-func (wh *WebHookServer[T]) RouteWebHook(w http.ResponseWriter, r *http.Request) {
+func (whs *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
+	bodyByte, err := io.ReadAll(r.Body)
+	if err != nil {
+		whs.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+		return
+	}
+	defer r.Body.Close()
+
+	//----------------------------------------------------------------------
+	//----------- запись в файл принятых в обработку объектов --------------
+	//---------------- только для test и development -----------------------
+	if os.Getenv("GO_HIVEHOOK_MAIN") == "test" || os.Getenv("GO_HIVEHOOK_MAIN") == "development" {
+		if str, err := supportingfunctions.NewReadReflectJSONSprint(bodyByte); err == nil {
+			if str != "" {
+				whs.logger.Send("accepted_objects", fmt.Sprintf("\n%s\n", str))
+			}
+		}
+	}
+	//----------------------------------------------------------------------
+
+	whs.chanOut <- bodyByte
+}
+
+/*
+// RouteWebHook маршрут при обращении к '/webhook'
+func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	eventElement := map[string]any{}
 	bodyByte, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -187,3 +209,4 @@ func (wh *WebHookServer[T]) RouteWebHook(w http.ResponseWriter, r *http.Request)
 	case "case_task_log":
 	}
 }
+*/
