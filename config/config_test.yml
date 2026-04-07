@@ -1,5 +1,9 @@
 COMMONINFO:
   file_name: config_dev
+TEMPORARYSTORAGE:
+  storage_object_ttl: 180
+  storage_delay_to_send_alert: 5
+  storage_delay_to_send_case: 30
 NATS:
   host: 192.168.9.208
   port: 4222
@@ -16,8 +20,6 @@ WEBHOOKSERVER:
   name: gcm-test
   host:
   port: 5000
-  storage_ttl: 180
-  storage_delay_to_send: 30
 DATABASEWRITELOG:
   host: datahook.cloud.gcm
   port: 9200

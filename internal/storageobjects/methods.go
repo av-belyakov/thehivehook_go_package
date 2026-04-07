@@ -34,14 +34,10 @@ func (s *StorageObjects[T]) Start(ctx context.Context) {
 					continue
 				}
 
-				fmt.Println("___ storageObjects.Start, time:", time.Now())
-
 				//проверяем, подошло ли время отправки объекта
 				if time.Now().After(s.storage.objects[index].timeSending) {
 					//забираем объект из хранилища
 					obj := s.getObject(index)
-
-					fmt.Println("sending object ->")
 
 					//отправка объекта в канал после истечения таймаута
 					s.chanOut <- StorageObjectData[T]{
@@ -60,35 +56,40 @@ func (s *StorageObjects[T]) Start(ctx context.Context) {
 }
 
 // AddObject добавляет объект или обновляет его (если есть объект с таким индексом)
-func (s *StorageObjects[T]) AddObject(id string, element T) {
-	s.addObject(id, element)
+// параметр toSend - время, в секундах, по истечении которого объект из записи будет передан в канал,
+// а сама запись будет удалена
+func (s *StorageObjects[T]) AddObject(timeSending int, settings StorageObjectDataSettings[T]) {
+	s.addObject(timeSending, settings)
 }
 
 // addObject добавляет объект или обновляет его (если есть объект с таким индексом)
-func (s *StorageObjects[T]) addObject(id string, element T) {
+func (s *StorageObjects[T]) addObject(timeSending int, settings StorageObjectDataSettings[T]) {
 	s.storage.mtx.Lock()
 	defer s.storage.mtx.Unlock()
 
 	for k, v := range s.storage.objects {
-		if v.id == id {
+		if v.id == settings.Id {
 			s.storage.objects[k] = object[T]{
 				id:          v.id,
+				objectType:  v.objectType,
 				timeExpiry:  v.timeExpiry,
 				timeCreated: v.timeCreated,
 				timeSending: v.timeSending,
-				element:     element,
+				element:     settings.Data,
 			}
 
 			return
 		}
 	}
 
+	currentTime := time.Now()
 	s.storage.objects = append(s.storage.objects, object[T]{
-		id:          id,
-		element:     element,
-		timeExpiry:  time.Now().Add(s.timeToLive),
-		timeSending: time.Now().Add(s.timeDelayToSend),
-		timeCreated: time.Now(),
+		id:          settings.Id,
+		objectType:  settings.ObjectType,
+		element:     settings.Data,
+		timeExpiry:  currentTime.Add(s.timeToLive),
+		timeSending: currentTime.Add(time.Duration(timeSending) * time.Second),
+		timeCreated: currentTime,
 	})
 }
 

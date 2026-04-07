@@ -3,18 +3,14 @@ package thehiveapi
 
 import (
 	"errors"
-
-	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // New настраивает модуль взаимодействия с API TheHive
-func NewTheHiveApi(logger interfaces.Logger, opts ...theHiveApiOptions_New) (*TheHiveApi_New, error) {
+func NewTheHiveApi(opts ...theHiveApiOptions_New) (*TheHiveApi_New, error) {
 	api := &TheHiveApi_New{
 		settings: theHiveApiSettings{
 			cachettl: 10,
 		},
-		logger:           logger,
-		receivingChannel: make(chan interfaces.ChannelRequester, 4),
 	}
 
 	for _, opt := range opts {

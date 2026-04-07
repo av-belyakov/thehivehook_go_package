@@ -8,9 +8,8 @@ import (
 // New инициализация хранилища объектов
 func New[T any](opts ...cacheOptions[T]) (*StorageObjects[T], error) {
 	storageObjects := &StorageObjects[T]{
-		timeTick:        time.Duration(1 * time.Second),    // 1 секунда
-		timeToLive:      time.Duration(3600 * time.Second), // 1 час
-		timeDelayToSend: time.Duration(10 * time.Second),   // 10 секунд
+		timeTick:   time.Duration(1 * time.Second),    // 1 секунда
+		timeToLive: time.Duration(3600 * time.Second), // 1 час
 		storage: objects[T]{
 			objects: []object[T]{},
 		},
@@ -47,25 +46,11 @@ func WithTimeTick[T any](v int) cacheOptions[T] {
 // допустимый интервал от 10 до 43200 секунд (12 часов)
 func WithTimeToLive[T any](v int) cacheOptions[T] {
 	return func(s *StorageObjects[T]) error {
-		if v < 10 || v > 43200 {
+		if v < 10 || v > 43_200 {
 			return errors.New("the maximum time after which an entry in the storage will be deleted should not be less than 10 seconds or more than 12 hours (43200 seconds)")
 		}
 
 		s.timeToLive = time.Duration(v) * time.Second
-
-		return nil
-	}
-}
-
-// WithTimeDelayToSend устанавливает время по истечении которого объект из записи будет передан в канал,
-// а сама запись будет удалена, допустимый интервал от 1 до 600 секунд (от 1 секунды до 10 минут)
-func WithTimeDelayToSend[T any](v int) cacheOptions[T] {
-	return func(s *StorageObjects[T]) error {
-		if v < 1 || v > 600 {
-			return errors.New("the time after which the object will be sent to the channel should not be less than 1 second or more than 180 seconds")
-		}
-
-		s.timeDelayToSend = time.Duration(v) * time.Second
 
 		return nil
 	}

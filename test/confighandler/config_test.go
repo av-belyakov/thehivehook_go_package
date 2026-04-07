@@ -123,12 +123,43 @@ func TestConfigHandler(t *testing.T) {
 	testOptions.function()
 	listTesting = append(listTesting, testOptions)
 
+	/*
+	 */
+
+	// --- Настройки TEMPORARYSTORAGE (для config_prod.yml) ---
+	testOptions = TestOptions{
+		name: "Настройки TEMPORARYSTORAGE (чтение конфигурационного файла по умолчанию config_prod.yaml)",
+		function: func() {
+			cfg, err = confighandler.NewConfig(constants.Root_Dir)
+			testOptions.err = err
+			testOptions.items = []TestParametrs{
+				{
+					inputParameters:    TestTypeElements{valueString: cfg.GetCommonInfo().FileName},
+					expectedParameters: TestTypeElements{valueString: "config production"},
+				},
+				{
+					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageObjectTTL},
+					expectedParameters: TestTypeElements{valueInt: 180},
+				},
+				{
+					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageDelayToSendAlert},
+					expectedParameters: TestTypeElements{valueInt: 5},
+				},
+				{
+					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageDelayToSendCase},
+					expectedParameters: TestTypeElements{valueInt: 30},
+				},
+			}
+		},
+	}
+	testOptions.function()
+	listTesting = append(listTesting, testOptions)
+
 	// --- Настройки NATS (для config_prod.yml) ---
 	testOptions = TestOptions{
 		name: "Настройки NATS (чтение конфигурационного файла по умолчанию config_prod.yaml)",
 		function: func() {
 			cfg, err = confighandler.NewConfig(constants.Root_Dir)
-
 			testOptions.err = err
 			testOptions.items = []TestParametrs{
 				{
@@ -170,7 +201,6 @@ func TestConfigHandler(t *testing.T) {
 		name: "Настройки TheHive (чтение конфигурационного файла по умолчанию config_prod.yaml)",
 		function: func() {
 			cfg, err = confighandler.NewConfig(constants.Root_Dir)
-
 			testOptions.err = err
 			testOptions.items = []TestParametrs{
 				{
@@ -204,7 +234,6 @@ func TestConfigHandler(t *testing.T) {
 		name: "Настройки WEBHOOKSERVER (чтение конфигурационного файла по умолчанию config_prod.yaml)",
 		function: func() {
 			cfg, err = confighandler.NewConfig(constants.Root_Dir)
-
 			testOptions.err = err
 			testOptions.items = []TestParametrs{
 				{
@@ -223,14 +252,6 @@ func TestConfigHandler(t *testing.T) {
 					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationWebHookServer().Port},
 					expectedParameters: TestTypeElements{valueInt: 5001},
 				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationWebHookServer().StorageTTL},
-					expectedParameters: TestTypeElements{valueInt: 180},
-				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationWebHookServer().StorageDelayToSend},
-					expectedParameters: TestTypeElements{valueInt: 30},
-				},
 			}
 		},
 	}
@@ -242,7 +263,6 @@ func TestConfigHandler(t *testing.T) {
 		name: "Настройки WRITELOGDB (чтение конфигурационного файла по умолчанию config_prod.yaml)",
 		function: func() {
 			cfg, err = confighandler.NewConfig(constants.Root_Dir)
-
 			testOptions.err = err
 			testOptions.items = []TestParametrs{
 				{
@@ -272,6 +292,37 @@ func TestConfigHandler(t *testing.T) {
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationWriteLogDB().Passwd},
 					expectedParameters: TestTypeElements{valueString: DATABASEWRITELOG_PASSWD},
+				},
+			}
+		},
+	}
+	testOptions.function()
+	listTesting = append(listTesting, testOptions)
+
+	// --- Настройки TEMPORARYSTORAGE (для config_dev.yml) ---
+	testOptions = TestOptions{
+		name: "Настройки TEMPORARYSTORAGE (чтение конфигурационного файла по умолчанию config_dev.yml)",
+		function: func() {
+			os.Setenv("GO_HIVEHOOK_MAIN", "development")
+
+			cfg, err = confighandler.NewConfig(constants.Root_Dir)
+			testOptions.err = err
+			testOptions.items = []TestParametrs{
+				{
+					inputParameters:    TestTypeElements{valueString: cfg.GetCommonInfo().FileName},
+					expectedParameters: TestTypeElements{valueString: "config_development"},
+				},
+				{
+					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageObjectTTL},
+					expectedParameters: TestTypeElements{valueInt: 180},
+				},
+				{
+					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageDelayToSendAlert},
+					expectedParameters: TestTypeElements{valueInt: 5},
+				},
+				{
+					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageDelayToSendCase},
+					expectedParameters: TestTypeElements{valueInt: 30},
 				},
 			}
 		},
@@ -382,14 +433,6 @@ func TestConfigHandler(t *testing.T) {
 					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationWebHookServer().Port},
 					expectedParameters: TestTypeElements{valueInt: 5000},
 				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationWebHookServer().StorageTTL},
-					expectedParameters: TestTypeElements{valueInt: 180},
-				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationWebHookServer().StorageDelayToSend},
-					expectedParameters: TestTypeElements{valueInt: 30},
-				},
 			}
 		},
 	}
@@ -432,6 +475,41 @@ func TestConfigHandler(t *testing.T) {
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationWriteLogDB().Passwd},
 					expectedParameters: TestTypeElements{valueString: DATABASEWRITELOG_PASSWD},
+				},
+			}
+		},
+	}
+	testOptions.function()
+	listTesting = append(listTesting, testOptions)
+
+	// --- Настройки TEMPORARYSTORAGE (через переменные окружения) ---
+	testOptions = TestOptions{
+		name: "Настройки TEMPORARYSTORAGE (через переменные окружения)",
+		function: func() {
+			const (
+				TSTORAGE_OBJECTTTL       = 120
+				TSTORAG_DELAYTOSENDALERT = 11
+				TSTORAG_DELAYTOSENDCASE  = 60
+			)
+
+			os.Setenv("GO_HIVEHOOK_TSTORAGEOBJECTTTL", strconv.Itoa(TSTORAGE_OBJECTTTL))
+			os.Setenv("GO_HIVEHOOK_TSTORAGDELAYTOSENDALERT", strconv.Itoa(TSTORAG_DELAYTOSENDALERT))
+			os.Setenv("GO_HIVEHOOK_TSTORAGDELAYTOSENDCASE", strconv.Itoa(TSTORAG_DELAYTOSENDCASE))
+
+			cfg, err = confighandler.NewConfig(constants.Root_Dir)
+			testOptions.err = err
+			testOptions.items = []TestParametrs{
+				{
+					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageObjectTTL},
+					expectedParameters: TestTypeElements{valueInt: TSTORAGE_OBJECTTTL},
+				},
+				{
+					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageDelayToSendAlert},
+					expectedParameters: TestTypeElements{valueInt: TSTORAG_DELAYTOSENDALERT},
+				},
+				{
+					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageDelayToSendCase},
+					expectedParameters: TestTypeElements{valueInt: TSTORAG_DELAYTOSENDCASE},
 				},
 			}
 		},
@@ -564,14 +642,6 @@ func TestConfigHandler(t *testing.T) {
 					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationWebHookServer().Port},
 					expectedParameters: TestTypeElements{valueInt: HIVEHOOK_WEBHPORT},
 				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationWebHookServer().StorageTTL},
-					expectedParameters: TestTypeElements{valueInt: HIVEHOOK_WEBTTL},
-				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationWebHookServer().StorageDelayToSend},
-					expectedParameters: TestTypeElements{valueInt: HIVEHOOK_WEBDS},
-				},
 			}
 		},
 	}
@@ -666,6 +736,11 @@ func unsetAllEnviromentEnvAny() {
 	os.Unsetenv("GO_HIVEHOOK_THAPIKEY")
 	os.Unsetenv("GO_HIVEHOOK_DBWLOGPASSWD")
 
+	//Настройка TEMPORARYSTORAGE
+	os.Unsetenv("GO_HIVEHOOK_TSTORAGEOBJECTTTL")
+	os.Unsetenv("GO_HIVEHOOK_TSTORAGDELAYTOSENDALERT")
+	os.Unsetenv("GO_HIVEHOOK_TSTORAGDELAYTOSENDCASE")
+
 	//настройки NATS
 	os.Unsetenv("GO_HIVEHOOK_NHOST")
 	os.Unsetenv("GO_HIVEHOOK_NPORT")
@@ -683,8 +758,6 @@ func unsetAllEnviromentEnvAny() {
 	os.Unsetenv("GO_HIVEHOOK_WEBHNAME")
 	os.Unsetenv("GO_HIVEHOOK_WEBHHOST")
 	os.Unsetenv("GO_HIVEHOOK_WEBHPORT")
-	os.Unsetenv("GO_HIVEHOOK_WEBHSTORAGDS")
-	os.Unsetenv("GO_HIVEHOOK_WEBHSTORAGETTL")
 
 	//настройки доступа к БД в которую будут записыватся логи
 	os.Unsetenv("GO_HIVEHOOK_DBWLOGHOST")

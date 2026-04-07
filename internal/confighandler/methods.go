@@ -16,6 +16,10 @@ func (conf *ConfigApp) GetListLogs() []*LogSet {
 	return conf.LogList
 }
 
+func (conf *ConfigApp) GetApplicationTemporaryStorage() *AppConfigTemporaryStorage {
+	return &conf.AppConfigTemporaryStorage
+}
+
 // GetApplicationNATS настройки взаимодействия с NATS
 func (conf *ConfigApp) GetApplicationNATS() *AppConfigNATS {
 	return &conf.AppConfigNATS

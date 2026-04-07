@@ -1,13 +1,11 @@
 package confighandler
 
 import (
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path"
 	"strconv"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
@@ -21,6 +19,11 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		validate *validator.Validate
 		envList  map[string]string = map[string]string{
 			"GO_HIVEHOOK_MAIN": "",
+
+			//Настройки временного хранилища
+			"GO_HIVEHOOK_TSTORAGEOBJECTTTL":       "",
+			"GO_HIVEHOOK_TSTORAGDELAYTOSENDALERT": "",
+			"GO_HIVEHOOK_TSTORAGDELAYTOSENDCASE":  "",
 
 			//Подключение к NATS
 			"GO_HIVEHOOK_NHOST":               "",
@@ -112,6 +115,17 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			conf.CommonInfo.FileName = viper.GetString("COMMONINFO.file_name")
 		}
 
+		//Настройки временного хранилища
+		if viper.IsSet("TEMPORARYSTORAGE.storage_object_ttl") {
+			conf.AppConfigTemporaryStorage.StorageObjectTTL = viper.GetInt("TEMPORARYSTORAGE.storage_object_ttl")
+		}
+		if viper.IsSet("TEMPORARYSTORAGE.storage_delay_to_send_alert") {
+			conf.AppConfigTemporaryStorage.StorageDelayToSendAlert = viper.GetInt("TEMPORARYSTORAGE.storage_delay_to_send_alert")
+		}
+		if viper.IsSet("TEMPORARYSTORAGE.storage_delay_to_send_case") {
+			conf.AppConfigTemporaryStorage.StorageDelayToSendCase = viper.GetInt("TEMPORARYSTORAGE.storage_delay_to_send_case")
+		}
+
 		//Настройки для модуля подключения к NATS
 		if viper.IsSet("NATS.host") {
 			conf.AppConfigNATS.Host = viper.GetString("NATS.host")
@@ -165,12 +179,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		}
 		if viper.IsSet("WEBHOOKSERVER.port") {
 			conf.AppConfigWebHookServer.Port = viper.GetInt("WEBHOOKSERVER.port")
-		}
-		if viper.IsSet("WEBHOOKSERVER.storage_ttl") {
-			conf.AppConfigWebHookServer.StorageTTL = viper.GetInt("WEBHOOKSERVER.storage_ttl")
-		}
-		if viper.IsSet("WEBHOOKSERVER.storage_delay_to_send") {
-			conf.AppConfigWebHookServer.StorageDelayToSend = viper.GetInt("WEBHOOKSERVER.storage_delay_to_send")
 		}
 
 		//Настройки доступа к БД в которую будут записыватся логи
@@ -243,6 +251,23 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 
 	if err := setSpecial(fn); err != nil {
 		return &conf, err
+	}
+
+	//Настройки временного хранилища
+	if envList["GO_HIVEHOOK_TSTORAGEOBJECTTTL"] != "" {
+		if v, err := strconv.Atoi(envList["GO_HIVEHOOK_TSTORAGEOBJECTTTL"]); err == nil {
+			conf.AppConfigTemporaryStorage.StorageObjectTTL = v
+		}
+	}
+	if envList["GO_HIVEHOOK_TSTORAGDELAYTOSENDALERT"] != "" {
+		if v, err := strconv.Atoi(envList["GO_HIVEHOOK_TSTORAGDELAYTOSENDALERT"]); err == nil {
+			conf.AppConfigTemporaryStorage.StorageDelayToSendAlert = v
+		}
+	}
+	if envList["GO_HIVEHOOK_TSTORAGDELAYTOSENDCASE"] != "" {
+		if v, err := strconv.Atoi(envList["GO_HIVEHOOK_TSTORAGDELAYTOSENDCASE"]); err == nil {
+			conf.AppConfigTemporaryStorage.StorageDelayToSendCase = v
+		}
 	}
 
 	//Настройки для модуля подключения к NATS
@@ -320,16 +345,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			conf.AppConfigWebHookServer.Port = p
 		}
 	}
-	if envList["GO_HIVEHOOK_WEBHSTORAGETTL"] != "" {
-		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHSTORAGETTL"]); err == nil {
-			conf.AppConfigWebHookServer.StorageTTL = p
-		}
-	}
-	if envList["GO_HIVEHOOK_WEBHSTORAGDS"] != "" {
-		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_WEBHSTORAGDS"]); err == nil {
-			conf.AppConfigWebHookServer.StorageDelayToSend = p
-		}
-	}
 
 	//Настройки доступа к БД в которую будут записыватся логи
 	if envList["GO_HIVEHOOK_DBWLOGHOST"] != "" {
@@ -361,6 +376,7 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 	return &conf, nil
 }
 
+/*
 func hundlerSubscribersString(str string) (SubscriberNATS, error) {
 	errMsg := "an incorrect string containing the 'subscribers' of the NATS settings was received"
 	subscriber := SubscriberNATS{}
@@ -386,3 +402,4 @@ func hundlerSubscribersString(str string) (SubscriberNATS, error) {
 
 	return subscriber, nil
 }
+*/

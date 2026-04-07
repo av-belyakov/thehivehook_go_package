@@ -4,6 +4,7 @@ package confighandler
 type ConfigApp struct {
 	CommonInfo
 	CommonAppConfig
+	AppConfigTemporaryStorage
 	AppConfigNATS
 	AppConfigTheHive
 	AppConfigWebHookServer
@@ -57,6 +58,12 @@ type Handshake struct {
 	TimeInterval int    `yaml:"timeInterval"`
 }
 
+type AppConfigTemporaryStorage struct {
+	StorageObjectTTL        int `validate:"gte=10,lte=43200" yaml:"storage_object_ttl"`
+	StorageDelayToSendAlert int `validate:"gte=1,lte=600" yaml:"storage_delay_to_send_alert"`
+	StorageDelayToSendCase  int `validate:"gte=1,lte=600" yaml:"storage_delay_to_send_case"`
+}
+
 type AppConfigNATS struct {
 	Subscriptions SubscriptionsNATS `yaml:"subscriptions"`
 	Host          string            `validate:"required" yaml:"host"`
@@ -72,11 +79,9 @@ type AppConfigTheHive struct {
 }
 
 type AppConfigWebHookServer struct {
-	Host               string `yaml:"host"`
-	Name               string `validate:"required" yaml:"name"`
-	Port               int    `validate:"gt=0,lte=65535" yaml:"port"`
-	StorageTTL         int    `validate:"gte=10,lte=43200" yaml:"ttl_tmp_info"`
-	StorageDelayToSend int    `validate:"gte=1,lte=600" yaml:"ttl_tmp_info"`
+	Host string `yaml:"host"`
+	Name string `validate:"required" yaml:"name"`
+	Port int    `validate:"gt=0,lte=65535" yaml:"port"`
 }
 
 type SubscriptionsNATS struct {

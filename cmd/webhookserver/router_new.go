@@ -76,21 +76,21 @@ func (wh *WebHookServer_New) RouteWebHook_New(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	objectType, err := GetObjectType(eventElement)
+	objectType, err := supportingfunctions.GetObjectTypeFromEventTheHive(eventElement)
 	if err != nil {
 		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 		return
 	}
 
-	rootId, err := GetRootId(eventElement)
+	rootId, err := supportingfunctions.GetRootIdFromEventTheHive(eventElement)
 	if err != nil {
 		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 		return
 	}
 
-	operation, err := GetOperation(eventElement)
+	operation, err := supportingfunctions.GetOperationFromEventTheHive(eventElement)
 	if err != nil {
 		wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 	}
@@ -110,7 +110,7 @@ func (wh *WebHookServer_New) RouteWebHook_New(w http.ResponseWriter, r *http.Req
 		}
 
 	case "case":
-		caseId, err := GetCaseId(eventElement)
+		caseId, err := supportingfunctions.GetCaseIdFromEventTheHive(eventElement)
 		if err != nil {
 			wh.logger.Send("error", supportingfunctions.CustomError(err).Error())
 		}

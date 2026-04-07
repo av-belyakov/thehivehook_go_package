@@ -144,9 +144,7 @@ func server(ctx context.Context) {
 		webhookserver.WithVersion[webhookserver.EventElements](version),
 		webhookserver.WithName[webhookserver.EventElements](conf.GetApplicationWebHookServer().Name),
 		webhookserver.WithHost[webhookserver.EventElements](conf.GetApplicationWebHookServer().Host),
-		webhookserver.WithPort[webhookserver.EventElements](conf.GetApplicationWebHookServer().Port),
-		webhookserver.WithTTL[webhookserver.EventElements](conf.GetApplicationWebHookServer().StorageTTL),
-		webhookserver.WithStorageDelayToSend[webhookserver.EventElements](conf.GetApplicationWebHookServer().StorageDelayToSend))
+		webhookserver.WithPort[webhookserver.EventElements](conf.GetApplicationWebHookServer().Port))
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'webhookserver': %s\n", err.Error())

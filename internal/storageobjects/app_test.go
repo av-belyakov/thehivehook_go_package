@@ -26,7 +26,6 @@ func TestStorageObjects(t *testing.T) {
 		storageobjects.WithChannelSize[Element](5),
 		storageobjects.WithTimeTick[Element](1),
 		storageobjects.WithTimeToLive[Element](10),
-		storageobjects.WithTimeDelayToSend[Element](3),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -37,30 +36,45 @@ func TestStorageObjects(t *testing.T) {
 
 	for range size {
 		id := gofakeit.UUID()
-		s.AddObject(id, Element{
-			ID:   id,
-			Type: gofakeit.AnimalType(),
-			Name: gofakeit.Animal(),
-		})
+		s.AddObject(
+			3, // 3 секундам
+			storageobjects.StorageObjectDataSettings[Element]{
+				Id:         id,
+				ObjectType: "test_case",
+				Data: Element{
+					ID:   id,
+					Type: gofakeit.AnimalType(),
+					Name: gofakeit.Animal(),
+				}})
 	}
 
 	objId := gofakeit.UUID()
-	s.AddObject(objId, Element{
-		ID:   objId,
-		Type: gofakeit.AnimalType(),
-		Name: gofakeit.Animal(),
-	})
+	s.AddObject(
+		3, // 3 секундам
+		storageobjects.StorageObjectDataSettings[Element]{
+			Id:         objId,
+			ObjectType: "test_case",
+			Data: Element{
+				ID:   objId,
+				Type: gofakeit.AnimalType(),
+				Name: gofakeit.Animal(),
+			}})
 
 	assert.Equal(t, s.Len(), size+1)
 
 	//модифицируем объект
 	objType := gofakeit.AnimalType()
 	objName := gofakeit.Animal()
-	s.AddObject(objId, Element{
-		ID:   objId,
-		Type: objType,
-		Name: objName,
-	})
+	s.AddObject(
+		3, // 3 секундам
+		storageobjects.StorageObjectDataSettings[Element]{
+			Id:         objId,
+			ObjectType: "test_case",
+			Data: Element{
+				ID:   objId,
+				Type: objType,
+				Name: objName,
+			}})
 
 	assert.Equal(t, s.Len(), size+1)
 

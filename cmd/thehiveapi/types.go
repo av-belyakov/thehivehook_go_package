@@ -7,9 +7,7 @@ import (
 )
 
 type TheHiveApi_New struct {
-	logger           interfaces.Logger
-	receivingChannel chan interfaces.ChannelRequester
-	settings         theHiveApiSettings
+	settings theHiveApiSettings
 }
 
 // apiTheHiveModule модуль для взаимодействия с API TheHive
@@ -35,6 +33,12 @@ type theHiveApiOptions func(*apiTheHiveModule) error
 
 // theHiveAPIOptions_New функциональные опции
 type theHiveApiOptions_New func(*TheHiveApi_New) error
+
+type InputReguest struct {
+	Data    []byte
+	Command string
+	RootId  string
+}
 
 // Querys перечень запросов к TheHive
 type Querys struct {

@@ -34,7 +34,6 @@ func New[T any](logger interfaces.Logger, opts ...webHookServerOptions[T]) (*Web
 		storageobjects.WithTimeTick[T](1),
 		storageobjects.WithChannelSize[T](10),
 		storageobjects.WithTimeToLive[T](whs.ttl),
-		storageobjects.WithTimeDelayToSend[T](whs.delaySending),
 	)
 	if err != nil {
 		return whs, chanOutput, err
