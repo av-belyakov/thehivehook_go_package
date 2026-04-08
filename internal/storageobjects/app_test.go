@@ -96,6 +96,13 @@ func TestStorageObjects(t *testing.T) {
 	}
 
 	assert.Equal(t, s.Len(), 0)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	ctx.Done()
+	assert.Nil(t, ctx.Err())
+
+	cancel()
+	assert.Error(t, ctx.Err())
 }
 
 type Element struct {

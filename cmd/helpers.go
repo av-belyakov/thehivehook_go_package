@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/internal/constants"
+	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 )
 
 func getInformationMessage(conf *confighandler.ConfigApp /*wh.name, host string, port int*/) string {
@@ -70,4 +72,22 @@ func getInformationMessage(conf *confighandler.ConfigApp /*wh.name, host string,
 	)
 
 	return msg
+}
+
+// sendData отправка данных NatApi
+func sendData(res datamodels.VerifiedResponseAcceptedCommand, chDone <-chan struct{}, chData chan<- []byte) error {
+	b, err := json.Marshal(res)
+	if err != nil {
+		return err
+	}
+
+	select {
+	case <-chDone:
+		return nil
+
+	default:
+		chData <- b
+	}
+
+	return nil
 }

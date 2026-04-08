@@ -14,3 +14,12 @@ type VerifiedObjectEventAlert struct {
 	Alert  map[string]any `json:"alert"`
 	Source string         `json:"source"`
 }
+
+type VerifiedResponseAcceptedCommand struct {
+	Data       any    `json:"data"`
+	Id         string `json:"id"`
+	Source     string `json:"source"`
+	Command    string `json:"command"`
+	Error      string `json:"error"`
+	StatusCode int    `json:"status_code"`
+}

@@ -1,42 +1,8 @@
 package thehiveapi
 
 import (
-	"encoding/json"
-
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
-
-// RequestChannelTheHive тип применяется для передачи запроса в модуль thehiveapi от сторонних модулей
-type RequestChannelTheHive struct {
-	Data       interface{}                      //какие то данные
-	RequestId  string                           //UUID идентификатор запроса
-	RootId     string                           //идентификатор по которому в TheHive будет выполнятся поиск
-	CaseId     string                           //идентификатор кейса в TheHive
-	Command    string                           //команда
-	ChanOutput chan interfaces.ChannelResponser //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
-}
-
-// ResponseChannelTheHive структура ответа от API TheHive
-type ResponseChannelTheHive struct {
-	Error      error  //объект ошибки
-	Data       []byte //набор данных
-	Source     string //источник данных
-	RequestId  string //UUID идентификатор ответа (соответствует идентификатору запроса)
-	StatusCode int    //статус кода ответа
-}
-
-// RequestCommand структура с командами для обработки модулем
-type RequestCommand struct {
-	ByteData       json.RawMessage `json:"byte_data"`           //набор данных в бинарном виде которые обрабатываются отдельно
-	Service        string          `json:"service"`             //наименование сервиса
-	Command        string          `json:"command"`             //команда
-	RootId         string          `json:"root_id"`             //основной id, как правило это rootId case или alert
-	CaseId         string          `json:"case_id"`             //id кейса
-	Value          string          `json:"value"`               //устанавливаемое значение
-	Username       string          `json:"username"`            //имя пользователя, необходим если нужно указать пользователя выполнившего действие
-	FieldName      string          `json:"field_name"`          //некое ключевое поле
-	RegionalObject string          `json:"for_regional_object"` //для кого предназначена команда
-}
 
 // SpecialObjectForCache является вспомогательным типом который реализует интерфейс
 // CacheStorageFuncHandler[T any] где в методе Comparison(objFromCache T) bool необходимо

@@ -1,6 +1,79 @@
 package natsapi
 
-import "errors"
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/nats-io/nats.go"
+)
+
+// Start инициализирует новый модуль взаимодействия с API NATS
+// при инициализации возращается канал для взаимодействия с модулем, все
+// запросы к модулю выполняются через данный канал
+func (api *NatsApi) Start_New(ctx context.Context) (chan<- InputData, <-chan OutputData, error) {
+	if ctx.Err() != nil {
+		return api.chanInputModule, api.chanOutputModule, ctx.Err()
+	}
+
+	//инициализация автоматической очистки хранилища используемого для хранения
+	//принимаемых, через NATS, команд
+	//сделал для того что бы избежать повторной отправки одной и той же команды
+	//предназначенной для одного и того же объекта передаваемой за короткий
+	//промежуток времени
+	//api.storageCache.Start(ctx)
+	//
+	// так как хранилище не используется!!!
+
+	nc, err := nats.Connect(
+		fmt.Sprintf("%s:%d", api.host, api.port),
+		//имя клиента
+		nats.Name(fmt.Sprintf("thehivehook.%s", api.nameRegionalObject)),
+		//неограниченное количество попыток переподключения
+		nats.MaxReconnects(-1),
+		//время ожидания до следующей попытки переподключения (по умолчанию 2 сек.)
+		nats.ReconnectWait(3*time.Second),
+		//обработка разрыва соединения с NATS
+		nats.DisconnectErrHandler(func(c *nats.Conn, err error) {
+			api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("the connection with NATS has been disconnected (%w)", err)).Error())
+		}),
+		//обработка переподключения к NATS
+		nats.ReconnectHandler(func(c *nats.Conn) {
+			api.logger.Send("info", "the connection to NATS has been re-established")
+		}),
+		//поиск медленных получателей (не обязательный для данного приложения параметр)
+		nats.ErrorHandler(func(c *nats.Conn, s *nats.Subscription, err error) {
+			if err == nats.ErrSlowConsumer {
+				pendingMsgs, _, err := s.Pending()
+				if err != nil {
+					api.logger.Send("warning", fmt.Sprintf("couldn't get pending messages: %v", err))
+
+					return
+				}
+
+				api.logger.Send("warning", fmt.Sprintf("Falling behind with %d pending messages on subject %q.\n", pendingMsgs, s.Subject))
+			}
+		}))
+	if err != nil {
+		return api.chanInputModule, api.chanOutputModule, supportingfunctions.CustomError(err)
+	}
+
+	api.natsConnection = nc
+
+	//обработчик подписки
+	go api.subscriptionHandler(ctx)
+
+	//обработчик данных изнутри приложения
+	go api.receivingChannelHandler(ctx)
+
+	go func(ctx context.Context, nc *nats.Conn) {
+		<-ctx.Done()
+		nc.Drain()
+	}(ctx, nc)
+
+	return api.chanInputModule, api.chanOutputModule, nil
+}
 
 // GetDataReceptionChannel канал для вывода данных из модуля
 func (mnats *ModuleNATS) GetDataReceptionChannel() <-chan SettingsOutputChan {
@@ -10,96 +83,4 @@ func (mnats *ModuleNATS) GetDataReceptionChannel() <-chan SettingsOutputChan {
 // SendingData отправка данных из модуля
 func (mnats *ModuleNATS) SendingData(data SettingsOutputChan) {
 	mnats.chanOutputNATS <- data
-}
-
-//******************* функции настройки опций natsapi ***********************
-
-// WithHost метод устанавливает имя или ip адрес хоста API
-func WithHost(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
-		if v == "" {
-			return errors.New("the value of 'host' cannot be empty")
-		}
-
-		n.host = v
-
-		return nil
-	}
-}
-
-// WithPort метод устанавливает порт API
-func WithPort(v int) NatsApiOptions {
-	return func(n *apiNatsModule) error {
-		if v <= 0 || v > 65535 {
-			return errors.New("an incorrect network port value was received")
-		}
-
-		n.port = v
-
-		return nil
-	}
-}
-
-// WithCacheTTL устанавливает время жизни для кэша хранящего функции-обработчики
-// запросов к модулю
-func WithCacheTTL(v int) NatsApiOptions {
-	return func(th *apiNatsModule) error {
-		if v <= 10 || v > 86400 {
-			return errors.New("the lifetime of a cache entry should be between 10 and 86400 seconds")
-		}
-
-		th.cachettl = v
-
-		return nil
-	}
-}
-
-// WithSubSenderCase устанавливает канал в который будут отправлятся объекты типа 'case'
-func WithSubSenderCase(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
-		if v == "" {
-			return errors.New("the value of 'sender_case' cannot be empty")
-		}
-
-		n.subscriptions.senderCase = v
-
-		return nil
-	}
-}
-
-// WithSubSenderAlert устанавливает канал в который будут отправлятся объекты типа 'alert'
-func WithSubSenderAlert(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
-		if v == "" {
-			return errors.New("the value of 'sender_alert' cannot be empty")
-		}
-
-		n.subscriptions.senderAlert = v
-
-		return nil
-	}
-}
-
-// WithSubListenerCommand устанавливает канал через которые будут приходить команды для
-// выполнения определенных действий в TheHive
-func WithSubListenerCommand(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
-		if v == "" {
-			return errors.New("the value of 'listener_command' cannot be empty")
-		}
-
-		n.subscriptions.listenerCommand = v
-
-		return nil
-	}
-}
-
-// WithNameRegionalObject устанавливает наименование которое будет отображатся в
-// статистике подключенных клиентов NATS
-func WithNameRegionalObject(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
-		n.nameRegionalObject = v
-
-		return nil
-	}
 }

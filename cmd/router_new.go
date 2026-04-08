@@ -5,7 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
 
+	"golang.org/x/sync/errgroup"
+
+	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
@@ -13,23 +19,29 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/storageobjects"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
-	"golang.org/x/sync/errgroup"
 )
 
-func router_new(
+func NewMajorRouter(cfg confighandler.ConfigApp, logger interfaces.Logger) *majorRouter {
+	return &majorRouter{
+		cfg:    cfg,
+		logger: logger,
+	}
+}
+
+func (r *majorRouter) start(
 	ctx context.Context,
-	cfg confighandler.ConfigApp,
 	apiTheHive *thehiveapi.TheHiveApi_New,
+	toNatsApi chan<- natsapi.InputData,
 	fromWebHook <-chan webhookserver.OutputData,
-	logger interfaces.Logger,
+	fromNatsApi <-chan natsapi.OutputData,
 ) error {
 	var timeToSend int = 10
 
 	// очередь для хранения объектов с отложенной отправкой в канал
-	storage, err := storageobjects.New[map[string]any](
+	storage, err := storageobjects.New(
 		storageobjects.WithChannelSize[map[string]any](4),
 		storageobjects.WithTimeTick[map[string]any](1),
-		storageobjects.WithTimeToLive[map[string]any](cfg.GetApplicationTemporaryStorage().StorageObjectTTL),
+		storageobjects.WithTimeToLive[map[string]any](r.cfg.GetApplicationTemporaryStorage().StorageObjectTTL),
 	)
 	if err != nil {
 		return supportingfunctions.CustomError(err)
@@ -43,113 +55,144 @@ func router_new(
 				return
 
 			case data := <-storage.GetObjects():
-				//просто что бы понимать какие объекты передаются
-				//rootId := data.Id
-				//objectType := data.ObjectType
-				//object := data.Data
-
+				// -------------------------------------
+				//все данные полученные из очереди хранилища (для временной задержки)
 				switch data.ObjectType {
 				case "alert":
 					go func() {
+						ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+						defer cancel()
+
 						res, statusCode, err := apiTheHive.GetAlert(ctx, data.Id)
 						if err != nil {
 							if _, ok := errors.AsType[thehiveapi.ErrorInformation](err); ok {
-								logger.Send("info", err.Error())
+								r.logger.Send("info", err.Error())
 							}
 
-							logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("%w, root id:'%s'", err, data.Id)).Error())
+							r.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("%w, root id:'%s'", err, data.Id)).Error())
 
 							return
 						}
 
-						logger.Send("info", fmt.Sprintf("the request for additional information about 'alert' was completed successfully, successful response to TheHive request, root id:'%s', status code:'%d'", data.Id, statusCode))
+						r.logger.Send("info", fmt.Sprintf("the request for additional information about 'alert' was completed successfully, successful response to TheHive request, root id:'%s', status code:'%d'", data.Id, statusCode))
 
 						element := map[string]any{}
 						if err := json.Unmarshal(res, &element); err != nil {
-							logger.Send("error", supportingfunctions.CustomError(err).Error())
+							r.logger.Send("error", supportingfunctions.CustomError(err).Error())
 
 							return
 						}
 
-						// !!!!!!! доделать как появится новая структура канала примёма NatsApi
-						//отправка события в nats
-						verifiedObject := datamodels.VerifiedObjectEventAlert{
-							Source: cfg.AppConfigWebHookServer.Name,
+						b, err := json.Marshal(datamodels.VerifiedObjectEventAlert{
+							Source: r.cfg.AppConfigWebHookServer.Name,
 							Event:  data.Data,
 							Alert:  element,
+						})
+						if err != nil {
+							r.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+							return
+						}
+
+						toNatsApi <- natsapi.InputData{
+							ElementType: "alert",
+							RootId:      data.Id,
+							Data:        b,
 						}
 					}()
 
 				case "case":
-					verifiedObject := datamodels.VerifiedObjectEventCase{
-						Source: cfg.AppConfigWebHookServer.Name,
-						Case:   data.Data,
-					}
+					go func() {
+						ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
+						defer cancel()
 
-					var g errgroup.Group
-					g.Go(func() error {
-						// запрос объекта типа Observables
-						res, statusCode, err := apiTheHive.GetObservables(ctx, data.Id)
-						if err != nil {
-							return err
+						verifiedObject := datamodels.VerifiedObjectEventCase{
+							Source: r.cfg.AppConfigWebHookServer.Name,
+							Case:   data.Data,
 						}
 
-						logger.Send("info", fmt.Sprintf("the request for additional information about 'observables' was completed successfully, successful response to TheHive request, root id:'%s', status code:'%d'", data.Id, statusCode))
-
-						element := []any{}
-						if err := json.Unmarshal(res, &element); err != nil {
-							logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-							return err
-						}
-
-						verifiedObject.Observables = element
-
-						return nil
-					})
-					g.Go(func() error {
-						// запрос объекта типа TTP
-						res, statusCode, err := apiTheHive.GetTTP(ctx, data.Id)
-						if err != nil {
-							return err
-						}
-
-						logger.Send("info", fmt.Sprintf("the request for additional information about 'ttp' was completed successfully, successful response to TheHive request, root id:'%s', status code:'%d'", data.Id, statusCode))
-
-						element := []any{}
-						if err := json.Unmarshal(res, &element); err != nil {
-							logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-							return err
-						}
-
-						verifiedObject.TTPs = element
-
-						return nil
-					})
-					if err := g.Wait(); err != nil {
-						if err != nil {
-							if _, ok := errors.AsType[thehiveapi.ErrorInformation](err); ok {
-								logger.Send("info", err.Error())
+						var g errgroup.Group
+						g.Go(func() error {
+							// запрос объекта типа Observables
+							res, statusCode, err := apiTheHive.GetObservables(ctx, data.Id)
+							if err != nil {
+								return err
 							}
 
-							logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("%w, root id:'%s'", err, data.Id)).Error())
+							r.logger.Send("info", fmt.Sprintf("the request for additional information about 'observables' was completed successfully, successful response to TheHive request, root id:'%s', status code:'%d'", data.Id, statusCode))
+
+							element := []any{}
+							if err := json.Unmarshal(res, &element); err != nil {
+								r.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+								return err
+							}
+
+							verifiedObject.Observables = element
+
+							return nil
+						})
+						g.Go(func() error {
+							// запрос объекта типа TTP
+							res, statusCode, err := apiTheHive.GetTTP(ctx, data.Id)
+							if err != nil {
+								return err
+							}
+
+							r.logger.Send("info", fmt.Sprintf("the request for additional information about 'ttp' was completed successfully, successful response to TheHive request, root id:'%s', status code:'%d'", data.Id, statusCode))
+
+							element := []any{}
+							if err := json.Unmarshal(res, &element); err != nil {
+								r.logger.Send("error", supportingfunctions.CustomError(err).Error())
+
+								return err
+							}
+
+							verifiedObject.TTPs = element
+
+							return nil
+						})
+						if err := g.Wait(); err != nil {
+							if err != nil {
+								if _, ok := errors.AsType[thehiveapi.ErrorInformation](err); ok {
+									r.logger.Send("info", err.Error())
+								}
+
+								r.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("%w, root id:'%s'", err, data.Id)).Error())
+
+								return
+							}
+						}
+
+						var caseId string
+						caseIdInt, err := supportingfunctions.GetCaseIdFromEventTheHive(data.Data)
+						if err == nil {
+							caseId = strconv.Itoa(caseIdInt)
+						}
+
+						b, err := json.Marshal(verifiedObject)
+						if err != nil {
+							r.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("%w, root id:'%s', case id:'%s'", err, data.Id, caseId)).Error())
 
 							return
 						}
-					}
 
-					// !!!!!!! доделать как появится новая структура канала примёма NatsApi
-					//отправка события в nats
-					verifiedObject
+						toNatsApi <- natsapi.InputData{
+							ElementType: "case",
+							RootId:      data.Id,
+							CaseId:      caseId,
+							Data:        b,
+						}
+					}()
 				}
-
 			case msg := <-fromWebHook:
+				// -------------------------------------
+				//все данные полученные из webhookserver
 				if msg.ObjectType == "alert" {
-					timeToSend = cfg.StorageDelayToSendAlert
+					timeToSend = r.cfg.StorageDelayToSendAlert
 				}
 				if msg.ObjectType == "case" {
-					timeToSend = cfg.StorageDelayToSendCase
+					timeToSend = r.cfg.StorageDelayToSendCase
 				}
 
 				//сохраняем объект для отложеного выполнения
@@ -162,20 +205,172 @@ func router_new(
 						Data:       msg.Data,
 					})
 
+			case msg := <-fromNatsApi:
 				/*
-					switch msg.ForSomebody {
-					case "to thehive":
-						toTheHiveAPI <- msg.Data
+					!!! ЭТО БУДУЩИЙ ответ на команду !!!
 
-					case "to nats":
-						toNatsAPI <- msg.Data
-					}
+						//ответ на команду
+						res, err := json.Marshal(struct {
+							Id         string `json:"id"`
+							Source     string `json:"source"`
+							Command    string `json:"command"`
+							StatusCode int    `json:"status_code"`
+							Data       any    `json:"data"`
+							Error      string `json:"error"`
+						}{
+							Id:         msg.GetRequestId(),
+							Source:     msg.GetSource(),
+							Command:    rc.Command,
+							StatusCode: msg.GetStatusCode(),
+							Data:       msg.GetData(),
+							Error:      errMsg,
+						})
+
 				*/
 
-			case msg := <-fromNatsAPI:
-				//обработка входящих команд
-				toTheHiveAPI <- msg
+				// -------------------------------------
+				//обработка входящих команд (добавление tags, custom fields и т.д.)
+				verifiedResponse := datamodels.VerifiedResponseAcceptedCommand{
+					Source:     r.cfg.GetApplicationWebHookServer().Name,
+					StatusCode: http.StatusBadRequest,
+				}
 
+				// парсим входящие команды
+				rc := thehiveapi.RequestCommand{}
+				if err := json.Unmarshal(msg.Data, &rc); err != nil {
+					errMsg := fmt.Errorf("the request contains an invalid json object (%s)", err.Error())
+					verifiedResponse.Error = errMsg.Error()
+					r.logger.Send("error", supportingfunctions.CustomError(errMsg).Error())
+
+					sendData(verifiedResponse, msg.ChanDone, msg.ChanOutput)
+
+					continue
+				}
+
+				/*
+									!!!!!
+					праверить все ли поля ответа на команду заполнены
+									!!!!!
+				*/
+
+				//проверяем какому из thehivehook_go_package было предназначена команда
+				// так как данный модуль распространяется по регионам, необходимо отличать
+				// запросы на изменения тегов, добавления задач или специальных полей,
+				// предназначенных для определённого модуля
+				if r.cfg.GetApplicationWebHookServer().Name != rc.RegionalObject {
+					errMsg := fmt.Errorf(
+						"the command '%s' cannot be executed because the name of the regional object '%s' does not match with name '%s'",
+						rc.Command,
+						rc.RegionalObject,
+						r.cfg.GetApplicationWebHookServer().Name,
+					)
+					verifiedResponse.Error = errMsg.Error()
+					verifiedResponse.Id = rc.RootId
+					verifiedResponse.StatusCode = http.StatusPreconditionFailed // условие ложно
+					r.logger.Send("error", supportingfunctions.CustomError(errMsg).Error())
+
+					sendData(verifiedResponse, msg.ChanDone, msg.ChanOutput)
+
+					continue
+				}
+
+				/*
+					!!! ЭТО БУДУЩИЙ ответ на команду !!!
+
+						//ответ на команду
+						res, err := json.Marshal(struct {
+							Id         string `json:"id"`
+							Source     string `json:"source"`
+							Command    string `json:"command"`
+							StatusCode int    `json:"status_code"`
+							Data       any    `json:"data"`
+							Error      string `json:"error"`
+						}{
+							Id:         msg.GetRequestId(),
+							Source:     msg.GetSource(),
+							Command:    rc.Command,
+							StatusCode: msg.GetStatusCode(),
+							Data:       msg.GetData(),
+							Error:      errMsg,
+						})
+
+				*/
+
+				r.logger.Send(
+					"info",
+					fmt.Sprintf("the command '%s' has been received, rootId '%s', for regional object '%s', currnet regional object '%s'",
+						rc.Command,
+						rc.RootId,
+						rc.RegionalObject,
+						r.cfg.GetApplicationWebHookServer().Name,
+					))
+
+				switch rc.Command {
+				case "add_case_tag":
+					go func() {
+						_, statusCode, err := apiTheHive.AddCaseTags(ctx, rc)
+						if err != nil {
+							verifiedResponse.Error = err.Error()
+							r.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						} else {
+							r.logger.Send(
+								"info",
+								fmt.Sprintf("when making a request to add a new tag '%s' for the service '%s' rootId '%s', caseId '%s', the following is received status code '%d'",
+									rc.Value,
+									rc.Service,
+									rc.RootId,
+									rc.CaseId,
+									statusCode,
+								))
+						}
+
+						verifiedResponse.StatusCode = statusCode
+					}()
+
+				case "add_case_task":
+					go func() {
+						_, statusCode, err := apiTheHive.AddCaseTask(ctx, rc)
+						if err != nil {
+							verifiedResponse.Error = err.Error()
+							r.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						} else {
+							r.logger.Send(
+								"info",
+								fmt.Sprintf("when making a request to add a new case task '%s' for the service '%s' rootId '%s', caseId '%s', the following is received status code '%d'",
+									rc.Value,
+									rc.Service,
+									rc.RootId,
+									rc.CaseId,
+									statusCode,
+								))
+						}
+
+						verifiedResponse.StatusCode = statusCode
+					}()
+
+				case "set_case_custom_field":
+					go func() {
+						_, statusCode, err := apiTheHive.AddCaseCustomFields(ctx, rc)
+						if err != nil {
+							verifiedResponse.Error = err.Error()
+							r.logger.Send("error", supportingfunctions.CustomError(err).Error())
+						} else {
+							r.logger.Send(
+								"info",
+								fmt.Sprintf("when making a request to add a new custom field '%s' for the service '%s' rootId '%s', caseId '%s', the following is received status code '%d'",
+									rc.Value,
+									rc.Service,
+									rc.RootId,
+									rc.CaseId,
+									statusCode,
+								))
+						}
+
+						verifiedResponse.StatusCode = statusCode
+					}()
+				}
+
+				sendData(verifiedResponse, msg.ChanDone, msg.ChanOutput)
 			}
 		}
 	}()

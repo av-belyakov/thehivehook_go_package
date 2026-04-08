@@ -21,14 +21,46 @@ type apiNatsModule struct {
 	sendingChannel     chan interfaces.ChannelRequester
 }
 
+// NatsApi модуль NATS API
+type NatsApi struct {
+	subscriptions      subscription
+	host               string
+	nameRegionalObject string
+	logger             interfaces.Logger
+	natsConnection     *nats.Conn
+	cachettl           int
+	port               int
+	chanInputModule    chan InputData
+	chanOutputModule   chan OutputData
+}
+
 type subscription struct {
 	senderCase      string
 	senderAlert     string
 	listenerCommand string
 }
 
+// InputData входящие в модуль данные (alert и case)
+type InputData struct {
+	Data        []byte
+	RootId      string
+	CaseId      string
+	ElementType string
+}
+
+// OutputData исходящие из модуля данные (команды на добавление tags, custom fields)
+type OutputData struct {
+	Data       []byte        //набор данных
+	RequestId  string        //id запроса
+	ChanDone   chan struct{} //канал информирующий о закрытии канала ChanOutput
+	ChanOutput chan []byte   //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
+}
+
 // NatsApiOptions функциональные опции
 type NatsApiOptions func(*apiNatsModule) error
+
+// NatsApiOptions функциональные опции
+type NatsApiOptions_New func(*NatsApi) error
 
 // ModuleNATS инициализированный модуль
 type ModuleNATS struct {
