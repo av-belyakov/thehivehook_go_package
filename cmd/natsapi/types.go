@@ -51,7 +51,6 @@ type InputData struct {
 // OutputData исходящие из модуля данные (команды на добавление tags, custom fields)
 type OutputData struct {
 	Data       []byte        //набор данных
-	RequestId  string        //id запроса
 	ChanDone   chan struct{} //канал информирующий о закрытии канала ChanOutput
 	ChanOutput chan []byte   //канал ответа реализующий интерфейс commoninterfaces.ChannelResponser
 }

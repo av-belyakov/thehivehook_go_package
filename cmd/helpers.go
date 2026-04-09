@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -83,7 +84,7 @@ func sendData(res datamodels.VerifiedResponseAcceptedCommand, chDone <-chan stru
 
 	select {
 	case <-chDone:
-		return nil
+		return errors.New("sending data to the NatsApi is not possible the data channel is closed")
 
 	default:
 		chData <- b

@@ -2,11 +2,9 @@ package natsapi
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
@@ -27,6 +25,8 @@ func (api *NatsApi) handlerIncomingCommands(ctx context.Context, m *nats.Msg) {
 	ctx, cancel := context.WithTimeout(ctx, (15 * time.Second))
 	defer func() {
 		cancel()
+
+		close(chDone)
 		close(chRes)
 	}()
 
@@ -46,31 +46,11 @@ func (api *NatsApi) handlerIncomingCommands(ctx context.Context, m *nats.Msg) {
 	//}
 	//api.storageCache.SetObject(keyId, []byte(rc.Command))
 
-	rc := RequestCommand{}
-	if err := json.Unmarshal(m.Data, &rc); err != nil {
-		api.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-		return
-	}
-
 	api.chanOutputModule <- OutputData{
-		RequestId:  uuid.New().String(),
 		Data:       m.Data,
 		ChanDone:   chDone,
 		ChanOutput: chRes,
 	}
-
-	/*
-		api.chanOutputModule <- &RequestFromNats{
-			RequestId:  uuid.New().String(),
-			RootId:     rc.RootId,
-			Service:    rc.Service,
-			Command:    "send_command",
-			Order:      rc.Command,
-			Data:       m.Data,
-			ChanOutput: chRes,
-		}
-	*/
 
 	select {
 	case <-ctx.Done():
@@ -79,36 +59,6 @@ func (api *NatsApi) handlerIncomingCommands(ctx context.Context, m *nats.Msg) {
 		return
 
 	case msg := <-chRes:
-		/*
-			errMsg := "no error"
-			if err := msg.GetError(); err == nil {
-				api.logger.Send("info", fmt.Sprintf("the command '%s' from service '%s' (case_id: '%s', root_id: '%s') returned a response '%d'", rc.Command, rc.Service, rc.CaseId, rc.RootId, msg.GetStatusCode()))
-			} else {
-				errMsg = err.Error()
-			}
-
-			//ответ на команду
-			res, err := json.Marshal(struct {
-				Id         string `json:"id"`
-				Source     string `json:"source"`
-				Command    string `json:"command"`
-				StatusCode int    `json:"status_code"`
-				Data       any    `json:"data"`
-				Error      string `json:"error"`
-			}{
-				Id:         msg.GetRequestId(),
-				Source:     msg.GetSource(),
-				Command:    rc.Command,
-				StatusCode: msg.GetStatusCode(),
-				Data:       msg.GetData(),
-				Error:      errMsg,
-			})
-			if err != nil {
-				api.logger.Send("error", supportingfunctions.CustomError(err).Error())
-
-				return
-			}
-		*/
 		if err := api.natsConnection.Publish(m.Reply, msg); err != nil {
 			api.logger.Send("error", supportingfunctions.CustomError(err).Error())
 		}
@@ -126,11 +76,13 @@ func (api *NatsApi) receivingChannelHandler(ctx context.Context) {
 			//--------------------------------------------------------------
 			//----------- запись в файл обработанных объектов --------------
 			//--------------------------------------------------------------
-			if str, err := supportingfunctions.NewReadReflectJSONSprint(msg.Data); err == nil {
-				if str != "" {
-					api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
+			go func() {
+				if str, err := supportingfunctions.NewReadReflectJSONSprint(msg.Data); err == nil {
+					if str != "" {
+						api.logger.Send("processed_objects", fmt.Sprintf("\n%s\n", str))
+					}
 				}
-			}
+			}()
 			//--------------------------------------------------------------
 
 			var subscription, description string

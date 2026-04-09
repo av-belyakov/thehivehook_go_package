@@ -54,6 +54,26 @@ func (r *majorRouter) start(
 			case <-ctx.Done():
 				return
 
+			case msg := <-fromWebHook:
+				// -------------------------------------
+				//все данные полученные из webhookserver
+				if msg.ObjectType == "alert" {
+					timeToSend = r.cfg.StorageDelayToSendAlert
+				}
+				if msg.ObjectType == "case" {
+					timeToSend = r.cfg.StorageDelayToSendCase
+				}
+
+				//сохраняем объект для отложеного выполнения
+				// ожидание истечения времени из параметра storageObject[n].timeSending
+				storage.AddObject(
+					timeToSend,
+					storageobjects.StorageObjectDataSettings[map[string]any]{
+						Id:         msg.RootId,
+						ObjectType: msg.ObjectType,
+						Data:       msg.Data,
+					})
+
 			case data := <-storage.GetObjects():
 				// -------------------------------------
 				//все данные полученные из очереди хранилища (для временной задержки)
@@ -95,7 +115,7 @@ func (r *majorRouter) start(
 						}
 
 						toNatsApi <- natsapi.InputData{
-							ElementType: "alert",
+							ElementType: data.ObjectType,
 							RootId:      data.Id,
 							Data:        b,
 						}
@@ -153,15 +173,13 @@ func (r *majorRouter) start(
 							return nil
 						})
 						if err := g.Wait(); err != nil {
-							if err != nil {
-								if _, ok := errors.AsType[thehiveapi.ErrorInformation](err); ok {
-									r.logger.Send("info", err.Error())
-								}
-
+							if _, ok := errors.AsType[thehiveapi.ErrorInformation](err); ok {
+								r.logger.Send("info", err.Error())
+							} else {
 								r.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("%w, root id:'%s'", err, data.Id)).Error())
-
-								return
 							}
+
+							return
 						}
 
 						var caseId string
@@ -178,56 +196,15 @@ func (r *majorRouter) start(
 						}
 
 						toNatsApi <- natsapi.InputData{
-							ElementType: "case",
+							ElementType: data.ObjectType,
 							RootId:      data.Id,
 							CaseId:      caseId,
 							Data:        b,
 						}
 					}()
 				}
-			case msg := <-fromWebHook:
-				// -------------------------------------
-				//все данные полученные из webhookserver
-				if msg.ObjectType == "alert" {
-					timeToSend = r.cfg.StorageDelayToSendAlert
-				}
-				if msg.ObjectType == "case" {
-					timeToSend = r.cfg.StorageDelayToSendCase
-				}
-
-				//сохраняем объект для отложеного выполнения
-				// ожидание истечения времени из параметра storageObject[n].timeSending
-				storage.AddObject(
-					timeToSend,
-					storageobjects.StorageObjectDataSettings[map[string]any]{
-						Id:         msg.RootId,
-						ObjectType: msg.ObjectType,
-						Data:       msg.Data,
-					})
 
 			case msg := <-fromNatsApi:
-				/*
-					!!! ЭТО БУДУЩИЙ ответ на команду !!!
-
-						//ответ на команду
-						res, err := json.Marshal(struct {
-							Id         string `json:"id"`
-							Source     string `json:"source"`
-							Command    string `json:"command"`
-							StatusCode int    `json:"status_code"`
-							Data       any    `json:"data"`
-							Error      string `json:"error"`
-						}{
-							Id:         msg.GetRequestId(),
-							Source:     msg.GetSource(),
-							Command:    rc.Command,
-							StatusCode: msg.GetStatusCode(),
-							Data:       msg.GetData(),
-							Error:      errMsg,
-						})
-
-				*/
-
 				// -------------------------------------
 				//обработка входящих команд (добавление tags, custom fields и т.д.)
 				verifiedResponse := datamodels.VerifiedResponseAcceptedCommand{
@@ -247,11 +224,8 @@ func (r *majorRouter) start(
 					continue
 				}
 
-				/*
-									!!!!!
-					праверить все ли поля ответа на команду заполнены
-									!!!!!
-				*/
+				verifiedResponse.Id = rc.RootId
+				verifiedResponse.Command = rc.Command
 
 				//проверяем какому из thehivehook_go_package было предназначена команда
 				// так как данный модуль распространяется по регионам, необходимо отличать
@@ -265,10 +239,9 @@ func (r *majorRouter) start(
 						r.cfg.GetApplicationWebHookServer().Name,
 					)
 					verifiedResponse.Error = errMsg.Error()
-					verifiedResponse.Id = rc.RootId
 					verifiedResponse.StatusCode = http.StatusPreconditionFailed // условие ложно
-					r.logger.Send("error", supportingfunctions.CustomError(errMsg).Error())
 
+					r.logger.Send("error", supportingfunctions.CustomError(errMsg).Error())
 					sendData(verifiedResponse, msg.ChanDone, msg.ChanOutput)
 
 					continue
@@ -353,7 +326,11 @@ func (r *majorRouter) start(
 						_, statusCode, err := apiTheHive.AddCaseCustomFields(ctx, rc)
 						if err != nil {
 							verifiedResponse.Error = err.Error()
-							r.logger.Send("error", supportingfunctions.CustomError(err).Error())
+							if _, ok := errors.AsType[thehiveapi.ErrorInformation](err); ok {
+								r.logger.Send("info", err.Error())
+							} else {
+								r.logger.Send("error", supportingfunctions.CustomError(err).Error())
+							}
 						} else {
 							r.logger.Send(
 								"info",
