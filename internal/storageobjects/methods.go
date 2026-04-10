@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Start запускает автоматическую обработку хранилища
 func (s *StorageObjects[T]) Start(ctx context.Context) {
 	go func() {
 		tick := time.NewTicker(s.timeTick)

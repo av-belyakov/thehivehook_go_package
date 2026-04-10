@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"golang.org/x/sync/errgroup"
 
@@ -15,11 +14,14 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/internal/counterelements"
 	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 	"github.com/av-belyakov/thehivehook_go_package/internal/storageobjects"
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
+
+const Time_After_Delete = 30
 
 func NewMajorRouter(cfg confighandler.ConfigApp, logger interfaces.Logger) *majorRouter {
 	return &majorRouter{
@@ -37,7 +39,7 @@ func (r *majorRouter) start(
 ) error {
 	var timeToSend int = 10
 
-	// очередь для хранения объектов с отложенной отправкой в канал
+	//очередь для хранения объектов с отложенной отправкой в канал
 	storage, err := storageobjects.New(
 		storageobjects.WithChannelSize[map[string]any](4),
 		storageobjects.WithTimeTick[map[string]any](1),
@@ -47,6 +49,13 @@ func (r *majorRouter) start(
 		return supportingfunctions.CustomError(err)
 	}
 	storage.Start(ctx)
+
+	//счетчик комад получаемых через Nats
+	// нужен для отслеживания количества команд, на каждую команду TheHive отправляет ответ в виде кейса,
+	// в результате получается замкнутый цикл когда изменение в кейсах порождает команды на добавления
+	// тегов и т.д., а команды, в свою очередь порождают изменения в кейсах и т.д.
+	ce := counterelements.New(Time_After_Delete)
+	ce.Start(ctx)
 
 	go func() {
 		for {
@@ -61,6 +70,9 @@ func (r *majorRouter) start(
 					timeToSend = r.cfg.StorageDelayToSendAlert
 				}
 				if msg.ObjectType == "case" {
+					//уменьшаем счётчик на 1 и проверяем не достигли ли 0
+					// если счётчик достиг 0 то удаляем элемент из счётчика
+
 					timeToSend = r.cfg.StorageDelayToSendCase
 				}
 
@@ -80,9 +92,6 @@ func (r *majorRouter) start(
 				switch data.ObjectType {
 				case "alert":
 					go func() {
-						ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
-						defer cancel()
-
 						res, statusCode, err := apiTheHive.GetAlert(ctx, data.Id)
 						if err != nil {
 							if _, ok := errors.AsType[thehiveapi.ErrorInformation](err); ok {
@@ -123,9 +132,6 @@ func (r *majorRouter) start(
 
 				case "case":
 					go func() {
-						ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
-						defer cancel()
-
 						verifiedObject := datamodels.VerifiedObjectEventCase{
 							Source: r.cfg.AppConfigWebHookServer.Name,
 							Case:   data.Data,
@@ -153,7 +159,7 @@ func (r *majorRouter) start(
 							return nil
 						})
 						g.Go(func() error {
-							// запрос объекта типа TTP
+							//запрос объекта типа TTP
 							res, statusCode, err := apiTheHive.GetTTP(ctx, data.Id)
 							if err != nil {
 								return err
@@ -212,7 +218,7 @@ func (r *majorRouter) start(
 					StatusCode: http.StatusBadRequest,
 				}
 
-				// парсим входящие команды
+				//парсим входящие команды
 				rc := thehiveapi.RequestCommand{}
 				if err := json.Unmarshal(msg.Data, &rc); err != nil {
 					errMsg := fmt.Errorf("the request contains an invalid json object (%s)", err.Error())
@@ -247,28 +253,6 @@ func (r *majorRouter) start(
 					continue
 				}
 
-				/*
-					!!! ЭТО БУДУЩИЙ ответ на команду !!!
-
-						//ответ на команду
-						res, err := json.Marshal(struct {
-							Id         string `json:"id"`
-							Source     string `json:"source"`
-							Command    string `json:"command"`
-							StatusCode int    `json:"status_code"`
-							Data       any    `json:"data"`
-							Error      string `json:"error"`
-						}{
-							Id:         msg.GetRequestId(),
-							Source:     msg.GetSource(),
-							Command:    rc.Command,
-							StatusCode: msg.GetStatusCode(),
-							Data:       msg.GetData(),
-							Error:      errMsg,
-						})
-
-				*/
-
 				r.logger.Send(
 					"info",
 					fmt.Sprintf("the command '%s' has been received, rootId '%s', for regional object '%s', currnet regional object '%s'",
@@ -281,6 +265,9 @@ func (r *majorRouter) start(
 				switch rc.Command {
 				case "add_case_tag":
 					go func() {
+						//увеличиваем счётчик для объекта на 1
+						ce.Add(rc.RootId)
+
 						_, statusCode, err := apiTheHive.AddCaseTags(ctx, rc)
 						if err != nil {
 							verifiedResponse.Error = err.Error()
@@ -302,6 +289,9 @@ func (r *majorRouter) start(
 
 				case "add_case_task":
 					go func() {
+						//увеличиваем счётчик для объекта на 1
+						ce.Add(rc.RootId)
+
 						_, statusCode, err := apiTheHive.AddCaseTask(ctx, rc)
 						if err != nil {
 							verifiedResponse.Error = err.Error()
@@ -323,6 +313,9 @@ func (r *majorRouter) start(
 
 				case "set_case_custom_field":
 					go func() {
+						//увеличиваем счётчик для объекта на 1
+						ce.Add(rc.RootId)
+
 						_, statusCode, err := apiTheHive.AddCaseCustomFields(ctx, rc)
 						if err != nil {
 							verifiedResponse.Error = err.Error()
