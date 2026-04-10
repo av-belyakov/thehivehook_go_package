@@ -2,7 +2,6 @@ package storageobjects
 
 import (
 	"context"
-	"fmt"
 	"time"
 )
 
@@ -164,7 +163,6 @@ func (s *StorageObjects[T]) deleteObjectsAfterLifetimeExpired() {
 	}
 
 	if index != -1 {
-		fmt.Println("func 'deleteObjectsAfterLifetimeExpired', delete object with index:", index)
 		s.storage.objects[index] = s.storage.objects[len(s.storage.objects)-1]
 		s.storage.objects = s.storage.objects[:len(s.storage.objects)-1]
 	}
