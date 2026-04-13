@@ -11,7 +11,6 @@ import (
 
 	"github.com/av-belyakov/thehivehook_go_package/cmd/elasticsearchapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/av-belyakov/thehivehook_go_package/cmd/wrappers"
 	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
@@ -35,15 +34,15 @@ func server(ctx context.Context) {
 	}
 
 	//чтение конфигурационного файла
-	conf, err := confighandler.NewConfig(rootPath)
+	cfg, err := confighandler.NewConfig(rootPath)
 	if err != nil {
 		log.Fatalf("error module 'confighandler': %s", err.Error())
 	}
 
 	// ****************************************************************************
 	// ********************* инициализация модуля логирования *********************
-	listLog := make([]simplelogger.OptionsManager, 0, len(conf.GetListLogs()))
-	for _, v := range conf.GetListLogs() {
+	listLog := make([]simplelogger.OptionsManager, 0, len(cfg.GetListLogs()))
+	for _, v := range cfg.GetListLogs() {
 		listLog = append(listLog, v)
 	}
 	opts := simplelogger.CreateOptions(listLog...)
@@ -55,12 +54,12 @@ func server(ctx context.Context) {
 	//*********************************************************************************
 	//********** инициализация модуля взаимодействия с БД для передачи логов **********
 	if esc, err := elasticsearchapi.NewElasticsearchConnect(elasticsearchapi.Settings{
-		Port:               conf.GetApplicationWriteLogDB().Port,
-		Host:               conf.GetApplicationWriteLogDB().Host,
-		User:               conf.GetApplicationWriteLogDB().User,
-		Passwd:             conf.GetApplicationWriteLogDB().Passwd,
-		IndexDB:            conf.GetApplicationWriteLogDB().StorageNameDB,
-		NameRegionalObject: conf.GetApplicationWebHookServer().Name,
+		Port:               cfg.GetApplicationWriteLogDB().Port,
+		Host:               cfg.GetApplicationWriteLogDB().Host,
+		User:               cfg.GetApplicationWriteLogDB().User,
+		Passwd:             cfg.GetApplicationWriteLogDB().Passwd,
+		IndexDB:            cfg.GetApplicationWriteLogDB().StorageNameDB,
+		NameRegionalObject: cfg.GetApplicationWebHookServer().Name,
 	}); err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 	} else {
@@ -72,12 +71,12 @@ func server(ctx context.Context) {
 	//********** инициализация модуля взаимодействия с Zabbix **********
 	chZabbix := make(chan interfaces.Messager)
 	zabbixSettings := wrappers.WrappersZabbixInteractionSettings{
-		NetworkPort: conf.Zabbix.NetworkPort,
-		NetworkHost: conf.Zabbix.NetworkHost,
-		ZabbixHost:  conf.Zabbix.ZabbixHost,
-		EventTypes:  make([]wrappers.EventType, len(conf.Zabbix.EventTypes)),
+		NetworkPort: cfg.Zabbix.NetworkPort,
+		NetworkHost: cfg.Zabbix.NetworkHost,
+		ZabbixHost:  cfg.Zabbix.ZabbixHost,
+		EventTypes:  make([]wrappers.EventType, len(cfg.Zabbix.EventTypes)),
 	}
-	for _, v := range conf.Zabbix.EventTypes {
+	for _, v := range cfg.Zabbix.EventTypes {
 		zabbixSettings.EventTypes = append(zabbixSettings.EventTypes, wrappers.EventType{
 			IsTransmit: v.IsTransmit,
 			EventType:  v.EventType,
@@ -95,70 +94,58 @@ func server(ctx context.Context) {
 	logging := logginghandler.New(simpleLogger, chZabbix)
 	logging.Start(ctx)
 
-	//******************************************************************
-	//************** инициализация TheHive API модуля ******************
-	apiTheHive, err := thehiveapi.New(
-		logging,
-		thehiveapi.WithAPIKey(conf.GetApplicationTheHive().ApiKey),
-		thehiveapi.WithHost(conf.GetApplicationTheHive().Host),
-		thehiveapi.WithPort(conf.GetApplicationTheHive().Port),
-		thehiveapi.WithCacheTTL(conf.GetApplicationTheHive().CacheTTL),
-		thehiveapi.WithNameRegionalObject(conf.GetApplicationWebHookServer().Name))
-	if err != nil {
-		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
-		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
-	}
-	//запуск модуля
-	chReqTheHiveAPI, err := apiTheHive.Start(ctx)
-	if err != nil {
-		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
-		log.Fatalf("error module 'thehiveapi': %s\n", err.Error())
-	}
-
 	//***************************************************
-	//********** инициализация NATS API модуля **********
+	//********** инициализация модуля для взаимодействия с API NATS **********
 	natsOptsAPI := []natsapi.NatsApiOptions{
-		natsapi.WithHost(conf.GetApplicationNATS().Host),
-		natsapi.WithPort(conf.GetApplicationNATS().Port),
-		natsapi.WithCacheTTL(conf.GetApplicationNATS().CacheTTL),
-		natsapi.WithNameRegionalObject(conf.GetApplicationWebHookServer().Name),
-		natsapi.WithSubSenderCase(conf.GetApplicationNATS().Subscriptions.SenderCase),
-		natsapi.WithSubSenderAlert(conf.GetApplicationNATS().Subscriptions.SenderAlert),
-		natsapi.WithSubListenerCommand(conf.GetApplicationNATS().Subscriptions.ListenerCommand)}
-	apiNats, err := natsapi.New(logging, natsOptsAPI...)
+		natsapi.WithHost(cfg.GetApplicationNATS().Host),
+		natsapi.WithPort(cfg.GetApplicationNATS().Port),
+		natsapi.WithNameRegionalObject(cfg.GetApplicationWebHookServer().Name),
+		natsapi.WithSubSenderCase(cfg.GetApplicationNATS().Subscriptions.SenderCase),
+		natsapi.WithSubSenderAlert(cfg.GetApplicationNATS().Subscriptions.SenderAlert),
+		natsapi.WithSubListenerCommand(cfg.GetApplicationNATS().Subscriptions.ListenerCommand)}
+	natsApi, err := natsapi.New(logging, natsOptsAPI...)
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
-	//запуск модуля
-	chReqNatsAPI, chNatsAPIReq, err := apiNats.Start(ctx)
+	chanInputApiNats, chanOutputApiNats, err := natsApi.Start(ctx)
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'natsapi': %s\n", err.Error())
 	}
 
-	//***********************************************************
-	//********** инициализация WEBHOOKSERVER сервера ************
-	webHook, chForSomebody, err := webhookserver.New(
+	//********************************************************************
+	//*************** инициализация WEBHOOKSERVER сервера ****************
+	webHookServer, chanOutputWebHookServer, err := webhookserver.New(
 		logging,
-		webhookserver.WithVersion[webhookserver.EventElements](version),
-		webhookserver.WithName[webhookserver.EventElements](conf.GetApplicationWebHookServer().Name),
-		webhookserver.WithHost[webhookserver.EventElements](conf.GetApplicationWebHookServer().Host),
-		webhookserver.WithPort[webhookserver.EventElements](conf.GetApplicationWebHookServer().Port))
+		webhookserver.WithVersion(version),
+		webhookserver.WithName(cfg.GetApplicationWebHookServer().Name),
+		webhookserver.WithHost(cfg.GetApplicationWebHookServer().Host),
+		webhookserver.WithPort(cfg.GetApplicationWebHookServer().Port),
+	)
 	if err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 		log.Fatalf("error module 'webhookserver': %s\n", err.Error())
 	}
 
-	//мост между каналами различных модулей
-	router(ctx, chForSomebody, chNatsAPIReq, chReqTheHiveAPI, chReqNatsAPI)
+	//*********************************************************************************
+	//********* инициализация маршрутизатора между каналами различных модулей *********
+	router := NewMajorRouter(*cfg, logging)
+	if err := router.start(
+		ctx,
+		chanInputApiNats,
+		chanOutputWebHookServer,
+		chanOutputApiNats,
+	); err != nil {
+		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
+	}
 
 	// вывод информационного сообщения при старте приложения
-	infoMsg := getInformationMessage(conf)
+	infoMsg := getInformationMessage(cfg)
 	_ = simpleLogger.Write("info", strings.ToLower(infoMsg))
 
 	//запуск модуля
-	if err = webHook.Start(ctx); err != nil {
+	if err = webHookServer.Start(ctx); err != nil {
 		_ = simpleLogger.Write("error", supportingfunctions.CustomError(err).Error())
 	}
 }

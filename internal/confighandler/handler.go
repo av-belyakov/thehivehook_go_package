@@ -35,15 +35,12 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			//Подключение к TheHive
 			"GO_HIVEHOOK_THHOST":   "",
 			"GO_HIVEHOOK_THPORT":   "",
-			"GO_HIVEHOOK_THUNAME":  "",
 			"GO_HIVEHOOK_THAPIKEY": "",
 
 			//Настройки WebHookServer
-			"GO_HIVEHOOK_WEBHNAME":       "",
-			"GO_HIVEHOOK_WEBHHOST":       "",
-			"GO_HIVEHOOK_WEBHPORT":       "",
-			"GO_HIVEHOOK_WEBHSTORAGDS":   "",
-			"GO_HIVEHOOK_WEBHSTORAGETTL": "",
+			"GO_HIVEHOOK_WEBHNAME": "",
+			"GO_HIVEHOOK_WEBHHOST": "",
+			"GO_HIVEHOOK_WEBHPORT": "",
 
 			//Настройки доступа к БД в которую будут записыватся логи
 			"GO_HIVEHOOK_DBWLOGHOST":        "",
@@ -133,10 +130,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		if viper.IsSet("NATS.port") {
 			conf.AppConfigNATS.Port = viper.GetInt("NATS.port")
 		}
-		if viper.IsSet("NATS.cache_ttl") {
-			conf.AppConfigNATS.CacheTTL = viper.GetInt("NATS.cache_ttl")
-		}
-
 		if viper.IsSet("NATS.subscriptions.sender_case") {
 			conf.AppConfigNATS.Subscriptions.SenderCase = viper.GetString("NATS.subscriptions.sender_case")
 		}
@@ -147,24 +140,12 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			conf.AppConfigNATS.Subscriptions.ListenerCommand = viper.GetString("NATS.subscriptions.listener_command")
 		}
 
-		//if viper.IsSet("NATS.subscribers") {
-		//	nats := NATS{}
-		//	if err := viper.GetViper().Unmarshal(&nats); err != nil {
-		//		return err
-		//	}
-		//
-		//	conf.AppConfigNATS.Subscribers = nats.NATS.Subscribers
-		//}
-
 		//Настройки для модуля подключения к TheHive
 		if viper.IsSet("THEHIVE.host") {
 			conf.AppConfigTheHive.Host = viper.GetString("THEHIVE.host")
 		}
 		if viper.IsSet("THEHIVE.port") {
 			conf.AppConfigTheHive.Port = viper.GetInt("THEHIVE.port")
-		}
-		if viper.IsSet("THEHIVE.cache_ttl") {
-			conf.AppConfigTheHive.CacheTTL = viper.GetInt("THEHIVE.cache_ttl")
 		}
 		if viper.IsSet("THEHIVE.api_key") {
 			conf.AppConfigTheHive.ApiKey = viper.GetString("THEHIVE.api_key")
@@ -279,12 +260,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 			conf.AppConfigNATS.Port = p
 		}
 	}
-	if envList["GO_HIVEHOOK_NCACHETTL"] != "" {
-		if v, err := strconv.Atoi(envList["GO_HIVEHOOK_NCACHETTL"]); err == nil {
-			conf.AppConfigNATS.CacheTTL = v
-		}
-	}
-
 	if envList["GO_HIVEHOOK_NSUBSENDERCASE"] != "" {
 		conf.AppConfigNATS.Subscriptions.SenderCase = envList["GO_HIVEHOOK_NSUBSENDERCASE"]
 	}
@@ -295,26 +270,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 		conf.AppConfigNATS.Subscriptions.ListenerCommand = envList["GO_HIVEHOOK_NSUBLISTENERCOMMAND"]
 	}
 
-	//if envList["GO_HIVEHOOK_NSUBSCRIBERS"] != "" {
-	//	subscribers := []SubscriberNATS{}
-	//	if strings.Contains(envList["GO_HIVEHOOK_NSUBSCRIBERS"], ";") {
-	//		tmp := strings.Split(envList["GO_HIVEHOOK_NSUBSCRIBERS"], ";")
-	//		if len(tmp) > 0 {
-	//			for _, v := range tmp {
-	//				if subscriber, err := hundlerSubscribersString(v); err == nil {
-	//					subscribers = append(subscribers, subscriber)
-	//				}
-	//			}
-	//		}
-	//	} else {
-	//		if subscriber, err := hundlerSubscribersString(envList["GO_HIVEHOOK_NSUBSCRIBERS"]); err == nil {
-	//			subscribers = append(subscribers, subscriber)
-	//		}
-	//	}
-	//
-	//	conf.AppConfigNATS.Subscribers = subscribers
-	//}
-
 	//Настройки для модуля подключения к TheHive
 	if envList["GO_HIVEHOOK_THHOST"] != "" {
 		conf.AppConfigTheHive.Host = envList["GO_HIVEHOOK_THHOST"]
@@ -322,11 +277,6 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 	if envList["GO_HIVEHOOK_THPORT"] != "" {
 		if p, err := strconv.Atoi(envList["GO_HIVEHOOK_THPORT"]); err == nil {
 			conf.AppConfigTheHive.Port = p
-		}
-	}
-	if envList["GO_HIVEHOOK_THCACHETTL"] != "" {
-		if v, err := strconv.Atoi(envList["GO_HIVEHOOK_THCACHETTL"]); err == nil {
-			conf.AppConfigTheHive.CacheTTL = v
 		}
 	}
 	if envList["GO_HIVEHOOK_THAPIKEY"] != "" {
@@ -375,31 +325,3 @@ func NewConfig(rootDir string) (*ConfigApp, error) {
 
 	return &conf, nil
 }
-
-/*
-func hundlerSubscribersString(str string) (SubscriberNATS, error) {
-	errMsg := "an incorrect string containing the 'subscribers' of the NATS settings was received"
-	subscriber := SubscriberNATS{}
-
-	if !strings.Contains(str, ":") {
-		return subscriber, errors.New(errMsg)
-	}
-
-	tmp := strings.Split(str, ":")
-	if len(tmp) == 0 {
-		return subscriber, errors.New(errMsg)
-	}
-
-	responders := []string{}
-	if strings.Contains(tmp[1], ",") {
-		responders = append(responders, strings.Split(tmp[1], ",")...)
-	} else {
-		responders = append(responders, tmp[1])
-	}
-
-	subscriber.Event = tmp[0]
-	subscriber.Responders = responders
-
-	return subscriber, nil
-}
-*/

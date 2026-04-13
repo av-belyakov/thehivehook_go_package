@@ -175,10 +175,6 @@ func TestConfigHandler(t *testing.T) {
 					expectedParameters: TestTypeElements{valueInt: 4222},
 				},
 				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationNATS().CacheTTL},
-					expectedParameters: TestTypeElements{valueInt: 3600},
-				},
-				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationNATS().Subscriptions.SenderCase},
 					expectedParameters: TestTypeElements{valueString: "object.casetype"},
 				},
@@ -214,10 +210,6 @@ func TestConfigHandler(t *testing.T) {
 				{
 					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTheHive().Port},
 					expectedParameters: TestTypeElements{valueInt: 9000},
-				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTheHive().CacheTTL},
-					expectedParameters: TestTypeElements{valueInt: 43_200},
 				},
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationTheHive().ApiKey},
@@ -352,10 +344,6 @@ func TestConfigHandler(t *testing.T) {
 					expectedParameters: TestTypeElements{valueInt: 4222},
 				},
 				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationNATS().CacheTTL},
-					expectedParameters: TestTypeElements{valueInt: 3600},
-				},
-				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationNATS().Subscriptions.SenderCase},
 					expectedParameters: TestTypeElements{valueString: "object.casetype.test"},
 				},
@@ -393,10 +381,6 @@ func TestConfigHandler(t *testing.T) {
 				{
 					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTheHive().Port},
 					expectedParameters: TestTypeElements{valueInt: 9000},
-				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTheHive().CacheTTL},
-					expectedParameters: TestTypeElements{valueInt: 43_200},
 				},
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationTheHive().ApiKey},
@@ -524,7 +508,6 @@ func TestConfigHandler(t *testing.T) {
 			const (
 				NATS_HOST               = "nats.cloud.gcm.test.test"
 				NATS_PORT               = 4545
-				NATS_CACHETTL           = 3600
 				NATS_SUBSENDERCASE      = "sender.case"
 				NATS_SUBSENDERALERT     = "sender.alert"
 				NATS_SUBLISTENERCOMMAND = "listener.command"
@@ -532,7 +515,6 @@ func TestConfigHandler(t *testing.T) {
 
 			os.Setenv("GO_HIVEHOOK_NHOST", NATS_HOST)
 			os.Setenv("GO_HIVEHOOK_NPORT", strconv.Itoa(NATS_PORT))
-			os.Setenv("GO_HIVEHOOK_NCACHETTL", strconv.Itoa(NATS_CACHETTL))
 			os.Setenv("GO_HIVEHOOK_NSUBSENDERCASE", NATS_SUBSENDERCASE)
 			os.Setenv("GO_HIVEHOOK_NSUBSENDERALERT", NATS_SUBSENDERALERT)
 			os.Setenv("GO_HIVEHOOK_NSUBLISTENERCOMMAND", NATS_SUBLISTENERCOMMAND)
@@ -547,10 +529,6 @@ func TestConfigHandler(t *testing.T) {
 				{
 					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationNATS().Port},
 					expectedParameters: TestTypeElements{valueInt: NATS_PORT},
-				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationNATS().CacheTTL},
-					expectedParameters: TestTypeElements{valueInt: NATS_CACHETTL},
 				},
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationNATS().Subscriptions.SenderCase},
@@ -575,14 +553,12 @@ func TestConfigHandler(t *testing.T) {
 		name: "Настройки TheHive (через переменные окружения)",
 		function: func() {
 			const (
-				THEHIVE_HOST     = "thehive.cloud.gcm.test"
-				THEHIVE_PORT     = 1122
-				THEHIVE_CACHETTL = 43200
+				THEHIVE_HOST = "thehive.cloud.gcm.test"
+				THEHIVE_PORT = 1122
 			)
 
 			os.Setenv("GO_HIVEHOOK_THHOST", THEHIVE_HOST)
 			os.Setenv("GO_HIVEHOOK_THPORT", strconv.Itoa(THEHIVE_PORT))
-			os.Setenv("GO_HIVEHOOK_THCACHETTL", strconv.Itoa(THEHIVE_CACHETTL))
 
 			cfg, err = confighandler.NewConfig(constants.Root_Dir)
 			testOptions.err = err
@@ -594,10 +570,6 @@ func TestConfigHandler(t *testing.T) {
 				{
 					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTheHive().Port},
 					expectedParameters: TestTypeElements{valueInt: THEHIVE_PORT},
-				},
-				{
-					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTheHive().CacheTTL},
-					expectedParameters: TestTypeElements{valueInt: THEHIVE_CACHETTL},
 				},
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationTheHive().ApiKey},
@@ -744,7 +716,6 @@ func unsetAllEnviromentEnvAny() {
 	//настройки NATS
 	os.Unsetenv("GO_HIVEHOOK_NHOST")
 	os.Unsetenv("GO_HIVEHOOK_NPORT")
-	os.Unsetenv("GO_HIVEHOOK_NCACHETTL")
 	os.Unsetenv("GO_HIVEHOOK_NSUBSENDERCASE")
 	os.Unsetenv("GO_HIVEHOOK_NSUBSENDERALERT")
 	os.Unsetenv("GO_HIVEHOOK_NSUBLISTENERCOMMAND")
@@ -752,7 +723,6 @@ func unsetAllEnviromentEnvAny() {
 	//настройки TheHive
 	os.Unsetenv("GO_HIVEHOOK_THHOST")
 	os.Unsetenv("GO_HIVEHOOK_THPORT")
-	os.Unsetenv("GO_HIVEHOOK_THCACHETTL")
 
 	//настройки WebHook сервера
 	os.Unsetenv("GO_HIVEHOOK_WEBHNAME")

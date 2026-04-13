@@ -5,11 +5,10 @@ import (
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/storageobjects"
 )
 
-// WebHookServer_New
-type WebHookServer_New struct {
+// WebHookServer
+type WebHookServer struct {
 	server     *http.Server
 	logger     interfaces.Logger
 	timeStart  time.Time
@@ -20,11 +19,11 @@ type WebHookServer_New struct {
 	chanOutput chan<- OutputData
 }
 
-// webHookServerOptions_New функциональные параметры
-type webHookServerOptions_New func(*WebHookServer_New) error
+// webHookServerOptions функциональные параметры
+type webHookServerOptions func(*WebHookServer) error
 
-// WebHookServerOptions_New основные опции
-type WebHookServerOptions_New struct {
+// WebHookServerOptions основные опции
+type WebHookServerOptions struct {
 	Version string //версия сервера (не обязательный параметр)
 	Name    string //наименование Webhook сервера (не обязательный параметр)
 	Host    string //сетевой хост, доменное имя или ip адрес, по умолчанию 127.0.0.1
@@ -32,42 +31,9 @@ type WebHookServerOptions_New struct {
 }
 
 type OutputData struct {
-	ObjectType string
-	RootId     string
 	Data       map[string]any
-}
-
-// WebHookServer непосредственно сам сервер
-type WebHookServer[T any] struct {
-	server       *http.Server
-	storage      *storageobjects.StorageObjects[T]
-	logger       interfaces.Logger
-	timeStart    time.Time
-	host         string
-	name         string //gcm, rcmmsk и т.д.
-	version      string
-	port         int
-	ttl          int
-	delaySending int
-	chanInput    chan<- ChanFromWebHookServer
-}
-
-// webHookServerOptions функциональные параметры
-type webHookServerOptions[T any] func(*WebHookServer[T]) error
-
-// WebHookServerOptions основные опции
-type WebHookServerOptions struct {
-	Host    string //сетевой хост, доменное имя или ip адрес, по умолчанию 127.0.0.1
-	Name    string //наименование Webhook сервера (не обязательный параметр)
-	Version string //версия сервера (не обязательный параметр)
-	TTL     int    //Time to live в секундах, по умолчанию 10 сек. (не обязательный параметр)
-	Port    int    //сетевой порт, по умолчанию 7575 (не обязательный параметр)
-}
-
-// ChanFromWebHookServer структура канала для взаимодействия сторонних сервисов с webhookserver
-type ChanFromWebHookServer struct {
-	Data        interfaces.ChannelRequester
-	ForSomebody string //для кого данные
+	RootId     string
+	ObjectType string
 }
 
 // ReadyMadeEventCase готовый, сформированный объект содержащий информацию по кейсу
@@ -85,4 +51,41 @@ type ReadyMadeEventAlert struct {
 	Source string         `json:"source"`
 }
 
+/*
+// WebHookServer непосредственно сам сервер
+
+	type WebHookServer[T any] struct {
+		server       *http.Server
+		storage      *storageobjects.StorageObjects[T]
+		logger       interfaces.Logger
+		timeStart    time.Time
+		host         string
+		name         string //gcm, rcmmsk и т.д.
+		version      string
+		port         int
+		ttl          int
+		delaySending int
+		chanInput    chan<- ChanFromWebHookServer
+	}
+
+// webHookServerOptions функциональные параметры
+type webHookServerOptions[T any] func(*WebHookServer[T]) error
+
+// WebHookServerOptions основные опции
+
+	type WebHookServerOptions struct {
+		Host    string //сетевой хост, доменное имя или ip адрес, по умолчанию 127.0.0.1
+		Name    string //наименование Webhook сервера (не обязательный параметр)
+		Version string //версия сервера (не обязательный параметр)
+		TTL     int    //Time to live в секундах, по умолчанию 10 сек. (не обязательный параметр)
+		Port    int    //сетевой порт, по умолчанию 7575 (не обязательный параметр)
+	}
+
+// ChanFromWebHookServer структура канала для взаимодействия сторонних сервисов с webhookserver
+
+	type ChanFromWebHookServer struct {
+		Data        interfaces.ChannelRequester
+		ForSomebody string //для кого данные
+	}
+*/
 type EventElements map[string]any

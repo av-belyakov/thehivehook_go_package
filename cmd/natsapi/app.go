@@ -1,40 +1,21 @@
-// Модуль для взаимодействия с API NATS
 package natsapi
 
 import (
-	"context"
 	"errors"
-	"fmt"
-	"time"
 
-	"github.com/nats-io/nats.go"
-
-	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/storage"
 	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
 // New настраивает новый модуль взаимодействия с API NATS
-func New(logger interfaces.Logger, opts ...NatsApiOptions) (*apiNatsModule, error) {
-	api := &apiNatsModule{
-		cachettl: 10,
+func New(logger interfaces.Logger, opts ...NatsApiOptions) (*NatsApi, error) {
+	api := &NatsApi{
 		logger:   logger,
-		//прием запросов в NATS
-		receivingChannel: make(chan interfaces.ChannelRequester),
-		//передача запросов из NATS
-		sendingChannel: make(chan interfaces.ChannelRequester),
+		cachettl: 10,
+		//входящие в модуль данные (обогащённые alerts и case)
+		chanInputModule: make(chan InputData),
+		//исходящие из модуля данные (команды добавления tags и custom field)
+		chanOutputModule: make(chan OutputData),
 	}
-
-	//----- natsapi storage -----
-	sc, err := storage.NewStorageAcceptedCommands(
-		storage.WithMaxSize(16),
-		storage.WithMaxTtl(180), //поставим пока время равное 3 минутам
-		storage.WithTimeTick(2))
-	if err != nil {
-		return api, err
-	}
-
-	api.storageCache = sc
 
 	for _, opt := range opts {
 		if err := opt(api); err != nil {
@@ -45,73 +26,9 @@ func New(logger interfaces.Logger, opts ...NatsApiOptions) (*apiNatsModule, erro
 	return api, nil
 }
 
-// Start инициализирует новый модуль взаимодействия с API NATS
-// при инициализации возращается канал для взаимодействия с модулем, все
-// запросы к модулю выполняются через данный канал
-func (api *apiNatsModule) Start(ctx context.Context) (chan<- interfaces.ChannelRequester, <-chan interfaces.ChannelRequester, error) {
-	if ctx.Err() != nil {
-		return api.receivingChannel, api.sendingChannel, ctx.Err()
-	}
-
-	//инициализация автоматической очистки хранилища используемого для хранения
-	//принимаемых, через NATS, команд
-	//сделал для того что бы избежать повторной отправки одной и той же команды
-	//предназначенной для одного и того же объекта передаваемой за короткий
-	//промежуток времени
-	api.storageCache.Start(ctx)
-
-	nc, err := nats.Connect(
-		fmt.Sprintf("%s:%d", api.host, api.port),
-		//имя клиента
-		nats.Name(fmt.Sprintf("thehivehook.%s", api.nameRegionalObject)),
-		//неограниченное количество попыток переподключения
-		nats.MaxReconnects(-1),
-		//время ожидания до следующей попытки переподключения (по умолчанию 2 сек.)
-		nats.ReconnectWait(3*time.Second),
-		//обработка разрыва соединения с NATS
-		nats.DisconnectErrHandler(func(c *nats.Conn, err error) {
-			api.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("the connection with NATS has been disconnected (%w)", err)).Error())
-		}),
-		//обработка переподключения к NATS
-		nats.ReconnectHandler(func(c *nats.Conn) {
-			api.logger.Send("info", "the connection to NATS has been re-established")
-		}),
-		//поиск медленных получателей (не обязательный для данного приложения параметр)
-		nats.ErrorHandler(func(c *nats.Conn, s *nats.Subscription, err error) {
-			if err == nats.ErrSlowConsumer {
-				pendingMsgs, _, err := s.Pending()
-				if err != nil {
-					api.logger.Send("warning", fmt.Sprintf("couldn't get pending messages: %v", err))
-
-					return
-				}
-
-				api.logger.Send("warning", fmt.Sprintf("Falling behind with %d pending messages on subject %q.\n", pendingMsgs, s.Subject))
-			}
-		}))
-	if err != nil {
-		return api.receivingChannel, api.sendingChannel, supportingfunctions.CustomError(err)
-	}
-
-	api.natsConnection = nc
-
-	//обработчик подписки
-	go api.subscriptionHandler(ctx)
-
-	//обработчик данных изнутри приложения
-	go api.receivingChannelHandler(ctx)
-
-	go func(ctx context.Context, nc *nats.Conn) {
-		<-ctx.Done()
-		nc.Drain()
-	}(ctx, nc)
-
-	return api.receivingChannel, api.sendingChannel, nil
-}
-
 // WithHost метод устанавливает имя или ip адрес хоста API
 func WithHost(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
+	return func(n *NatsApi) error {
 		if v == "" {
 			return errors.New("the value of 'host' cannot be empty")
 		}
@@ -124,7 +41,7 @@ func WithHost(v string) NatsApiOptions {
 
 // WithPort метод устанавливает порт API
 func WithPort(v int) NatsApiOptions {
-	return func(n *apiNatsModule) error {
+	return func(n *NatsApi) error {
 		if v <= 0 || v > 65535 {
 			return errors.New("an incorrect network port value was received")
 		}
@@ -135,23 +52,9 @@ func WithPort(v int) NatsApiOptions {
 	}
 }
 
-// WithCacheTTL устанавливает время жизни для кэша хранящего функции-обработчики
-// запросов к модулю
-func WithCacheTTL(v int) NatsApiOptions {
-	return func(th *apiNatsModule) error {
-		if v <= 10 || v > 86400 {
-			return errors.New("the lifetime of a cache entry should be between 10 and 86400 seconds")
-		}
-
-		th.cachettl = v
-
-		return nil
-	}
-}
-
 // WithSubSenderCase устанавливает канал в который будут отправлятся объекты типа 'case'
 func WithSubSenderCase(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
+	return func(n *NatsApi) error {
 		if v == "" {
 			return errors.New("the value of 'sender_case' cannot be empty")
 		}
@@ -164,7 +67,7 @@ func WithSubSenderCase(v string) NatsApiOptions {
 
 // WithSubSenderAlert устанавливает канал в который будут отправлятся объекты типа 'alert'
 func WithSubSenderAlert(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
+	return func(n *NatsApi) error {
 		if v == "" {
 			return errors.New("the value of 'sender_alert' cannot be empty")
 		}
@@ -178,7 +81,7 @@ func WithSubSenderAlert(v string) NatsApiOptions {
 // WithSubListenerCommand устанавливает канал через которые будут приходить команды для
 // выполнения определенных действий в TheHive
 func WithSubListenerCommand(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
+	return func(n *NatsApi) error {
 		if v == "" {
 			return errors.New("the value of 'listener_command' cannot be empty")
 		}
@@ -192,7 +95,7 @@ func WithSubListenerCommand(v string) NatsApiOptions {
 // WithNameRegionalObject устанавливает наименование которое будет отображатся в
 // статистике подключенных клиентов NATS
 func WithNameRegionalObject(v string) NatsApiOptions {
-	return func(n *apiNatsModule) error {
+	return func(n *NatsApi) error {
 		n.nameRegionalObject = v
 
 		return nil

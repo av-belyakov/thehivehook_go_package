@@ -3,8 +3,9 @@ package webhookserver_test
 import (
 	"testing"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
 )
 
 func TestMemCache(t *testing.T) {

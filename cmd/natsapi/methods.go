@@ -12,19 +12,10 @@ import (
 // Start инициализирует новый модуль взаимодействия с API NATS
 // при инициализации возращается канал для взаимодействия с модулем, все
 // запросы к модулю выполняются через данный канал
-func (api *NatsApi) Start_New(ctx context.Context) (chan<- InputData, <-chan OutputData, error) {
+func (api *NatsApi) Start(ctx context.Context) (chan<- InputData, <-chan OutputData, error) {
 	if ctx.Err() != nil {
 		return api.chanInputModule, api.chanOutputModule, ctx.Err()
 	}
-
-	//инициализация автоматической очистки хранилища используемого для хранения
-	//принимаемых, через NATS, команд
-	//сделал для того что бы избежать повторной отправки одной и той же команды
-	//предназначенной для одного и того же объекта передаваемой за короткий
-	//промежуток времени
-	//api.storageCache.Start(ctx)
-	//
-	// так как хранилище не используется!!!
 
 	nc, err := nats.Connect(
 		fmt.Sprintf("%s:%d", api.host, api.port),
@@ -73,14 +64,4 @@ func (api *NatsApi) Start_New(ctx context.Context) (chan<- InputData, <-chan Out
 	}(ctx, nc)
 
 	return api.chanInputModule, api.chanOutputModule, nil
-}
-
-// GetDataReceptionChannel канал для вывода данных из модуля
-func (mnats *ModuleNATS) GetDataReceptionChannel() <-chan SettingsOutputChan {
-	return mnats.chanOutputNATS
-}
-
-// SendingData отправка данных из модуля
-func (mnats *ModuleNATS) SendingData(data SettingsOutputChan) {
-	mnats.chanOutputNATS <- data
 }

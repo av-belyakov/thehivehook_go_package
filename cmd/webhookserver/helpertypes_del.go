@@ -1,11 +1,6 @@
 package webhookserver
 
-import (
-	"context"
-
-	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
-)
-
+/*
 // RequestFromWebHook структура запроса из модуля
 type RequestFromWebHook struct {
 	Data        any //набор данных
@@ -25,3 +20,4 @@ type ResponsToWebHook struct {
 	RequestId  string //UUID идентификатор ответа (соответствует идентификатору запроса)
 	StatusCode int    //статус кода ответа
 }
+*/

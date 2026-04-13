@@ -68,19 +68,17 @@ type AppConfigNATS struct {
 	Subscriptions SubscriptionsNATS `yaml:"subscriptions"`
 	Host          string            `validate:"required" yaml:"host"`
 	Port          int               `validate:"gt=0,lte=65535" yaml:"port"`
-	CacheTTL      int               `validate:"gt=10,lte=86400" yaml:"cache_ttl"`
 }
 
 type AppConfigTheHive struct {
-	ApiKey   string `validate:"required"`
-	Host     string `validate:"required" yaml:"host"`
-	Port     int    `validate:"gt=0,lte=65535" yaml:"port"`
-	CacheTTL int    `validate:"gt=10,lte=86400" yaml:"cache_ttl"`
+	ApiKey string `validate:"required"`
+	Host   string `validate:"required" yaml:"host"`
+	Port   int    `validate:"gt=0,lte=65535" yaml:"port"`
 }
 
 type AppConfigWebHookServer struct {
-	Host string `yaml:"host"`
 	Name string `validate:"required" yaml:"name"`
+	Host string `yaml:"host"`
 	Port int    `validate:"gt=0,lte=65535" yaml:"port"`
 }
 

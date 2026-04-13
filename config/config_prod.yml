@@ -7,7 +7,6 @@ TEMPORARYSTORAGE:
 NATS:
   host: nats.cloud.gcm
   port: 4222
-  cache_ttl: 3600
   subscriptions:
     sender_case: object.casetype
     sender_alert: object.alerttype
@@ -15,7 +14,6 @@ NATS:
 THEHIVE:
   host: thehive.cloud.gcm
   port: 9000
-  cache_ttl: 43200
 WEBHOOKSERVER:
   name: gcm
   host: 192.168.9.53
@@ -23,6 +21,6 @@ WEBHOOKSERVER:
 DATABASEWRITELOG:
   host: datahook.cloud.gcm
   port: 9200
+  user: log_writer
   namedb:
   storage_name_db: thehivehook_go_package
-  user: log_writer

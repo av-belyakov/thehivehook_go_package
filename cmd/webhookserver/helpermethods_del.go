@@ -1,11 +1,6 @@
 package webhookserver
 
-import (
-	"context"
-
-	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
-)
-
+/*
 //********************* Response ********************
 
 // NewChannelRespons конструктор ответа
@@ -141,3 +136,4 @@ func (r *RequestFromWebHook) GetChanOutput() chan interfaces.ChannelResponser {
 func (r *RequestFromWebHook) SetChanOutput(v chan interfaces.ChannelResponser) {
 	r.ChanOutput = v
 }
+*/

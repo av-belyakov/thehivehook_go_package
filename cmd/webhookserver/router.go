@@ -13,8 +13,8 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 )
 
-// RouteIndex_New маршрут при обращении к '/'
-func (wh *WebHookServer_New) RouteIndex_New(w http.ResponseWriter, r *http.Request) {
+// RouteIndex маршрут при обращении к '/'
+func (wh *WebHookServer) RouteIndex(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 
@@ -42,8 +42,8 @@ func (wh *WebHookServer_New) RouteIndex_New(w http.ResponseWriter, r *http.Reque
 			printMemStats()))
 }
 
-// RouteWebHook_New маршрут при обращении к '/webhook'
-func (wh *WebHookServer_New) RouteWebHook_New(w http.ResponseWriter, r *http.Request) {
+// RouteWebHook маршрут при обращении к '/webhook'
+func (wh *WebHookServer) RouteWebHook(w http.ResponseWriter, r *http.Request) {
 	eventElement := map[string]any{}
 
 	bodyByte, err := io.ReadAll(r.Body)

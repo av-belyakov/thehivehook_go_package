@@ -29,12 +29,14 @@ _thehivehook_go/
 
 ```yaml
 COMMONINFO:
-  file_name: config_prod
+  file_name: config production
+TEMPORARYSTORAGE:
+  storage_object_ttl: 180
+  storage_delay_to_send_alert: 5
+  storage_delay_to_send_case: 30
 NATS:
-  prefix: test
   host: nats.cloud.gcm
   port: 4222
-  cache_ttl: 3600
   subscriptions:
     sender_case: object.casetype
     sender_alert: object.alerttype
@@ -47,8 +49,6 @@ WEBHOOKSERVER:
   name: rcmnvs #наименование webhookserver (у каждого своё)
   host: git-runner.rcm #ip или домен ВМ на которой будет хостится приложение
   port: 5000
-  storage_ttl: 180
-  storage_delay_to_send: 30
 DATABASEWRITELOG:
   host: datahook.cloud.gcm #домен сервера БД для логов (не менять, домен ГЦМ)
   port: 9200
@@ -88,9 +88,6 @@ DATABASEWRITELOG:
 
 - **GO_HIVEHOOK_NHOST**
 - **GO_HIVEHOOK_NPORT**
-- **GO_HIVEHOOK_NCACHETTL** - данный параметр должен содержать время жизни записи
-  кэша, по истечение которого запись автоматически удаляется, значение задается
-  в секундах в диапазоне от 10 до 86400 секунд
 - **GO_HIVEHOOK_NSUBSENDERCASE** - канал для отправки в него информации по case
 - **GO_HIVEHOOK_NSUBSENDERALERT** - канал для отправки в него информации по alert
 - **GO_HIVEHOOK_NSUBLISTENERCOMMAND** - канал для приема команд которые нужно выполнить на TheHive
@@ -99,9 +96,6 @@ DATABASEWRITELOG:
 
 - **GO_HIVEHOOK_THHOST**
 - **GO_HIVEHOOK_THPORT**
-- **GO_HIVEHOOK_THCACHETTL** - данный параметр должен содержать время жизни записи
-  кэша, по истечение которого запись автоматически удаляется, значение задается
-  в секундах в диапазоне от 10 до 86400 секунд
 - **GO_HIVEHOOK_THAPIKEY** - ЭТО ОБЯЗАТЕЛЬНЫЙ ПАРАМЕТР!!!
   Он задается ТОЛЬКО через переменную окружения. В конфигурационном
   файле этого параметра нет.

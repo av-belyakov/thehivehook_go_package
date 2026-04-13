@@ -3,46 +3,13 @@ package thehiveapi
 
 import (
 	"errors"
-	"runtime"
-
-	"github.com/av-belyakov/cachingstoragewithqueue"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi/storage"
-	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
 )
 
 // New настраивает модуль взаимодействия с API TheHive
-func New(logger interfaces.Logger, opts ...theHiveApiOptions) (*apiTheHiveModule, error) {
-	api := &apiTheHiveModule{
-		settings: theHiveApiSettings{
-			cachettl: 10,
-		},
-		logger:           logger,
-		receivingChannel: make(chan interfaces.ChannelRequester, 4),
+func New(opts ...theHiveApiOptions) (*TheHiveApi, error) {
+	api := &TheHiveApi{
+		settings: theHiveApiSettings{},
 	}
-
-	//---- пока уберем для тестирования использования своего собственого хранилища ----
-	l := NewLogWrite(logger)
-	cache, err := cachingstoragewithqueue.NewCacheStorage(
-		cachingstoragewithqueue.WithMaxTtl[any](10),
-		cachingstoragewithqueue.WithTimeTick[any](1),
-		cachingstoragewithqueue.WithMaxSize[any](360),
-		cachingstoragewithqueue.WithEnableAsyncProcessing[any](runtime.NumCPU()),
-		cachingstoragewithqueue.WithLogging[any](l))
-	if err != nil {
-		return api, err
-	}
-	api.cache = cache
-
-	//----- thehiveapi storage -----
-	sc, err := storage.NewStorageFoundObjects(
-		storage.WithMaxSize(360),
-		storage.WithMaxTtl(300),
-		storage.WithTimeTick(1))
-	if err != nil {
-		return api, err
-	}
-
-	api.storageCache = sc
 
 	for _, opt := range opts {
 		if err := opt(api); err != nil {
@@ -55,7 +22,7 @@ func New(logger interfaces.Logger, opts ...theHiveApiOptions) (*apiTheHiveModule
 
 // WithAPIKey идентификатор-ключ для API
 func WithAPIKey(v string) theHiveApiOptions {
-	return func(th *apiTheHiveModule) error {
+	return func(th *TheHiveApi) error {
 		if v == "" {
 			return errors.New("the value of 'apiKey' cannot be empty")
 		}
@@ -68,7 +35,7 @@ func WithAPIKey(v string) theHiveApiOptions {
 
 // WithHost имя или ip адрес хоста API
 func WithHost(v string) theHiveApiOptions {
-	return func(th *apiTheHiveModule) error {
+	return func(th *TheHiveApi) error {
 		if v == "" {
 			return errors.New("the value of 'host' cannot be empty")
 		}
@@ -81,7 +48,7 @@ func WithHost(v string) theHiveApiOptions {
 
 // WithPort сетевой порт API
 func WithPort(v int) theHiveApiOptions {
-	return func(th *apiTheHiveModule) error {
+	return func(th *TheHiveApi) error {
 		if v <= 0 || v > 65535 {
 			return errors.New("an incorrect network port value was received")
 		}
@@ -92,23 +59,9 @@ func WithPort(v int) theHiveApiOptions {
 	}
 }
 
-// WithCacheTTL время жизни для кэша хранящего функции-обработчики
-// запросов к модулю
-func WithCacheTTL(v int) theHiveApiOptions {
-	return func(th *apiTheHiveModule) error {
-		if v <= 10 || v > 86400 {
-			return errors.New("the lifetime of a cache entry should be between 10 and 86400 seconds")
-		}
-
-		th.settings.cachettl = v
-
-		return nil
-	}
-}
-
 // WithNameRegionalObject наименование регионального объекта
 func WithNameRegionalObject(v string) theHiveApiOptions {
-	return func(th *apiTheHiveModule) error {
+	return func(th *TheHiveApi) error {
 		if v == "" {
 			return errors.New("the value of 'nameRegionalObject' cannot be empty")
 		}
