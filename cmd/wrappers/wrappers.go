@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/interfaces"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
 	zabbixapicommunicator "github.com/av-belyakov/zabbixapicommunicator/cmd"
 )
 

@@ -1,8 +1,8 @@
 package helperfunc
 
 import (
-	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/interfaces"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/logginghandler"
 )
 
 type LoggingForTest struct {

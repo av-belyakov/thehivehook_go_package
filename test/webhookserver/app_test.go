@@ -11,10 +11,10 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
-	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/constants"
-	"github.com/av-belyakov/thehivehook_go_package/test/helpers"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/webhookserver"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/constants"
+	"github.com/av-belyakov/thehivehook_go_package/v2/test/helpers"
 )
 
 func TestWebhookServer(t *testing.T) {

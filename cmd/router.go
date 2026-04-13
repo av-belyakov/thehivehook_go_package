@@ -10,15 +10,15 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
-	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/counterelements"
-	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
-	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/storageobjects"
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/natsapi"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/thehiveapi"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/webhookserver"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/counterelements"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/interfaces"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/storageobjects"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
 )
 
 const Time_After_Delete = 30

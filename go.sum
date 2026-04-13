@@ -1,7 +1,5 @@
 github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1Xbatp0=
 github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
-github.com/av-belyakov/cachingstoragewithqueue v1.2.9 h1:Z0hRr+SzWsdNEROHadiYdJALdlSmRxlLu+knyf9fA/g=
-github.com/av-belyakov/cachingstoragewithqueue v1.2.9/go.mod h1:Dh0mhJoZRMQgeV72zyz35m2XK4rd2GmrLWDWdhnHdik=
 github.com/av-belyakov/simplelogger v0.0.0-20250924090323-6ab0607b4a4b h1:axOJ0ObU1iTsHz6Q9GHeX2WRVeQ06skXNw1WcosKXyw=
 github.com/av-belyakov/simplelogger v0.0.0-20250924090323-6ab0607b4a4b/go.mod h1:yW2ev3nXPP3WY8svBWJpg4PQRl67MTGIaaiXJ0ULRZ8=
 github.com/av-belyakov/zabbixapicommunicator v0.0.0-20250618124251-10a4a23cd7ca h1:10CiLYaxxDD9524HYACXxEIjQY/UzochnUi0vGiL3ao=

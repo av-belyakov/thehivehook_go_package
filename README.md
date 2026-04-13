@@ -1,6 +1,6 @@
 # Thehivehook_go_package
 
-[![Go Version](https://img.shields.io/badge/Go-1.24.4+-00ADD8?style=flat&logo=go)](https://golang.org/)
+[![Go Version](https://img.shields.io/badge/Go-1.26.2+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker)](https://www.docker.com/)
 
 Пакет 'thehivehook_go_package' раелизует сервис который является посредником между TheHive и NATS, и применяется для передачи событий типа 'case' и 'alert' от TheHive через брокер сообщений NATS сторонним сервисам.

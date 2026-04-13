@@ -11,12 +11,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
-	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/constants"
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
-	helperfunc "github.com/av-belyakov/thehivehook_go_package/test/helpfunc"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/natsapi"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/thehiveapi"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/constants"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
+	helperfunc "github.com/av-belyakov/thehivehook_go_package/v2/test/helpfunc"
 )
 
 func TestSendCommandSetTag(t *testing.T) {

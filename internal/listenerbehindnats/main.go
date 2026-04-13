@@ -14,9 +14,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/nats-io/nats.go"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
 )
 
 var (

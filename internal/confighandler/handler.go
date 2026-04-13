@@ -10,7 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
 )
 
 func NewConfig(rootDir string) (*ConfigApp, error) {

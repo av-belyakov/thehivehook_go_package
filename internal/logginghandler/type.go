@@ -1,6 +1,6 @@
 package logginghandler
 
-import "github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
+import "github.com/av-belyakov/thehivehook_go_package/v2/internal/interfaces"
 
 type LoggingChan struct {
 	dataWriter interfaces.WriterLoggingData

@@ -7,9 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/thehiveapi"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/thehiveapi"
 )
 
 func TestSetCustomField(t *testing.T) {

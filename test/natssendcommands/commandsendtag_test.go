@@ -11,9 +11,9 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/constants"
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/constants"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
 )
 
 func TestCommandSendTags(t *testing.T) {

@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/datamodels"
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/datamodels"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
 )
 
 // GetAlert формирует запрос на получения из TheHive объекта типа 'alert'

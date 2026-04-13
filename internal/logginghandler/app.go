@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/interfaces"
 )
 
 // New конструктор обработчиа логов (это просто мост соединяющий несколько сервисов логирования)

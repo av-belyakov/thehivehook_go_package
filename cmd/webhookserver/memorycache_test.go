@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/webhookserver"
 )
 
 func TestMemCache(t *testing.T) {

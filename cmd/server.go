@@ -9,16 +9,16 @@ import (
 
 	"github.com/av-belyakov/simplelogger"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/elasticsearchapi"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/webhookserver"
-	"github.com/av-belyakov/thehivehook_go_package/cmd/wrappers"
-	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
-	"github.com/av-belyakov/thehivehook_go_package/internal/confighandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/constants"
-	"github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
-	"github.com/av-belyakov/thehivehook_go_package/internal/logginghandler"
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/elasticsearchapi"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/natsapi"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/webhookserver"
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/wrappers"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/appversion"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/confighandler"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/constants"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/interfaces"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/logginghandler"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
 )
 
 // server здесь реализована вся логика запуска thehivehook_go_package

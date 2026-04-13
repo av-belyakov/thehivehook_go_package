@@ -11,8 +11,8 @@ import (
 	"github.com/doganarif/govisual"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/appname"
-	"github.com/av-belyakov/thehivehook_go_package/internal/appversion"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/appname"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/appversion"
 )
 
 // Start выполняет запуск модуля

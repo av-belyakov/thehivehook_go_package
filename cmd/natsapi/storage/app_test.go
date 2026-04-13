@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/av-belyakov/thehivehook_go_package/cmd/natsapi/storage"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/natsapi/storage"
 )
 
 func TestStorageAcceptedCommands(t *testing.T) {

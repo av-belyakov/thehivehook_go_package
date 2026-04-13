@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	sfunc "github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
+	sfunc "github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
 )
 
 var (

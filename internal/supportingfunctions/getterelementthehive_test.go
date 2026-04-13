@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/supportingfunctions"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/supportingfunctions"
 )
 
 func TestGetter(t *testing.T) {

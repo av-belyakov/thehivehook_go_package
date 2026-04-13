@@ -14,7 +14,6 @@ NATS:
 THEHIVE:
   host: thehive.cloud.gcm
   port: 9000
-  cache_ttl: 43200
 WEBHOOKSERVER:
   name: gcm-dev-test
   host: 192.168.9.208

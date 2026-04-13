@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/av-belyakov/thehivehook_go_package/internal/counterelements"
+	"github.com/av-belyakov/thehivehook_go_package/v2/internal/counterelements"
 )
 
 func TestCounterElements(t *testing.T) {

@@ -1,9 +1,8 @@
-module github.com/av-belyakov/thehivehook_go_package
+module github.com/av-belyakov/thehivehook_go_package/v2
 
-go 1.26.1
+go 1.26.2
 
 require (
-	github.com/av-belyakov/cachingstoragewithqueue v1.2.9
 	github.com/av-belyakov/simplelogger v0.0.0-20250924090323-6ab0607b4a4b
 	github.com/av-belyakov/zabbixapicommunicator v0.0.0-20250618124251-10a4a23cd7ca
 	github.com/brianvoe/gofakeit/v7 v7.14.1

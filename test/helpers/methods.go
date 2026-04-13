@@ -1,6 +1,6 @@
 package helpers
 
-import "github.com/av-belyakov/thehivehook_go_package/internal/interfaces"
+import "github.com/av-belyakov/thehivehook_go_package/v2/internal/interfaces"
 
 func (l *LoggingForTest) GetChan() <-chan interfaces.Messager {
 	return l.chMessage
