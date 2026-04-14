@@ -150,9 +150,11 @@ build-test:
     #удаляет старый образ (версия 1)
     - docker rmi $CI_REGISTRY_IMAGE:test || true
     #удаляет старый образ (версия 2)
-    - docker rmi $CI_REGISTRY_IMAGE:app_v2.test || true
+    - docker rmi $CI_REGISTRY_IMAGE:v2.0.test || true
     - >
-      docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+      docker buildx build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+       --provenance=false \
+       --platform linux/amd64 \
        --build-arg VERSION=$CI_COMMIT_SHORT_SHA \
        --build-arg USERNAME=$GITLAB_USER_NAME \
        --build-arg USERPASSWD=$GITLAB_USER_PASSWD \
@@ -160,9 +162,9 @@ build-test:
        --build-arg STATUS=development .
     #удаляет промежуточный образ с меткой temporary
     - *docker-image-pure
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:app_v2.test
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v2.0.test
     - *docker-login
-    - docker push $CI_REGISTRY_IMAGE:app_v2.test
+    - docker push $CI_REGISTRY_IMAGE:v2.0.test
     - docker rmi $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA || true
 
 # сборка основного образа
