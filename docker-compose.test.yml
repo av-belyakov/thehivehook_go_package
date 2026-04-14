@@ -24,7 +24,7 @@ services:
     environment:
       - GO_HIVEHOOK_THAPIKEY=$HIVEHOOK_THAPIKEY
       - GO_HIVEHOOK_DBWLOGPASSWD=$HIVEHOOK_DBWLOGPASSWD
-    image: gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:v2.test
+    image: gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test.v2
     restart: unless-stopped
     #пробрасываем user ID для корректной записи логов
     user: root
