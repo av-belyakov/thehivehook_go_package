@@ -152,7 +152,7 @@ build-test:
     #удаляет старый образ (версия 2)
     - docker rmi $CI_REGISTRY_IMAGE:v2.0.test || true
     - >
-      docker buildx -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+      docker buildx build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
        --provenance=false \
        --platform linux/amd64 \
        --build-arg VERSION=$CI_COMMIT_SHORT_SHA \
