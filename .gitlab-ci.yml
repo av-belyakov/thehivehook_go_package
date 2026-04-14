@@ -212,8 +212,8 @@ deploy-test:
     #удаляет новый контейнер если он есть
     - docker-compose -f $CI_PROJECT_DIR/docker-compose.test.yml down --remove-orphans
     #удаляет контейнер со старой версией
-    - docker stop gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test
-    - docker rm gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test
+    - docker stop gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test || true
+    - docker rm gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test || true
     #удаляет старый образ (версия 1)
     - docker rmi gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package:test || true
     #удаляет старый образ (версия 2)
