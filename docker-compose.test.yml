@@ -1,7 +1,7 @@
-version: "3.4"
+#version: "3.4"
 
 services:
-  app:
+  app_v1:
     container_name: thehivehook_go.gcm-test
     environment:
       - GO_HIVEHOOK_THAPIKEY=$HIVEHOOK_THAPIKEY
@@ -11,11 +11,30 @@ services:
     #пробрасываем user ID для корректной записи логов
     user: root
     command: chmod 777 /opt/thehivehook_go_package/logs && \
-             chown 1500:1500 /opt/thehivehook_go_package/logs
+      chown 1500:1500 /opt/thehivehook_go_package/logs
     volumes:
       - /var/log/thehivehook_go_package.gcm-test:/opt/thehivehook_go_package/logs:rw
       - ./config:/opt/thehivehook_go_package/config:rw
       #для корректного отображения даты с учетом временной зоны
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+
+  app_v2:
+    container_name: thehivehook_go_v2.gcm-test
+    environment:
+      - GO_HIVEHOOK_THAPIKEY=$HIVEHOOK_THAPIKEY
+      - GO_HIVEHOOK_DBWLOGPASSWD=$HIVEHOOK_DBWLOGPASSWD
+    image: gitlab.cloud.gcm:5050/a.belyakov/thehivehook_go_package_v2:test
+    restart: unless-stopped
+    #пробрасываем user ID для корректной записи логов
+    user: root
+    command: chmod 777 /opt/thehivehook_go_package/logs && \
+      chown 1500:1500 /opt/thehivehook_go_package/logs
+    volumes:
+      - /var/log/thehivehook_go_package.gcm-test:/opt/thehivehook_go_package/logs:rw
+      - ./config:/opt/thehivehook_go_package/config:rw
+      #для корректного отображения даты с учетом временной зоны
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
     network_mode: "host"
