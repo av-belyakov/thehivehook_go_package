@@ -43,6 +43,7 @@ func (s *StorageObjects[T]) Start(ctx context.Context) {
 					s.chanOut <- StorageObjectData[T]{
 						Id:          obj.id,
 						Data:        obj.element,
+						ObjectType:  obj.objectType,
 						TimeCreated: obj.timeCreated,
 					}
 				}
@@ -71,11 +72,11 @@ func (s *StorageObjects[T]) addObject(timeSending int, settings StorageObjectDat
 		if v.id == settings.Id {
 			s.storage.objects[k] = object[T]{
 				id:          v.id,
-				objectType:  v.objectType,
+				element:     settings.Data,
+				objectType:  settings.ObjectType,
 				timeExpiry:  v.timeExpiry,
 				timeCreated: v.timeCreated,
 				timeSending: v.timeSending,
-				element:     settings.Data,
 			}
 
 			return
@@ -85,8 +86,8 @@ func (s *StorageObjects[T]) addObject(timeSending int, settings StorageObjectDat
 	currentTime := time.Now()
 	s.storage.objects = append(s.storage.objects, object[T]{
 		id:          settings.Id,
-		objectType:  settings.ObjectType,
 		element:     settings.Data,
+		objectType:  settings.ObjectType,
 		timeExpiry:  currentTime.Add(s.timeToLive),
 		timeSending: currentTime.Add(time.Duration(timeSending) * time.Second),
 		timeCreated: currentTime,
