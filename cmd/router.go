@@ -75,7 +75,7 @@ func (r *majorRouter) start(
 				return
 
 			case msg := <-fromWebHook:
-				r.logger.Send("info", fmt.Sprintf("'majorRouter' received an object of the type:'%s'", msg.ObjectType))
+				r.logger.Send("info", fmt.Sprintf("'majorRouter' received an object of the type '%s'", msg.ObjectType))
 
 				// -------------------------------------
 				//все данные полученные из webhookserver
@@ -246,6 +246,10 @@ func (r *majorRouter) start(
 							Data:        b,
 						}
 					}()
+
+				default:
+					r.logger.Send("error", supportingfunctions.CustomError(fmt.Errorf("an unknown object type '%s' has been accepted for root id '%s'", data.ObjectType, data.Id)).Error())
+
 				}
 
 			case msg := <-fromNatsApi:
