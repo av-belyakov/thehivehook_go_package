@@ -75,13 +75,15 @@ func (r *majorRouter) start(
 				return
 
 			case msg := <-fromWebHook:
+				r.logger.Send("info", fmt.Sprintf("'majorRouter' received an object of the type:'%s'", msg.ObjectType))
+
 				// -------------------------------------
 				//все данные полученные из webhookserver
 				if msg.ObjectType == "alert" {
 					timeToSend = r.cfg.StorageDelayToSendAlert
 				}
 				if msg.ObjectType == "case" {
-					//уменьшаем счётчик на еденицу и проверяем достиг ли счётчик нуля, если счётчик
+					//уменьшаем счётчик на единицу и проверяем достиг ли счётчик нуля, если счётчик
 					// равен нулю, то запись об элементе удаляется из счётчика, а сам объект игнорируется
 					// если счётчик больше нуля, то игнорируем объект так как этот объект мог быть порождён
 					// результатом выполнения команды
@@ -92,11 +94,15 @@ func (r *majorRouter) start(
 							counter.DeleteKey(msg.RootId)
 						}
 
+						r.logger.Send("info", fmt.Sprintf("'majorRouter' the object type '%s', may be a consequence of executing some command, skip adding to the cache", msg.ObjectType))
+
 						continue
 					}
 
 					timeToSend = r.cfg.StorageDelayToSendCase
 				}
+
+				r.logger.Send("info", fmt.Sprintf("'majorRouter' saving a type '%s' object for deferred execution", msg.ObjectType))
 
 				//сохраняем объект для отложеного выполнения
 				// ожидание истечения времени из параметра storageObject[n].timeSending
@@ -109,11 +115,15 @@ func (r *majorRouter) start(
 					})
 
 			case data := <-storage.GetObjects():
+				r.logger.Send("info", fmt.Sprintf("'majorRouter' data was received from the deferred cache, object type '%s'", data.ObjectType))
+
 				// -------------------------------------
 				//все данные полученные из очереди хранилища (для временной задержки)
 				switch data.ObjectType {
 				case "alert":
 					go func() {
+						r.logger.Send("info", "'majorRouter' created goroutine for to enrich an object of the type 'alert'")
+
 						res, statusCode, err := apiTheHive.GetAlert(ctx, data.Id)
 						if err != nil {
 							if _, ok := errors.AsType[thehiveapi.ErrorInformation](err); ok {
@@ -145,6 +155,8 @@ func (r *majorRouter) start(
 							return
 						}
 
+						r.logger.Send("info", "'majorRouter' transfer of an enriched verified object of type 'alert' to the module natsapi")
+
 						toNatsApi <- natsapi.InputData{
 							ElementType: data.ObjectType,
 							RootId:      data.Id,
@@ -158,6 +170,8 @@ func (r *majorRouter) start(
 							Source: r.cfg.AppConfigWebHookServer.Name,
 							Case:   data.Data,
 						}
+
+						r.logger.Send("info", "'majorRouter' created goroutine for to enrich an object of the type 'case'")
 
 						var g errgroup.Group
 						g.Go(func() error {
@@ -222,6 +236,8 @@ func (r *majorRouter) start(
 
 							return
 						}
+
+						r.logger.Send("info", "'majorRouter' transfer of an enriched verified object of type 'case' to the module natsapi")
 
 						toNatsApi <- natsapi.InputData{
 							ElementType: data.ObjectType,
