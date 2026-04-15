@@ -144,7 +144,7 @@ build-test:
   rules:
     - *readme-no-commit
     - *configs-no-commit
-    #    - *docker-compose-no-commit
+    - *docker-compose-no-commit
     - *dev-test-commit
   script:
     #удаляет старый образ (версия 1)
