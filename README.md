@@ -251,3 +251,33 @@ curl  -H "Authorization: Bearer <api_key_local_admin>" http://**IP ВАШЕГО 
 ```
 
 однако для этого нужны привелегии пользователя admin.
+
+curl -XPUT -H "Authorization: Bearer i0cawzqL8njK9ohiS2xVPIBUIRgN5pPE" -H 'Content-type: application/json' -H 'X-Organisation: Developers' thehive.cloud.gcm:9000/api/config/organisation/notification -d '{
+"value": [
+{
+"delegate": false,
+"trigger": {"name": "AnyEvent"},
+"notifier": {"name": "webhook", "endpoint": "local"}
+},
+{
+"delegate": false,
+"trigger": {"name": "AnyEvent"},
+"notifier": {"name": "webhook", "endpoint": "gcm"}
+},
+{
+"delegate": false,
+"trigger": {"name": "AnyEvent"},
+"notifier": {"name": "webhook", "endpoint": "thehivehook_gcm"}
+},
+{
+"delegate": false,
+"trigger": {"name": "AnyEvent"},
+"notifier": {"name": "webhook", "endpoint": "thehivehook_gcm_test"}
+},
+{
+"delegate": false,
+"trigger": {"name": "AnyEvent"},
+"notifier": {"name": "webhook", "endpoint": "siem-thehive-adapter"}
+}
+]
+}'
