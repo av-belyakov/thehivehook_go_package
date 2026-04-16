@@ -152,7 +152,7 @@ build-test:
     #удаляет старый образ (версия 2)
     - docker rmi $CI_REGISTRY_IMAGE:v2.0.test || true
     - >
-      docker buildx build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+      docker buildx build -t $CI_REGISTRY_IMAGE:v2.0.test \
        --provenance=false \
        --platform linux/amd64 \
        --build-arg VERSION=$CI_COMMIT_SHORT_SHA \
@@ -162,7 +162,7 @@ build-test:
        --build-arg STATUS=development .
     #удаляет промежуточный образ с меткой temporary
     - *docker-image-pure
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v2.0.test
+    #    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v2.0.test
     - *docker-login
     - docker push $CI_REGISTRY_IMAGE:v2.0.test
     - docker rmi $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA || true
@@ -182,7 +182,7 @@ build-prod:
     #удаляет старый образ (версия 2)
     - docker rmi $CI_REGISTRY_IMAGE:v2.0.latest || true
     - >
-      docker buildx build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+      docker buildx build -t $CI_REGISTRY_IMAGE:v2.0.test \
        --provenance=false \
        --platform linux/amd64 \
        --build-arg VERSION=$CI_COMMIT_SHORT_SHA \
@@ -190,7 +190,7 @@ build-prod:
        --build-arg USERPASSWD=$GITLAB_USER_PASSWD \
        --build-arg BRANCH=$BRANCH_MAJOR .
     - *docker-image-pure
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v2.0.latest
+    #    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE:v2.0.latest
     - *docker-login
     - docker push $CI_REGISTRY_IMAGE:v2.0.latest
     - docker rmi $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA || true
