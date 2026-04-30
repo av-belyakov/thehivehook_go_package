@@ -257,6 +257,7 @@ deploy-prod:
   <<: *deploy-prod-tags
   rules:
     - *readme-no-commit
+    - *configs-no-commit
     - *docker-compose-no-commit
     - if: $CI_COMMIT_BRANCH == $BRANCH_MAJOR || $CI_COMMIT_REF_NAME == $BRANCH_MAJOR
       when: manual

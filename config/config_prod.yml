@@ -1,5 +1,5 @@
 COMMONINFO:
-  file_name: config production
+  file_name: "config production"
 TEMPORARYSTORAGE:
   storage_object_ttl: 180
   storage_delay_to_send_alert: 5

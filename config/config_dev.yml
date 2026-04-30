@@ -1,5 +1,5 @@
 COMMONINFO:
-  file_name: config_development
+  file_name: "config development"
 TEMPORARYSTORAGE:
   storage_object_ttl: 180
   storage_delay_to_send_alert: 5
