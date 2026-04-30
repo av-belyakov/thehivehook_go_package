@@ -302,7 +302,7 @@ func TestConfigHandler(t *testing.T) {
 			testOptions.items = []TestParametrs{
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetCommonInfo().FileName},
-					expectedParameters: TestTypeElements{valueString: "config_development"},
+					expectedParameters: TestTypeElements{valueString: "config development"},
 				},
 				{
 					inputParameters:    TestTypeElements{valueInt: cfg.GetApplicationTemporaryStorage().StorageObjectTTL},
@@ -333,7 +333,7 @@ func TestConfigHandler(t *testing.T) {
 			testOptions.items = []TestParametrs{
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetCommonInfo().FileName},
-					expectedParameters: TestTypeElements{valueString: "config_development"},
+					expectedParameters: TestTypeElements{valueString: "config development"},
 				},
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationNATS().Host},
@@ -372,7 +372,7 @@ func TestConfigHandler(t *testing.T) {
 			testOptions.items = []TestParametrs{
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetCommonInfo().FileName},
-					expectedParameters: TestTypeElements{valueString: "config_development"},
+					expectedParameters: TestTypeElements{valueString: "config development"},
 				},
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationTheHive().Host},
@@ -403,7 +403,7 @@ func TestConfigHandler(t *testing.T) {
 			testOptions.items = []TestParametrs{
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetCommonInfo().FileName},
-					expectedParameters: TestTypeElements{valueString: "config_development"},
+					expectedParameters: TestTypeElements{valueString: "config development"},
 				},
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationWebHookServer().Name},
@@ -434,7 +434,7 @@ func TestConfigHandler(t *testing.T) {
 			testOptions.items = []TestParametrs{
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetCommonInfo().FileName},
-					expectedParameters: TestTypeElements{valueString: "config_development"},
+					expectedParameters: TestTypeElements{valueString: "config development"},
 				},
 				{
 					inputParameters:    TestTypeElements{valueString: cfg.GetApplicationWriteLogDB().Host},
