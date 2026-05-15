@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/av-belyakov/thehivehook_go_package/v2/internal/datamodels"
@@ -161,48 +160,48 @@ func (api *TheHiveApi) AddCaseTags(ctx context.Context, rc RequestCommand) ([]by
 func (api *TheHiveApi) AddCaseCustomFields(ctx context.Context, rc RequestCommand) ([]byte, int, error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
+	/*
+		//получаем информацию по кейсу
+		bodyByte, statusCode, err := api.GetCaseEvent(ctx, rc.RootId)
+		if err != nil {
+			return nil, statusCode, supportingfunctions.CustomError(err)
+		}
+		if statusCode != http.StatusOK {
+			return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("when executing the get case event request for root id '%s', case id '%s', the response status is received '%d'", rc.RootId, rc.CaseId, statusCode))
+		}
 
-	//получаем информацию по кейсу
-	bodyByte, statusCode, err := api.GetCaseEvent(ctx, rc.RootId)
-	if err != nil {
-		return nil, statusCode, supportingfunctions.CustomError(err)
-	}
-	if statusCode != http.StatusOK {
-		return nil, statusCode, supportingfunctions.CustomError(fmt.Errorf("when executing the get case event request for root id '%s', case id '%s', the response status is received '%d'", rc.RootId, rc.CaseId, statusCode))
-	}
+		cases := []struct {
+			CustomFields []struct {
+				Name  string `json:"name"`
+				Value string `json:"value"`
+			} `json:"customFields"`
+		}{}
 
-	cases := []struct {
-		CustomFields []struct {
-			Name  string `json:"name"`
-			Value string `json:"value"`
-		} `json:"customFields"`
-	}{}
+		err = json.Unmarshal(bodyByte, &cases)
+		if err != nil {
+			return bodyByte, statusCode, supportingfunctions.CustomError(err)
+		}
 
-	err = json.Unmarshal(bodyByte, &cases)
-	if err != nil {
-		return bodyByte, statusCode, supportingfunctions.CustomError(err)
-	}
+		if len(cases) == 0 {
+			return bodyByte, http.StatusNotFound, supportingfunctions.CustomError(fmt.Errorf("no events were found in TheHive by root id '%s' (case id '%s', service '%s')", rc.RootId, rc.CaseId, rc.Service))
+		}
 
-	if len(cases) == 0 {
-		return bodyByte, http.StatusNotFound, supportingfunctions.CustomError(fmt.Errorf("no events were found in TheHive by root id '%s' (case id '%s', service '%s')", rc.RootId, rc.CaseId, rc.Service))
-	}
+		for _, v := range cases {
+			for _, customField := range v.CustomFields {
+				if !strings.Contains(rc.FieldName, customField.Name) {
+					continue
+				}
 
-	for _, v := range cases {
-		for _, customField := range v.CustomFields {
-			if !strings.Contains(rc.FieldName, customField.Name) {
-				continue
-			}
-
-			if strings.EqualFold(rc.Value, customField.Value) {
-				return bodyByte, http.StatusNotModified, ErrorInformation{
-					Err: fmt.Sprintf("the field with the name '%s' and the value '%s' already exists", customField.Name, customField.Value),
+				if strings.EqualFold(rc.Value, customField.Value) {
+					return bodyByte, http.StatusNotModified, ErrorInformation{
+						Err: fmt.Sprintf("the field with the name '%s' and the value '%s' already exists", customField.Name, customField.Value),
+					}
 				}
 			}
 		}
-	}
-
+	*/
 	req := fmt.Appendf(nil, `{"customFields.%s": %q}`, rc.FieldName, rc.Value)
-	bodyByte, statusCode, err = api.query(ctx, fmt.Sprintf("/api/case/%s", rc.RootId), req, "PATCH")
+	bodyByte, statusCode, err := api.query(ctx, fmt.Sprintf("/api/case/%s", rc.RootId), req, "PATCH")
 	if err != nil {
 		return nil, statusCode, supportingfunctions.CustomError(err)
 	}
