@@ -4,7 +4,7 @@
 # для удаления временного образа, можно через ci/cd, можно руками 
 # docker image prune -a --force --filter="label=temporary"
 
-ARG TAG_NAME=1.26.3-alpine
+ARG TAG_NAME=1.26.5-alpine
 ARG IMAGE_NAME=alpine
 
 FROM golang:${TAG_NAME} AS packages_image
