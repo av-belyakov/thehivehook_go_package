@@ -17,7 +17,6 @@ import (
 	"github.com/av-belyakov/thehivehook_go_package/v2/cmd/thehiveapi"
 	"github.com/av-belyakov/thehivehook_go_package/v2/internal/confighandler"
 	"github.com/av-belyakov/thehivehook_go_package/v2/internal/datamodels"
-	helperfunc "github.com/av-belyakov/thehivehook_go_package/v2/test/helpfunc"
 )
 
 var _ = Describe("Testthehivegetcase", Ordered, func() {
@@ -97,20 +96,15 @@ var _ = Describe("Testthehivegetcase", Ordered, func() {
 
 	Context("Тест 2. Запрос кейса по его номеру через метод GetCaseEvent", func() {
 		It("При выполнении запроса на получении объекта 'event' Case ошибок быть не должно", func() {
-			logging := helperfunc.NewLoggingForTest()
 			conf := confighandler.AppConfigTheHive{
 				Port:   9000,
 				Host:   "thehive.cloud.gcm",
 				ApiKey: os.Getenv("GO_HIVEHOOK_THAPIKEY"),
 			}
 			apiTheHive, err := thehiveapi.New(
-				logging,
 				thehiveapi.WithAPIKey(conf.ApiKey),
 				thehiveapi.WithHost(conf.Host),
 				thehiveapi.WithPort(conf.Port))
-			Expect(err).ShouldNot(HaveOccurred())
-
-			_, err = apiTheHive.Start(context.Background())
 			Expect(err).ShouldNot(HaveOccurred())
 
 			b, code, err := apiTheHive.GetCaseEvent(context.Background(), "~88678416456" /*"~88325656792"*/)
@@ -135,20 +129,15 @@ var _ = Describe("Testthehivegetcase", Ordered, func() {
 
 	Context("Тест 3. Запрос кейса по его номеру через метод GetCaseEvent", func() {
 		It("Должна быть получена специальная ошибка datamodels.ConnectionError при подключении к неверному доменному имени", func() {
-			logging := helperfunc.NewLoggingForTest()
 			conf := confighandler.AppConfigTheHive{
 				Port:   9000,
 				Host:   "1thehive.cloud.gcm",
 				ApiKey: os.Getenv("GO_HIVEHOOK_THAPIKEY"),
 			}
 			apiTheHive, err := thehiveapi.New(
-				logging,
 				thehiveapi.WithAPIKey(conf.ApiKey),
 				thehiveapi.WithHost(conf.Host),
 				thehiveapi.WithPort(conf.Port))
-			Expect(err).ShouldNot(HaveOccurred())
-
-			_, err = apiTheHive.Start(context.Background())
 			Expect(err).ShouldNot(HaveOccurred())
 
 			_, _, err = apiTheHive.GetCaseEvent(context.Background(), "~88678416456")

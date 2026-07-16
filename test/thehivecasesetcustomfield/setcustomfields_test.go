@@ -18,11 +18,11 @@ func TestSetCustomField(t *testing.T) {
 		log.Fatalln(err)
 	}
 
-	theHiveApi, err := thehiveapi.NewTheHiveApi(
-		thehiveapi.WithAPIKey_New(os.Getenv("GO_HIVEHOOK_THAPIKEY")),
-		thehiveapi.WithHost_New("thehive.cloud.gcm"),
-		thehiveapi.WithPort_New(9000),
-		thehiveapi.WithNameRegionalObject_New("test-object"),
+	theHiveApi, err := thehiveapi.New(
+		thehiveapi.WithAPIKey(os.Getenv("GO_HIVEHOOK_THAPIKEY")),
+		thehiveapi.WithHost("thehive.cloud.gcm"),
+		thehiveapi.WithPort(9000),
+		thehiveapi.WithNameRegionalObject("test-object"),
 	)
 	assert.NoError(t, err)
 
