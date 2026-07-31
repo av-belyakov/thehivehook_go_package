@@ -289,7 +289,7 @@ func (r *majorRouter) start(
 					verifiedResponse.Error = errMsg.Error()
 					verifiedResponse.StatusCode = http.StatusPreconditionFailed // условие ложно
 
-					r.logger.Send("error", supportingfunctions.CustomError(errMsg).Error())
+					r.logger.Send("info", supportingfunctions.CustomError(errMsg).Error())
 					sendData(verifiedResponse, msg.ChanDone, msg.ChanOutput)
 
 					continue
